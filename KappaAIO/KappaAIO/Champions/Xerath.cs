@@ -1,0 +1,822 @@
+﻿namespace KappaAIO.Champions
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using Core;
+    using Core.Managers;
+
+    using EloBuddy;
+    using EloBuddy.SDK;
+    using EloBuddy.SDK.Enumerations;
+    using EloBuddy.SDK.Events;
+    using EloBuddy.SDK.Menu;
+    using EloBuddy.SDK.Menu.Values;
+    using EloBuddy.SDK.Rendering;
+
+    using SharpDX;
+
+    using Color = System.Drawing.Color;
+
+    internal class Xerath
+    {
+        private static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
+
+        private static bool hasbought;
+
+        private static Item Scryb;
+
+        private static Spell.Chargeable Q;
+
+        private static Spell.Skillshot W;
+
+        private static Spell.Skillshot E;
+
+        private static Spell.Skillshot R;
+
+        private static Menu Menuini, RMenu, ComboMenu, HarassMenu, LaneClearMenu, JungleClearMenu, KillStealMenu, MiscMenu, DrawMenu, ColorMenu;
+
+        private static bool AttacksEnabled
+        {
+            get
+            {
+                if (IsCastingR)
+                {
+                    return false;
+                }
+
+                if (Q.IsCharging)
+                {
+                    return false;
+                }
+
+                if (ComboMenu.keybind("key"))
+                {
+                    return IsPassiveUp || (!Q.IsReady() && !W.IsReady() && !E.IsReady());
+                }
+
+                return true;
+            }
+        }
+
+        public static bool IsPassiveUp
+        {
+            get
+            {
+                return Player.HasBuff("XerathAscended2OnHit");
+            }
+        }
+
+        public static bool IsCastingR
+        {
+            get
+            {
+                return Player.HasBuff("XerathLocusOfPower2")
+                       || (Common.LastCastedSpell.Name == "XerathLocusOfPower2" && Core.GameTickCount - Common.LastCastedSpell.Time < 500);
+            }
+        }
+
+        public static class RCharge
+        {
+            public static int CastT;
+
+            public static int Index;
+
+            public static Vector3 Position;
+
+            public static bool TapKeyPressed;
+        }
+
+        public static void Execute()
+        {
+            switch (Game.MapId)
+            {
+                case GameMapId.SummonersRift:
+                    Scryb = new Item((int)ItemId.Farsight_Alteration, 3500f);
+                    break;
+                case GameMapId.CrystalScar:
+                    Scryb = new Item(3462, 2500f);
+                    break;
+            }
+
+            Q = new Spell.Chargeable(SpellSlot.Q, 750, 1500, 1500, 500, int.MaxValue, 100) { AllowedCollisionCount = int.MaxValue };
+            W = new Spell.Skillshot(SpellSlot.W, 1100, SkillShotType.Circular, 250, int.MaxValue, 100) { AllowedCollisionCount = int.MaxValue };
+            E = new Spell.Skillshot(SpellSlot.E, 1050, SkillShotType.Linear, 250, 1600, 70);
+            R = new Spell.Skillshot(SpellSlot.R, 3200, SkillShotType.Circular, 500, int.MaxValue, 120) { AllowedCollisionCount = int.MaxValue };
+
+            SpellList.Add(Q);
+            SpellList.Add(W);
+            SpellList.Add(E);
+            SpellList.Add(R);
+
+            Menuini = MainMenu.AddMenu("Xerath", "Xerath");
+            RMenu = Menuini.AddSubMenu("R Settings");
+            ComboMenu = Menuini.AddSubMenu("Combo Settings");
+            ComboMenu.AddGroupLabel("Combo Settings");
+            HarassMenu = Menuini.AddSubMenu("Harass Settings");
+            HarassMenu.AddGroupLabel("Harass Settings");
+            LaneClearMenu = Menuini.AddSubMenu("LaneClear Settings");
+            LaneClearMenu.AddGroupLabel("LaneClear Settings");
+            JungleClearMenu = Menuini.AddSubMenu("JungleClear Settings");
+            JungleClearMenu.AddGroupLabel("JungleClear Settings");
+            KillStealMenu = Menuini.AddSubMenu("Stealer");
+            KillStealMenu.AddGroupLabel("Stealer Settings");
+            MiscMenu = Menuini.AddSubMenu("Misc Settings");
+            DrawMenu = Menuini.AddSubMenu("Drawings Settings");
+            ColorMenu = Menuini.AddSubMenu("Color Picker");
+
+            foreach (var spell in SpellList)
+            {
+                Menuini.Add(spell.Slot + "hit", new ComboBox(spell.Slot + " HitChance", 0, "High", "Medium", "Low"));
+                Menuini.AddSeparator(0);
+            }
+
+            RMenu.AddGroupLabel("R Settings");
+            RMenu.Add("R", new CheckBox("Use R"));
+            RMenu.Add("scrybR", new CheckBox("Use Scrybing Orb while Ulting"));
+            RMenu.Add("Rmode", new ComboBox("R Mode", 0, "Auto", "Custom Delays", "On Tap"));
+            RMenu.Add("Rtap", new KeyBind("R Tap Key", false, KeyBind.BindTypes.HoldActive, 'S'));
+            RMenu.AddGroupLabel("R Custom Delays");
+            for (int i = 1; i <= 5; i++)
+            {
+                RMenu.Add("delay" + i, new Slider("Delay " + i, 0, 0, 1500));
+            }
+            RMenu.Add("Rblock", new CheckBox("Block Commands While Casting R"));
+            RMenu.Add("Rnear", new CheckBox("Focus Targets Near Mouse Only"));
+            RMenu.Add("Mradius", new Slider("Mouse Radius", 750, 300, 1500));
+
+            ComboMenu.Add("key", new KeyBind("Combo Key", false, KeyBind.BindTypes.HoldActive, 32));
+            HarassMenu.Add("key", new KeyBind("Harass Key", false, KeyBind.BindTypes.HoldActive, 'C'));
+            HarassMenu.Add("toggle", new KeyBind("Auto Harass", false, KeyBind.BindTypes.PressToggle, 'H'));
+            LaneClearMenu.Add("key", new KeyBind("LaneClear Key", false, KeyBind.BindTypes.HoldActive, 'V'));
+            JungleClearMenu.Add("key", new KeyBind("JungleClear Key", false, KeyBind.BindTypes.HoldActive, 'V'));
+
+            foreach (var spell in SpellList.Where(s => s != R))
+            {
+                ComboMenu.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
+
+                HarassMenu.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
+                HarassMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% > [{0}%]"));
+                HarassMenu.AddSeparator(0);
+
+                LaneClearMenu.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
+                LaneClearMenu.Add(spell.Slot + "mode", new ComboBox(spell.Slot + " Mode", 0, "LaneClear", "LastHit", "Both"));
+                LaneClearMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% > [{0}%]"));
+                LaneClearMenu.AddSeparator(0);
+
+                JungleClearMenu.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
+                JungleClearMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% > [{0}%]"));
+                JungleClearMenu.AddSeparator(0);
+
+                KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
+                KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
+                KillStealMenu.AddSeparator(0);
+            }
+
+            MiscMenu.AddGroupLabel("Misc Settings");
+            MiscMenu.Add("gap", new CheckBox("E Anti-GapCloser"));
+            MiscMenu.Add("int", new CheckBox("E Interrupter"));
+            MiscMenu.Add("Danger", new ComboBox("Interrupter Danger Level", 1, "High", "Medium", "Low"));
+            MiscMenu.Add("flee", new KeyBind("Escape with E", false, KeyBind.BindTypes.HoldActive, 'A'));
+            var notifi = MiscMenu.Add("Notifications", new CheckBox("Use Notifications"));
+            MiscMenu.Add("autoECC", new CheckBox("Auto E On CC enemy"));
+            MiscMenu.Add("scrybebuy", new CheckBox("Auto Scrybing Orb Buy"));
+            MiscMenu.Add("scrybebuylevel", new Slider("Buy Orb at level [{0}]", 9, 1, 18));
+            MiscMenu.AddGroupLabel("Anti-GapCloser Spells");
+            foreach (var spell in
+                from spell in Gapcloser.GapCloserList
+                from enemy in EntityManager.Heroes.Enemies.Where(enemy => spell.ChampName == enemy.ChampionName)
+                select spell)
+            {
+                MiscMenu.Add(spell.SpellName, new CheckBox(spell.ChampName + " - " + spell.SpellSlot));
+            }
+
+            foreach (var spell in SpellList)
+            {
+                DrawMenu.Add(spell.Slot.ToString(), new CheckBox(spell.Slot + " Range"));
+            }
+
+            DrawMenu.Add("Rmini", new CheckBox("Draw R Range (MiniMap)", false));
+
+            foreach (var spell in SpellList)
+            {
+                ColorMenu.Add(spell.Slot + "Color", new ColorPicker(spell.Slot + " Color", Color.Chartreuse));
+            }
+
+            if (notifi.CurrentValue)
+            {
+                Common.ShowNotification("KappaXerath - Loaded", 5000);
+            }
+
+            Game.OnUpdate += Game_OnGameUpdate;
+            Drawing.OnDraw += Drawing_OnDraw;
+            Drawing.OnEndScene += Drawing_OnEndScene;
+            Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
+            Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            Orbwalker.OnPreAttack += Orbwalker_OnPreAttack;
+            Player.OnIssueOrder += Player_OnIssueOrder;
+            GameObject.OnCreate += GameObject_OnCreate;
+        }
+
+        private static void GameObject_OnCreate(GameObject sender, EventArgs args)
+        {
+            if (sender.Name == "Rengar_LeapSound.troy" && sender != null)
+            {
+                var rengar = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.Hero == Champion.Rengar);
+                if (rengar != null && MiscMenu.checkbox("gap") && rengar.IsValidTarget(E.Range))
+                {
+                    E.Cast(rengar);
+                }
+            }
+        }
+
+        private static void Player_OnIssueOrder(Obj_AI_Base sender, PlayerIssueOrderEventArgs args)
+        {
+            if (IsCastingR && RMenu.checkbox("Rblock"))
+            {
+                args.Process = false;
+            }
+        }
+
+        private static void Orbwalker_OnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
+        {
+            args.Process = AttacksEnabled;
+        }
+
+        private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
+        {
+            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || !MiscMenu.checkbox(e.SpellName) || e.End == Vector3.Zero
+                || !MiscMenu.checkbox("gap"))
+            {
+                return;
+            }
+            if (e.End.IsInRange(Player.Instance, 650) || sender.IsValidTarget(650))
+            {
+                E.Cast(sender);
+            }
+        }
+
+        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (sender.IsMe)
+            {
+                Common.LastCastedSpell.Name = args.SData.Name;
+
+                Common.LastCastedSpell.Time = args.Time;
+
+                switch (args.SData.Name)
+                {
+                    case "XerathLocusOfPower2":
+                        RCharge.CastT = 0;
+                        RCharge.Index = 0;
+                        RCharge.Position = new Vector3();
+                        RCharge.TapKeyPressed = false;
+                        break;
+                    case "XerathLocusPulse":
+                        RCharge.CastT = Core.GameTickCount;
+                        RCharge.Index++;
+                        RCharge.Position = args.End;
+                        RCharge.TapKeyPressed = false;
+                        break;
+                }
+            }
+        }
+
+        private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
+        {
+            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || e.DangerLevel < Common.danger(MiscMenu)
+                || !sender.IsValidTarget(500) || !MiscMenu.checkbox("int"))
+            {
+                return;
+            }
+
+            E.Cast(sender);
+        }
+
+        private static void Combo()
+        {
+            UseSpells(ComboMenu.checkbox("Q"), ComboMenu.checkbox("W"), ComboMenu.checkbox("E"));
+        }
+
+        private static void Harass()
+        {
+            UseSpells(
+                HarassMenu.checkbox("Q") && Q.Mana(HarassMenu),
+                HarassMenu.checkbox("W") && W.Mana(HarassMenu),
+                HarassMenu.checkbox("E") && E.Mana(HarassMenu));
+        }
+
+        private static void UseSpells(bool useQ, bool useW, bool useE)
+        {
+            var Target = TargetSelector.GetTarget(Q.MaximumRange, DamageType.Magical);
+
+            if (Target != null && useE && E.IsReady())
+            {
+                if (Player.Instance.Distance(Target) < E.Range * 0.4f)
+                {
+                    E.Cast(Target, E.hitchance(Menuini));
+                }
+                else if (!useW || !W.IsReady())
+                {
+                    E.Cast(Target, E.hitchance(Menuini));
+                }
+            }
+
+            if (Target != null && useW && W.IsReady())
+            {
+                W.Cast(Target, W.hitchance(Menuini));
+            }
+
+            if (useQ && Q.IsReady() && Target != null)
+            {
+                if (Q.IsCharging && Target.IsValidTarget(Q.Range - 100))
+                {
+                    Q.Cast(Target, Q.hitchance(Menuini));
+                }
+                else if (!useW || !W.IsReady() || Player.Instance.Distance(Target) > W.Range)
+                {
+                    Q.StartCharging();
+                }
+            }
+        }
+
+        private static AIHeroClient GetTargetNearMouse(float distance)
+        {
+            AIHeroClient bestTarget = null;
+            var bestRatio = 0f;
+            var target = TargetSelector.SelectedTarget;
+            if (target.IsValidTarget() && target.IsKillable()
+                && (Game.CursorPos.Distance(target.ServerPosition) < distance && Player.Instance.Distance(target) < R.Range))
+            {
+                return TargetSelector.SelectedTarget;
+            }
+
+            foreach (var hero in EntityManager.Heroes.Enemies)
+            {
+                if (!hero.IsValidTarget(R.Range) || !hero.IsKillable() || Game.CursorPos.Distance(hero.ServerPosition) > distance)
+                {
+                    continue;
+                }
+
+                var damage = Player.Instance.CalculateDamageOnUnit(hero, DamageType.Magical, 100);
+                var ratio = damage / (1 + hero.Health) * TargetSelector.GetPriority(hero);
+
+                if (ratio > bestRatio)
+                {
+                    bestRatio = ratio;
+                    bestTarget = hero;
+                }
+            }
+
+            return bestTarget;
+        }
+
+        private static void WhileCastingR()
+        {
+            if (!RMenu.checkbox("R"))
+            {
+                return;
+            }
+            var rMode = RMenu.combobox("Rmode");
+
+            var rTarget = RMenu.checkbox("Rnear")
+                              ? GetTargetNearMouse(RMenu.slider("Mradius"))
+                              : TargetSelector.GetTarget(R.Range, DamageType.Magical);
+
+            if (rTarget != null)
+            {
+                if (rTarget.TotalShieldHealth() - R.Slot.GetDamage(rTarget) < 0)
+                {
+                    if (Core.GameTickCount - RCharge.CastT <= 0)
+                    {
+                        return;
+                    }
+                }
+
+                if (RCharge.Index != 0 && rTarget.Distance(RCharge.Position) > 1000)
+                {
+                    if (Core.GameTickCount - RCharge.CastT <= Math.Min(2500, rTarget.Distance(RCharge.Position) - 1000))
+                    {
+                        return;
+                    }
+                }
+                scrybeorbuse();
+                switch (rMode)
+                {
+                    case 0:
+                        R.Cast(rTarget, R.hitchance(Menuini));
+                        break;
+
+                    case 1:
+                        var delay = RMenu.slider("delay" + (RCharge.Index + 1));
+                        if (Core.GameTickCount - RCharge.CastT > delay)
+                        {
+                            R.Cast(rTarget, R.hitchance(Menuini));
+                        }
+                        break;
+
+                    case 2:
+                        if (RCharge.TapKeyPressed)
+                        {
+                            R.Cast(rTarget);
+                        }
+                        break;
+                }
+            }
+        }
+
+        private static void KillStealLogic()
+        {
+            foreach (var spell in SpellList.Where(s => s != R))
+            {
+                if (KillStealMenu.checkbox(spell.Slot + "ks"))
+                {
+                    if (spell.IsReady() && spell.GetKStarget() != null)
+                    {
+                        if (spell == Q)
+                        {
+                            if (!Q.IsCharging)
+                            {
+                                Q.StartCharging();
+                                return;
+                            }
+                            if (Q.IsCharging)
+                            {
+                                Q.Cast(Q.GetKStarget(), Q.hitchance(Menuini));
+                            }
+                        }
+                        else
+                        {
+                            spell.Cast(spell.GetKStarget());
+                        }
+                    }
+                }
+                if (KillStealMenu.checkbox(spell.Slot + "js"))
+                {
+                    if (spell.IsReady() && spell.GetJStarget() != null)
+                    {
+                        if (spell == Q)
+                        {
+                            if (!Q.IsCharging)
+                            {
+                                Q.StartCharging();
+                                return;
+                            }
+                            if (Q.IsCharging)
+                            {
+                                Q.Cast(Q.GetJStarget(), Q.hitchance(Menuini));
+                            }
+                        }
+                        else
+                        {
+                            spell.Cast(spell.GetJStarget());
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void Farm()
+        {
+            var useQ = LaneClearMenu.checkbox("Q") && Q.IsReady() && Q.Mana(LaneClearMenu);
+
+            var useW = LaneClearMenu.checkbox("W") && W.IsReady() && W.Mana(LaneClearMenu);
+
+            var useE = LaneClearMenu.checkbox("E") && E.IsReady() && E.Mana(LaneClearMenu);
+
+            var allMinionsQ = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsValidTarget(Q.MaximumRange));
+
+            var allMinionsW = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsValidTarget(W.Range));
+
+            var objAiMinionsQ = allMinionsQ as Obj_AI_Minion[] ?? allMinionsQ.ToArray();
+
+            if (useQ && allMinionsQ != null)
+            {
+                var Qpos = EntityManager.MinionsAndMonsters.GetLineFarmLocation(objAiMinionsQ.ToArray(), Q.Width, (int)Q.MaximumRange);
+
+                var useQi = LaneClearMenu.combobox(Q.Slot + "mode");
+
+                if (useQi == 0 || useQi == 2)
+                {
+                    if (Q.IsCharging)
+                    {
+                        var locQ = Qpos.CastPosition;
+                        if (Qpos.HitNumber >= 1)
+                        {
+                            Q.Cast(locQ);
+                        }
+                    }
+                    else if (Qpos.HitNumber > 0)
+                    {
+                        Q.StartCharging();
+                    }
+                }
+                if (useQi == 1 || useQi == 2)
+                {
+                    var minion = objAiMinionsQ.FirstOrDefault(m => Q.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay));
+                    if (Q.IsCharging && minion != null)
+                    {
+                        Q.Cast(minion);
+                    }
+                    else if (minion != null)
+                    {
+                        Q.StartCharging();
+                    }
+                }
+            }
+
+            if (useW && allMinionsW != null)
+            {
+                var objAiMinions = allMinionsW as Obj_AI_Minion[] ?? allMinionsW.ToArray();
+                var Wpos = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
+                    objAiMinions.ToArray(),
+                    W.Width,
+                    (int)W.Range,
+                    W.CastDelay,
+                    W.Speed);
+                var useWi = LaneClearMenu.combobox(W.Slot + "mode");
+
+                if (useWi == 0 || useWi == 2)
+                {
+                    var locW = Wpos.CastPosition;
+                    if (Wpos.HitNumber >= 1)
+                    {
+                        W.Cast(locW);
+                    }
+                }
+
+                if (useWi == 1 || useWi == 2)
+                {
+                    var minion = objAiMinions.FirstOrDefault(m => W.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, W.CastDelay));
+                    if (minion != null)
+                    {
+                        W.Cast(minion);
+                    }
+                }
+            }
+
+            if (useE)
+            {
+                var useEi = LaneClearMenu.combobox(E.Slot + "mode");
+                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsValidTarget(E.Range)))
+                {
+                    if (minion != null && (useEi == 0 || useEi == 2))
+                    {
+                        E.Cast(minion);
+                    }
+
+                    if (minion != null && (useEi == 1 || useEi == 2))
+                    {
+                        if (E.Slot.GetDamage(minion) >= Prediction.Health.GetPrediction(minion, E.CastDelay))
+                        {
+                            E.Cast(minion);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void JungleFarm()
+        {
+            var useQ = JungleClearMenu.checkbox("Q") && Q.IsReady() && Q.Mana(JungleClearMenu);
+
+            var useW = JungleClearMenu.checkbox("W") && W.IsReady() && W.Mana(JungleClearMenu);
+
+            var useE = JungleClearMenu.checkbox("E") && E.IsReady() && E.Mana(JungleClearMenu);
+
+            var allMinionsQ = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsValidTarget(Q.MaximumRange));
+            var allMinionsW = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsValidTarget(W.Range));
+            var objAiMinionsQ = allMinionsQ as Obj_AI_Minion[] ?? allMinionsQ.ToArray();
+            var objAiMinionsW = allMinionsW as Obj_AI_Minion[] ?? allMinionsW.ToArray();
+
+            if (useQ && allMinionsQ != null)
+            {
+                var Qpos = EntityManager.MinionsAndMonsters.GetLineFarmLocation(objAiMinionsQ.ToArray(), Q.Width, (int)Q.MaximumRange);
+
+                if (Q.IsCharging)
+                {
+                    var locQ = Qpos.CastPosition;
+                    if (Qpos.HitNumber >= 1)
+                    {
+                        Q.Cast(locQ);
+                    }
+                }
+                else if (Qpos.HitNumber > 0)
+                {
+                    Q.StartCharging();
+                }
+
+                var minion = objAiMinionsQ.FirstOrDefault(m => Q.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay));
+                if (Q.IsCharging && minion != null)
+                {
+                    Q.Cast(minion);
+                }
+                else if (minion != null)
+                {
+                    Q.StartCharging();
+                }
+            }
+
+            if (useW && allMinionsW != null)
+            {
+                var Wpos = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
+                    objAiMinionsW.ToArray(),
+                    W.Width,
+                    (int)W.Range,
+                    W.CastDelay,
+                    W.Speed);
+
+                var locW = Wpos.CastPosition;
+                if (Wpos.HitNumber >= 1)
+                {
+                    W.Cast(locW);
+                }
+
+                var minion = objAiMinionsW.FirstOrDefault(m => W.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, W.CastDelay));
+                if (minion != null)
+                {
+                    W.Cast(minion);
+                }
+            }
+
+            if (useE)
+            {
+                foreach (var minion in EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsValidTarget(E.Range)))
+                {
+                    if (E.Slot.GetDamage(minion) >= Prediction.Health.GetPrediction(minion, E.CastDelay))
+                    {
+                        E.Cast(minion);
+                    }
+                    E.Cast(minion);
+                }
+            }
+        }
+
+        private static void Game_OnGameUpdate(EventArgs args)
+        {
+            if (MiscMenu.keybind("flee"))
+            {
+                var target = TargetSelector.GetTarget(E.Range, DamageType.Magical);
+                if (target != null)
+                {
+                    E.Cast(target);
+                }
+                Orbwalker.OrbwalkTo(Game.CursorPos);
+            }
+
+            KillStealLogic();
+
+            if (MiscMenu.checkbox("autoECC"))
+            {
+                var ecc = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.IsValidTarget(E.Range) && e.IsCC());
+                if (ecc != null)
+                {
+                    E.Cast(ecc);
+                }
+            }
+
+            ScrybingOrb();
+
+            if (Player.Instance.IsDead)
+            {
+                return;
+            }
+
+            R.Range = (uint)(1925 + R.Level * 1200);
+
+            if (ComboMenu.keybind("key"))
+            {
+                Combo();
+            }
+
+            if (HarassMenu.keybind("key") || HarassMenu.keybind("toggle"))
+            {
+                Harass();
+            }
+
+            if (LaneClearMenu.keybind("key"))
+            {
+                Farm();
+            }
+
+            if (JungleClearMenu.keybind("key"))
+            {
+                JungleFarm();
+            }
+
+            Orbwalker.DisableAttacking = IsCastingR;
+            Orbwalker.DisableMovement = IsCastingR;
+            RCharge.TapKeyPressed = RMenu.keybind("Rtap");
+
+            if (IsCastingR)
+            {
+                WhileCastingR();
+                return;
+            }
+
+            if (R.IsReady() && MiscMenu.checkbox("Notifications") && Environment.TickCount - Common.lastNotification > 5000)
+            {
+                foreach (var enemy in
+                    EntityManager.Heroes.Enemies.Where(h => h.IsValidTarget() && R.Slot.GetDamage(h) * 3 > h.Health))
+                {
+                    Common.ShowNotification(enemy.ChampionName + ": is killable R!!!", 4000);
+                    Common.lastNotification = Environment.TickCount;
+                }
+            }
+        }
+
+        public static void scrybeorbuse()
+        {
+            if (!RMenu.checkbox("scrybR"))
+            {
+                return;
+            }
+
+            var target = TargetSelector.GetTarget(R.Range, DamageType.Magical);
+            if (target == null)
+            {
+                return;
+            }
+            if (Scryb.IsOwned(Player.Instance) && (!target.IsHPBarRendered || NavMesh.IsWallOfGrass(target.ServerPosition, 50)))
+            {
+                Scryb.Cast(target.ServerPosition);
+            }
+        }
+
+        public static void ScrybingOrb()
+        {
+            var level = MiscMenu.slider("scrybebuylevel");
+            var buy = MiscMenu.checkbox("scrybebuy");
+
+            if (!buy)
+            {
+                return;
+            }
+
+            if (hasbought)
+            {
+                return;
+            }
+
+            if (!Scryb.IsOwned(Player.Instance) && Player.Instance.IsInShopRange() && Player.Instance.Level >= level)
+            {
+                Scryb.Buy();
+                hasbought = true;
+            }
+        }
+
+        private static void Drawing_OnEndScene(EventArgs args)
+        {
+            if (Player.Instance.IsDead)
+            {
+                return;
+            }
+            /*
+            var Rcirclemap = DrawMenu.checkbox("Rmini");
+
+            if (Rcirclemap && R.IsReady())
+            {
+                DrawingsManager.DrawCricleMinimap(Color.White, R.Range, Player.Instance.ServerPosition, 2, 20);
+            }
+            */
+        }
+
+        private static void Drawing_OnDraw(EventArgs args)
+        {
+            if (IsCastingR)
+            {
+                if (RMenu.checkbox("Rnear"))
+                {
+                    Circle.Draw(SharpDX.Color.Red, RMenu.slider("Mradius"), Game.CursorPos);
+                }
+            }
+
+            foreach (var spell in SpellList)
+            {
+                var color = ColorMenu.Color(spell.Slot + "Color");
+                spell.SpellRange(color, DrawMenu.checkbox(spell.Slot.ToString()));
+            }
+
+            if (MiscMenu.checkbox("Notifications") && R.IsReady())
+            {
+                var t = TargetSelector.GetTarget(R.Range, DamageType.Physical);
+
+                if (t.IsValidTarget())
+                {
+                    var rDamage = R.Slot.GetDamage(t);
+                    if (rDamage * 5 > t.Health)
+                    {
+                        Drawing.DrawText(
+                            Drawing.Width * 0.1f,
+                            Drawing.Height * 0.5f,
+                            Color.Red,
+                            (int)(t.Health / rDamage) + " x Ult can kill: " + t.ChampionName + " have: " + t.Health + "hp");
+                        DrawingsManager.drawLine(t.Position, Player.Instance.Position, 10, Color.Yellow);
+                    }
+                }
+            }
+        }
+    }
+}

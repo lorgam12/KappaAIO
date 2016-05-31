@@ -1,7 +1,7 @@
 # KappaAIO
-AurelionSol
-Azir
-Brand
-Kindred
-Malzahar
-Xerath
+# AurelionSol
+# Azir
+# Brand
+# Kindred
+# Malzahar
+# Xerath

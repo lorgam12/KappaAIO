@@ -1,12 +1,15 @@
 ﻿namespace KappaAIO.Core
 {
+    using System.Linq;
+
     using EloBuddy.SDK;
+    using EloBuddy.SDK.Events;
     using EloBuddy.SDK.Menu;
     using EloBuddy.SDK.Menu.Values;
 
     internal class kCore
     {
-        public static Menu CoreMenu, ks;
+        public static Menu CoreMenu, GapMenu, ks;
 
         public static readonly string[] Junglemobs =
             {
@@ -18,7 +21,17 @@
         public static void Execute()
         {
             CoreMenu = MainMenu.AddMenu("KappaCore", "KappaCore");
+            GapMenu = CoreMenu.AddSubMenu("Anti-GapCloser Settings");
             ks = CoreMenu.AddSubMenu("Stealer");
+
+            GapMenu.AddGroupLabel("Anti GapCloser Champions");
+            foreach (var spell in
+                from spell in Gapcloser.GapCloserList
+                from enemy in EntityManager.Heroes.Enemies.Where(enemy => spell.ChampName == enemy.ChampionName)
+                select spell)
+            {
+                GapMenu.Add(spell.SpellName, new CheckBox(spell.ChampName + " " + spell.SpellSlot));
+            }
 
             ks.AddGroupLabel("KillSteal Champions");
             foreach (var hero in EntityManager.Heroes.Enemies)

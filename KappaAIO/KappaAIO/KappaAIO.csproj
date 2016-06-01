@@ -48,11 +48,13 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Champions\AurelionSol.cs" />
     <Compile Include="Champions\Azir.cs" />
+    <Compile Include="Champions\Base.cs" />
     <Compile Include="Champions\Brand.cs" />
     <Compile Include="Champions\Kindred.cs" />
     <Compile Include="Champions\Malzahar.cs" />

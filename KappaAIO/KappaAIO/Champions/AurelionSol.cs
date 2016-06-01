@@ -1,7 +1,6 @@
 ﻿namespace KappaAIO.Champions
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
 
     using EloBuddy;
@@ -16,25 +15,21 @@
 
     using Color = System.Drawing.Color;
 
-    internal class AurelionSol
+    internal class AurelionSol : Base
     {
         public static float Qsize;
 
         private static MissileClient QMissle;
 
-        public static Spell.Skillshot Q { get; private set; }
+        private static Spell.Skillshot Q { get; }
 
-        public static Spell.Active W { get; private set; }
+        private static Spell.Active W { get; }
 
-        public static Spell.Active W2 { get; private set; }
+        private static Spell.Active W2 { get; }
 
-        public static Spell.Skillshot R { get; private set; }
+        private static Spell.Skillshot R { get; }
 
-        private static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
-
-        private static Menu Menuini, AutoMenu, ComboMenu, HarassMenu, LaneClearMenu, JungleClearMenu, KillstealMenu, DrawMenu, ColorMenu;
-
-        public static void Execute()
+        static AurelionSol()
         {
             Q = new Spell.Skillshot(SpellSlot.Q, 600, SkillShotType.Linear, 0, 1000, 180);
             W = new Spell.Active(SpellSlot.W, 600);
@@ -55,8 +50,8 @@
             LaneClearMenu.AddGroupLabel("LaneClear Settings");
             JungleClearMenu = Menuini.AddSubMenu("JungleClear Settings");
             JungleClearMenu.AddGroupLabel("JungleClear Settings");
-            KillstealMenu = Menuini.AddSubMenu("KillSteal Settings");
-            KillstealMenu.AddGroupLabel("Stealer Settings");
+            KillStealMenu = Menuini.AddSubMenu("KillSteal Settings");
+            KillStealMenu.AddGroupLabel("Stealer Settings");
             DrawMenu = Menuini.AddSubMenu("Drawings");
             DrawMenu.AddGroupLabel("Drawings");
             ColorMenu = Menuini.AddSubMenu("ColorPicker");
@@ -77,14 +72,6 @@
             AutoMenu.Add("IntQ", new CheckBox("Interrupter Q"));
             AutoMenu.Add("IntR", new CheckBox("Interrupter R"));
             AutoMenu.Add("Danger", new ComboBox("Interrupter DangerLevel", 1, "High", "Medium", "Low"));
-            AutoMenu.AddGroupLabel("Anti GapCloser Spells");
-            foreach (var spell in
-                from spell in Gapcloser.GapCloserList
-                from enemy in EntityManager.Heroes.Enemies.Where(enemy => spell.ChampName == enemy.ChampionName)
-                select spell)
-            {
-                AutoMenu.Add(spell.SpellName, new CheckBox(spell.ChampName + " " + spell.SpellSlot));
-            }
 
             DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));
             DrawMenu.AddLabel("Draws = ComboDamage / Enemy Current Health");
@@ -113,8 +100,8 @@
                 {
                     DrawMenu.Add(spell.Slot.ToString(), new CheckBox(spell.Slot + " Range"));
                     ColorMenu.Add(spell.Slot.ToString(), new ColorPicker(spell.Slot + " Color", Color.Chartreuse));
-                    KillstealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
-                    KillstealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
+                    KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
+                    KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
                 }
             }
 
@@ -132,12 +119,10 @@
             DrawMenu.Add("w2", new CheckBox("W Min Range"));
             ColorMenu.Add("w2", new ColorPicker("W2 Color", Color.Chartreuse));
 
-            Game.OnTick += Game_OnTick;
             Gapcloser.OnGapcloser += Auto.Gapcloser_OnGapcloser;
             Interrupter.OnInterruptableSpell += Auto.Interrupter_OnInterruptableSpell;
             GameObject.OnCreate += GameObject_OnCreate;
             GameObject.OnDelete += GameObject_OnDelete;
-            Drawing.OnDraw += Drawing_OnDraw;
         }
 
         private static void GameObject_OnDelete(GameObject sender, EventArgs args)
@@ -184,32 +169,10 @@
             }
         }
 
-        private static void Game_OnTick(EventArgs args)
+        public override void Active()
         {
-            Auto.KillSteal();
-            updatespells();
-
             Orbwalker.DisableAttacking = W.Handle.ToggleState == 2 && ComboMenu.checkbox("disableAA") && Common.orbmode(Orbwalker.ActiveModes.Combo);
-            if (Common.orbmode(Orbwalker.ActiveModes.Combo))
-            {
-                Compat.Combo();
-            }
-            if (Common.orbmode(Orbwalker.ActiveModes.Harass))
-            {
-                Compat.Harass();
-            }
-            if (Common.orbmode(Orbwalker.ActiveModes.LaneClear))
-            {
-                Clear.LaneClear();
-            }
-            if (Common.orbmode(Orbwalker.ActiveModes.JungleClear))
-            {
-                Clear.JungleClear();
-            }
-        }
 
-        private static void updatespells()
-        {
             var f = (QMissle?.StartPosition.Distance(QMissle.Position) + Q.Width) / 16;
             if (f != null)
             {
@@ -219,6 +182,186 @@
             Q.Range = (uint)Menuini.slider("qrange");
             W.Range = (uint)Menuini.slider("wmax");
             W2.Range = (uint)Menuini.slider("wmin");
+        }
+
+        public override void Combo()
+        {
+            var Qmode = ComboMenu.combobox("qmode");
+
+            if (QMissle != null && Qmode == 0 && EntityManager.Heroes.Enemies.Any(e => e.IsInRange(QMissle, Qsize) && e.IsKillable()))
+            {
+                Q.Cast(Game.CursorPos);
+            }
+
+            var target = TargetSelector.GetTarget(1000, DamageType.Magical);
+            var Wtarget = TargetSelector.GetTarget(W.Range, DamageType.Magical);
+            var Rtarget = TargetSelector.GetTarget(R.Range, DamageType.Magical);
+
+            var useQ = ComboMenu.checkbox(Q.Slot.ToString()) && target.IsValidTarget(Q.Range) && Q.IsReady();
+            var useW = ComboMenu.checkbox(W.Slot.ToString()) && W.IsReady();
+            var useR = ComboMenu.checkbox(R.Slot.ToString()) && R.IsReady();
+            var Rfinisher = ComboMenu.checkbox("Rfinisher");
+
+            if (useQ && target != null)
+            {
+                if (Q.Handle.ToggleState != 2 && !target.IsValidTarget(250))
+                {
+                    Q.Cast(target, Q.hitchance(Menuini));
+                }
+            }
+            if (QMissle != null && Q.Handle.ToggleState == 2 && Qmode == 1 && target.IsInRange(QMissle, Qsize))
+            {
+                Q.Cast(Game.CursorPos);
+            }
+
+            if (useW)
+            {
+                if (Wtarget != null)
+                {
+                    if (W.Handle.ToggleState != 2 && Wtarget.IsValidTarget(W.Range))
+                    {
+                        W.Cast();
+                    }
+                    if (W.Handle.ToggleState == 2 && Wtarget.IsValidTarget(W2.Range))
+                    {
+                        W.Cast();
+                    }
+                }
+
+                if (Wtarget == null && W.Handle.ToggleState == 2)
+                {
+                    W.Cast();
+                }
+            }
+            if (useR)
+            {
+                var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range));
+                if (enemies != null)
+                {
+                    var aiHeroClients = enemies as AIHeroClient[] ?? enemies.ToArray();
+                    foreach (var enemy in aiHeroClients)
+                    {
+                        var Rectangle = new Geometry.Polygon.Rectangle(
+                            user.ServerPosition,
+                            user.ServerPosition.Extend(enemy.ServerPosition, R.Range).To3D(),
+                            R.Width);
+
+                        if (aiHeroClients.Count(e => Rectangle.IsInside(e)) >= ComboMenu.slider("Raoe"))
+                        {
+                            R.Cast(enemy.ServerPosition);
+                        }
+                    }
+                }
+
+                if (Rfinisher && Rtarget != null && Rtarget.IsKillable(R.Range)
+                    && R.GetDamage(Rtarget) > Prediction.Health.GetPrediction(Rtarget, R.CastDelay))
+                {
+                    R.Cast(Rtarget, R.hitchance(Menuini));
+                }
+            }
+        }
+
+        public override void Harass()
+        {
+            var Qmode = HarassMenu.combobox("qmode");
+
+            if (QMissle != null && Qmode == 0 && EntityManager.Heroes.Enemies.Any(e => e.IsInRange(QMissle, Qsize) && e.IsKillable()))
+            {
+                Q.Cast(Game.CursorPos);
+            }
+
+            var target = TargetSelector.GetTarget(1000, DamageType.Magical);
+            var Wtarget = TargetSelector.GetTarget(W.Range, DamageType.Magical);
+
+            var useQ = HarassMenu.checkbox(Q.Slot.ToString()) && target.IsValidTarget(Q.Range) && Q.IsReady() && Q.Mana(HarassMenu);
+            var useW = HarassMenu.checkbox(W.Slot.ToString()) && W.IsReady() && W.Mana(HarassMenu);
+
+            if (useQ)
+            {
+                if (Q.Handle.ToggleState != 2 && !target.IsValidTarget(250))
+                {
+                    if (Q.Handle.ToggleState != 2)
+                    {
+                        Q.Cast(target, Q.hitchance(Menuini));
+                    }
+                }
+                if (QMissle != null && Q.Handle.ToggleState == 2 && Qmode == 1 && target.IsInRange(QMissle, Qsize))
+                {
+                    Q.Cast(Game.CursorPos);
+                }
+            }
+
+            if (useW)
+            {
+                if (Wtarget != null)
+                {
+                    if (W.Handle.ToggleState != 2 && Wtarget.IsValidTarget(W.Range))
+                    {
+                        W.Cast();
+                    }
+                    if (W.Handle.ToggleState == 2 && Wtarget.IsValidTarget(W2.Range))
+                    {
+                        W.Cast();
+                    }
+                }
+
+                if (Wtarget == null && W.Handle.ToggleState == 2)
+                {
+                    W.Cast();
+                }
+            }
+        }
+
+        public override void LaneClear()
+        {
+            var useQ = LaneClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && Q.Mana(LaneClearMenu);
+            var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(Q.Range));
+            if (!useQ || minions == null)
+            {
+                return;
+            }
+
+            foreach (var minion in minions)
+            {
+                if (minion.CountEnemyMinions(180) > 2)
+                {
+                    Q.Cast(minion);
+                }
+            }
+        }
+
+        public override void JungleClear()
+        {
+            var useQ = JungleClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && Q.Mana(JungleClearMenu);
+            var mob =
+                EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderByDescending(m => m.MaxHealth).FirstOrDefault(m => m.IsKillable(Q.Range));
+            if (!useQ || mob == null)
+            {
+                return;
+            }
+
+            Q.Cast(mob);
+        }
+
+        public override void KillSteal()
+        {
+            foreach (var spell in SpellList.Where(s => s != W))
+            {
+                if (spell.GetKStarget() != null && spell.IsReady() && KillStealMenu.checkbox(spell.Slot + "ks"))
+                {
+                    spell.Cast(spell.GetKStarget());
+                }
+                if (spell.GetJStarget() != null && spell.IsReady() && KillStealMenu.checkbox(spell.Slot + "js"))
+                {
+                    spell.Cast(spell.GetJStarget());
+                }
+            }
+        }
+
+        public override void Draw()
+        {
+            Q.DrawSpellDamage(true);
+            W2.SpellRange(ColorMenu.Color("W2"), DrawMenu.checkbox("w2"));
         }
 
         private static class Auto
@@ -242,7 +385,7 @@
 
             public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
             {
-                if (sender == null || !sender.IsEnemy || !sender.IsKillable() || !AutoMenu.checkbox(e.SpellName))
+                if (sender == null || !sender.IsEnemy || !sender.IsKillable() || !kCore.GapMenu.checkbox(e.SpellName))
                 {
                     return;
                 }
@@ -256,202 +399,6 @@
                     R.Cast(sender);
                 }
             }
-
-            public static void KillSteal()
-            {
-                foreach (var spell in SpellList.Where(s => s != W))
-                {
-                    if (spell.GetKStarget() != null && spell.IsReady() && KillstealMenu.checkbox(spell.Slot + "ks"))
-                    {
-                        spell.Cast(spell.GetKStarget());
-                    }
-                    if (spell.GetJStarget() != null && spell.IsReady() && KillstealMenu.checkbox(spell.Slot + "js"))
-                    {
-                        spell.Cast(spell.GetJStarget());
-                    }
-                }
-            }
-        }
-
-        private static class Compat
-        {
-            public static void Combo()
-            {
-                var Qmode = ComboMenu.combobox("qmode");
-
-                if (QMissle != null && Qmode == 0 && EntityManager.Heroes.Enemies.Any(e => e.IsInRange(QMissle, Qsize) && e.IsKillable()))
-                {
-                    Q.Cast(Game.CursorPos);
-                }
-
-                var target = TargetSelector.GetTarget(1000, DamageType.Magical);
-                var Wtarget = TargetSelector.GetTarget(W.Range, DamageType.Magical);
-                var Rtarget = TargetSelector.GetTarget(R.Range, DamageType.Magical);
-
-                var useQ = ComboMenu.checkbox(Q.Slot.ToString()) && target.IsValidTarget(Q.Range) && Q.IsReady();
-                var useW = ComboMenu.checkbox(W.Slot.ToString()) && W.IsReady();
-                var useR = ComboMenu.checkbox(R.Slot.ToString()) && R.IsReady();
-                var Rfinisher = ComboMenu.checkbox("Rfinisher");
-
-                if (useQ && target != null)
-                {
-                    if (Q.Handle.ToggleState != 2 && !target.IsValidTarget(250))
-                    {
-                        Q.Cast(target, Q.hitchance(Menuini));
-                    }
-                }
-                if (QMissle != null && Q.Handle.ToggleState == 2 && Qmode == 1 && target.IsInRange(QMissle, Qsize))
-                {
-                    Q.Cast(Game.CursorPos);
-                }
-
-                if (useW)
-                {
-                    if (Wtarget != null)
-                    {
-                        if (W.Handle.ToggleState != 2 && Wtarget.IsValidTarget(W.Range))
-                        {
-                            W.Cast();
-                        }
-                        if (W.Handle.ToggleState == 2 && Wtarget.IsValidTarget(W2.Range))
-                        {
-                            W.Cast();
-                        }
-                    }
-
-                    if (Wtarget == null && W.Handle.ToggleState == 2)
-                    {
-                        W.Cast();
-                    }
-                }
-                if (useR)
-                {
-                    var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range));
-                    if (enemies != null)
-                    {
-                        var aiHeroClients = enemies as AIHeroClient[] ?? enemies.ToArray();
-                        foreach (var enemy in aiHeroClients)
-                        {
-                            var Rectangle = new Geometry.Polygon.Rectangle(
-                                Player.Instance.ServerPosition,
-                                Player.Instance.ServerPosition.Extend(enemy.ServerPosition, R.Range).To3D(),
-                                R.Width);
-
-                            if (aiHeroClients.Count(e => Rectangle.IsInside(e)) >= ComboMenu.slider("Raoe"))
-                            {
-                                R.Cast(enemy.ServerPosition);
-                            }
-                        }
-                    }
-
-                    if (Rfinisher && Rtarget != null && Rtarget.IsKillable(R.Range)
-                        && R.Slot.GetDamage(Rtarget) > Prediction.Health.GetPrediction(Rtarget, R.CastDelay))
-                    {
-                        R.Cast(Rtarget, R.hitchance(Menuini));
-                    }
-                }
-            }
-
-            public static void Harass()
-            {
-                var Qmode = HarassMenu.combobox("qmode");
-
-                if (QMissle != null && Qmode == 0 && EntityManager.Heroes.Enemies.Any(e => e.IsInRange(QMissle, Qsize) && e.IsKillable()))
-                {
-                    Q.Cast(Game.CursorPos);
-                }
-
-                var target = TargetSelector.GetTarget(1000, DamageType.Magical);
-                var Wtarget = TargetSelector.GetTarget(W.Range, DamageType.Magical);
-
-                var useQ = HarassMenu.checkbox(Q.Slot.ToString()) && target.IsValidTarget(Q.Range) && Q.IsReady() && Q.Mana(HarassMenu);
-                var useW = HarassMenu.checkbox(W.Slot.ToString()) && W.IsReady() && W.Mana(HarassMenu);
-
-                if (useQ)
-                {
-                    if (Q.Handle.ToggleState != 2 && !target.IsValidTarget(250))
-                    {
-                        if (Q.Handle.ToggleState != 2)
-                        {
-                            Q.Cast(target, Q.hitchance(Menuini));
-                        }
-                    }
-                    if (QMissle != null && Q.Handle.ToggleState == 2 && Qmode == 1 && target.IsInRange(QMissle, Qsize))
-                    {
-                        Q.Cast(Game.CursorPos);
-                    }
-                }
-
-                if (useW)
-                {
-                    if (Wtarget != null)
-                    {
-                        if (W.Handle.ToggleState != 2 && Wtarget.IsValidTarget(W.Range))
-                        {
-                            W.Cast();
-                        }
-                        if (W.Handle.ToggleState == 2 && Wtarget.IsValidTarget(W2.Range))
-                        {
-                            W.Cast();
-                        }
-                    }
-
-                    if (Wtarget == null && W.Handle.ToggleState == 2)
-                    {
-                        W.Cast();
-                    }
-                }
-            }
-        }
-
-        private static class Clear
-        {
-            public static void LaneClear()
-            {
-                var useQ = LaneClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && Q.Mana(LaneClearMenu);
-                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(Q.Range));
-                if (!useQ || minions == null)
-                {
-                    return;
-                }
-
-                foreach (var minion in minions)
-                {
-                    if (minion.CountEnemyMinions(180) > 2)
-                    {
-                        Q.Cast(minion);
-                    }
-                }
-            }
-
-            public static void JungleClear()
-            {
-                var useQ = JungleClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && Q.Mana(JungleClearMenu);
-                var mob =
-                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                        .OrderByDescending(m => m.MaxHealth)
-                        .FirstOrDefault(m => m.IsKillable(Q.Range));
-                if (!useQ || mob == null)
-                {
-                    return;
-                }
-
-                Q.Cast(mob);
-            }
-        }
-
-        private static void Drawing_OnDraw(EventArgs args)
-        {
-            // Spells Drawings
-            foreach (var spell in SpellList)
-            {
-                var color = ColorMenu.Color(spell.Slot.ToString());
-                spell.SpellRange(color, DrawMenu.checkbox(spell.Slot.ToString()));
-            }
-            W2.SpellRange(ColorMenu.Color("w2"), DrawMenu.checkbox("w2"));
-
-            // Damage
-            DrawingsManager.DrawTotalDamage(DamageType.Magical, DrawMenu.checkbox("damage"));
         }
     }
 }

@@ -16,21 +16,17 @@
 
     using SharpDX;
 
-    internal class Brand
+    internal class Brand : Base
     {
-        private static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
+        private static readonly Spell.Skillshot Q;
 
-        private static Menu MenuIni, Auto, Combo, Harass, LaneClear, JungleClear, KillSteal, DrawMenu, ColorMenu;
+        private static readonly Spell.Skillshot W;
 
-        private static Spell.Skillshot Q;
+        private static readonly Spell.Targeted E;
 
-        private static Spell.Skillshot W;
+        private static readonly Spell.Targeted R;
 
-        private static Spell.Targeted E;
-
-        private static Spell.Targeted R;
-
-        public static void Execute()
+        static Brand()
         {
             try
             {
@@ -44,90 +40,85 @@
                 SpellList.Add(E);
                 SpellList.Add(R);
 
-                MenuIni = MainMenu.AddMenu("Brand", "Brand");
-                Auto = MenuIni.AddSubMenu("Auto");
-                Combo = MenuIni.AddSubMenu("Combo");
-                Harass = MenuIni.AddSubMenu("Harass");
-                Harass.AddGroupLabel("Harass");
-                LaneClear = MenuIni.AddSubMenu("LaneClear");
-                LaneClear.AddGroupLabel("LaneClear");
-                JungleClear = MenuIni.AddSubMenu("JungleClear");
-                JungleClear.AddGroupLabel("JungleClear");
-                KillSteal = MenuIni.AddSubMenu("Stealer");
-                DrawMenu = MenuIni.AddSubMenu("Drawings");
-                ColorMenu = MenuIni.AddSubMenu("Colors");
+                Menuini = MainMenu.AddMenu("Brand", "Brand");
+                AutoMenu = Menuini.AddSubMenu("Auto");
+                ComboMenu = Menuini.AddSubMenu("Combo");
+                HarassMenu = Menuini.AddSubMenu("Harass");
+                HarassMenu.AddGroupLabel("Harass");
+                LaneClearMenu = Menuini.AddSubMenu("LaneClear");
+                LaneClearMenu.AddGroupLabel("LaneClear");
+                JungleClearMenu = Menuini.AddSubMenu("JungleClear");
+                JungleClearMenu.AddGroupLabel("JungleClear");
+                KillStealMenu = Menuini.AddSubMenu("Stealer");
+                DrawMenu = Menuini.AddSubMenu("Drawings");
+                ColorMenu = Menuini.AddSubMenu("Colors");
 
                 foreach (var spell in SpellList.Where(s => s != E && s != R))
                 {
-                    MenuIni.Add(spell.Slot + "hit", new ComboBox(spell.Slot + " HitChance", 0, "High", "Medium", "Low"));
-                    MenuIni.AddSeparator(0);
+                    Menuini.Add(spell.Slot + "hit", new ComboBox(spell.Slot + " HitChance", 0, "High", "Medium", "Low"));
+                    Menuini.AddSeparator(0);
                 }
 
-                Auto.AddGroupLabel("Auto Settings");
-                Auto.Add("AutoR", new Slider("Auto R AoE hit [{0}] Targets or more", 2, 1, 6));
-                Auto.Add("Gap", new CheckBox("Anti GapCloser"));
-                Auto.Add("Int", new CheckBox("Auto Interrupter"));
-                Auto.Add("Danger", new ComboBox("Interrupter Danger Level", 1, "High", "Medium", "Low"));
-                Auto.AddSeparator(0);
-                Auto.AddGroupLabel("Auto Hit Passive");
-                Auto.Add("AutoQ", new CheckBox("Auto Q Dotnate Passive"));
-                Auto.Add("AutoW", new CheckBox("Auto W Dotnate Passive", false));
-                Auto.Add("AutoE", new CheckBox("Auto E Dotnate Passive"));
-                Auto.AddSeparator(0);
-                Auto.AddGroupLabel("Anti GapCloser - Spells");
-                foreach (var gapspell in
-                    EntityManager.Heroes.Enemies.SelectMany(enemy => Gapcloser.GapCloserList.Where(e => e.ChampName == enemy.ChampionName)))
-                {
-                    Auto.Add(gapspell.SpellName, new CheckBox(gapspell.SpellName + " - " + gapspell.SpellSlot));
-                }
+                AutoMenu.AddGroupLabel("Auto Settings");
+                AutoMenu.Add("AutoR", new Slider("Auto R AoE hit [{0}] Targets or more", 2, 1, 6));
+                AutoMenu.Add("Gap", new CheckBox("Anti GapCloser"));
+                AutoMenu.Add("Int", new CheckBox("Auto Interrupter"));
+                AutoMenu.Add("Danger", new ComboBox("Interrupter Danger Level", 1, "High", "Medium", "Low"));
+                AutoMenu.AddSeparator(0);
+                AutoMenu.AddGroupLabel("Auto Hit Passive");
+                AutoMenu.Add("AutoQ", new CheckBox("Auto Q Dotnate Passive"));
+                AutoMenu.Add("AutoW", new CheckBox("Auto W Dotnate Passive", false));
+                AutoMenu.Add("AutoE", new CheckBox("Auto E Dotnate Passive"));
+                AutoMenu.AddSeparator(0);
+                AutoMenu.AddGroupLabel("Anti GapCloser - Spells");
 
-                Combo.AddGroupLabel("Combo Settings");
-                Combo.Add("Q", new CheckBox("Use Q"));
-                Combo.AddLabel("Extra Q Settings");
-                Combo.Add("Qp", new CheckBox("Q Only for stun"));
-                Combo.Add(Q.Slot + "mana", new Slider("Use Q if Mana% is more than [{0}%]", 10));
-                Combo.AddSeparator(1);
+                ComboMenu.AddGroupLabel("Combo Settings");
+                ComboMenu.Add("Q", new CheckBox("Use Q"));
+                ComboMenu.AddLabel("Extra Q Settings");
+                ComboMenu.Add("Qp", new CheckBox("Q Only for stun"));
+                ComboMenu.Add(Q.Slot + "mana", new Slider("Use Q if Mana% is more than [{0}%]", 10));
+                ComboMenu.AddSeparator(1);
 
-                Combo.Add("W", new CheckBox("Use W"));
-                Combo.AddLabel("Extra W Settings");
-                Combo.Add("Wp", new CheckBox("W Only if target has brand passive", false));
-                Combo.Add(W.Slot + "mana", new Slider("Use W if Mana% is more than [{0}%]", 5));
-                Combo.AddSeparator(1);
+                ComboMenu.Add("W", new CheckBox("Use W"));
+                ComboMenu.AddLabel("Extra W Settings");
+                ComboMenu.Add("Wp", new CheckBox("W Only if target has brand passive", false));
+                ComboMenu.Add(W.Slot + "mana", new Slider("Use W if Mana% is more than [{0}%]", 5));
+                ComboMenu.AddSeparator(1);
 
-                Combo.Add("E", new CheckBox("Use E"));
-                Combo.AddLabel("Extra E Settings");
-                Combo.Add("Ep", new CheckBox("E Only if target has brand passive", false));
-                Combo.Add(E.Slot + "mana", new Slider("Use E if Mana% is more than [{0}%]", 15));
-                Combo.AddSeparator(1);
+                ComboMenu.Add("E", new CheckBox("Use E"));
+                ComboMenu.AddLabel("Extra E Settings");
+                ComboMenu.Add("Ep", new CheckBox("E Only if target has brand passive", false));
+                ComboMenu.Add(E.Slot + "mana", new Slider("Use E if Mana% is more than [{0}%]", 15));
+                ComboMenu.AddSeparator(1);
 
-                Combo.Add("RFinisher", new CheckBox("Use R Finisher"));
-                Combo.Add("RAoe", new CheckBox("Use R Aoe"));
-                Combo.Add("Rhit", new Slider("R AoE hit [{0}] Targets or more", 2, 1, 6));
-                Combo.Add(R.Slot + "mana", new Slider("Use R if Mana% is more than [{0}%]"));
+                ComboMenu.Add("RFinisher", new CheckBox("Use R Finisher"));
+                ComboMenu.Add("RAoe", new CheckBox("Use R Aoe"));
+                ComboMenu.Add("Rhit", new Slider("R AoE hit [{0}] Targets or more", 2, 1, 6));
+                ComboMenu.Add(R.Slot + "mana", new Slider("Use R if Mana% is more than [{0}%]"));
 
                 foreach (var spell in SpellList.Where(s => s.Slot != SpellSlot.R))
                 {
-                    Harass.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
-                    Harass.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
-                    Harass.AddSeparator(1);
-                    LaneClear.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
-                    LaneClear.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
-                    LaneClear.AddSeparator(1);
-                    JungleClear.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
-                    JungleClear.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
-                    JungleClear.AddSeparator(1);
+                    HarassMenu.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
+                    HarassMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
+                    HarassMenu.AddSeparator(1);
+                    LaneClearMenu.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
+                    LaneClearMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
+                    LaneClearMenu.AddSeparator(1);
+                    JungleClearMenu.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
+                    JungleClearMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
+                    JungleClearMenu.AddSeparator(1);
                 }
 
-                KillSteal.AddGroupLabel("KillSteal");
+                KillStealMenu.AddGroupLabel("KillSteal");
                 foreach (var spell in SpellList)
                 {
-                    KillSteal.Add(spell.Slot + "ks", new CheckBox("Use " + spell.Slot));
+                    KillStealMenu.Add(spell.Slot + "ks", new CheckBox("Use " + spell.Slot));
                 }
-                KillSteal.AddSeparator(0);
-                KillSteal.AddGroupLabel("JungleSteal");
+                KillStealMenu.AddSeparator(0);
+                KillStealMenu.AddGroupLabel("JungleSteal");
                 foreach (var spell in SpellList)
                 {
-                    KillSteal.Add(spell.Slot + "js", new CheckBox("Use " + spell.Slot));
+                    KillStealMenu.Add(spell.Slot + "js", new CheckBox("Use " + spell.Slot));
                 }
 
                 DrawMenu.AddGroupLabel("Drawings");
@@ -142,8 +133,6 @@
 
                 Common.ShowNotification("KappaBrand - Loaded", 5000);
 
-                Game.OnTick += Game_OnTick;
-                Drawing.OnDraw += Drawing_OnDraw;
                 Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
                 Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
                 Orbwalker.OnUnkillableMinion += Orbwalker_OnUnkillableMinion;
@@ -154,48 +143,50 @@
             }
         }
 
-        private static void Orbwalker_OnUnkillableMinion(Obj_AI_Base target, Orbwalker.UnkillableMinionArgs args)
+        public override void Active()
         {
-            if (target == null || !Common.orbmode(Orbwalker.ActiveModes.LaneClear))
+            var targets = EntityManager.Heroes.Enemies.Where(e => e.countpassive() >= 2 && e.IsValidTarget() && e.IsKillable());
+
+            if (targets != null)
             {
-                return;
+                var aiHeroClients = targets as AIHeroClient[] ?? targets.ToArray();
+                if (AutoMenu.checkbox("AutoQ"))
+                {
+                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(Q.Range));
+                    if (target != null)
+                    {
+                        Q.Cast(target, Q.hitchance(Menuini));
+                    }
+                }
+                if (AutoMenu.checkbox("AutoW"))
+                {
+                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(W.Range));
+                    if (target != null)
+                    {
+                        W.Cast(target, W.hitchance(Menuini));
+                    }
+                }
+                if (AutoMenu.checkbox("AutoE"))
+                {
+                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(E.Range));
+                    if (target != null)
+                    {
+                        E.Cast(target);
+                    }
+                }
             }
 
-            var Eready = LaneClear.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(LaneClear);
+            var hits = AutoMenu.slider("AutoR");
+            var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsValidTarget(R.Range) && e.IsKillable());
+            var aoetarget = enemies.FirstOrDefault(e => user.CountEnemeis(400) >= hits);
 
-            if (Eready && E.Slot.GetDamage(target) >= Prediction.Health.GetPrediction(target, E.CastDelay))
+            if (aoetarget != null)
             {
-                E.Cast(target);
+                R.Cast(aoetarget);
             }
         }
 
-        private static void Game_OnTick(EventArgs args)
-        {
-            if (Common.orbmode(Orbwalker.ActiveModes.Combo))
-            {
-                ComboLogic();
-            }
-
-            if (Common.orbmode(Orbwalker.ActiveModes.Harass))
-            {
-                HarassLogic();
-            }
-
-            if (Common.orbmode(Orbwalker.ActiveModes.LaneClear))
-            {
-                LaneClearLogic();
-            }
-
-            if (Common.orbmode(Orbwalker.ActiveModes.JungleClear))
-            {
-                JungleClearLogic();
-            }
-
-            Automated();
-            KillStealLogic();
-        }
-
-        public static void ComboLogic()
+        public override void Combo()
         {
             var target = TargetSelector.GetTarget(Q.Range + 100, DamageType.Magical);
             if (target == null)
@@ -203,15 +194,15 @@
                 return;
             }
 
-            var Qready = Combo.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(Combo);
+            var Qready = ComboMenu.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(ComboMenu);
 
-            var Wready = Combo.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(Combo);
+            var Wready = ComboMenu.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(ComboMenu);
 
-            var Eready = Combo.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(Combo);
+            var Eready = ComboMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(ComboMenu);
 
-            var RFinisher = Combo.checkbox("RFinisher") && R.IsReady() && target.IsValidTarget(R.Range) && R.Mana(Combo);
+            var RFinisher = ComboMenu.checkbox("RFinisher") && R.IsReady() && target.IsValidTarget(R.Range) && R.Mana(ComboMenu);
 
-            var RAoe = Combo.checkbox("RAoe") && R.IsReady() && target.IsValidTarget(R.Range) && R.Mana(Combo);
+            var RAoe = ComboMenu.checkbox("RAoe") && R.IsReady() && target.IsValidTarget(R.Range) && R.Mana(ComboMenu);
 
             if (Qready)
             {
@@ -235,7 +226,7 @@
             }
         }
 
-        public static void HarassLogic()
+        public override void Harass()
         {
             var target = TargetSelector.GetTarget(Q.Range + 100, DamageType.Magical);
             if (target == null)
@@ -243,11 +234,11 @@
                 return;
             }
 
-            var Qready = Harass.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(Harass);
+            var Qready = HarassMenu.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(HarassMenu);
 
-            var Wready = Harass.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(Harass);
+            var Wready = HarassMenu.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(HarassMenu);
 
-            var Eready = Harass.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(Harass);
+            var Eready = HarassMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(HarassMenu);
 
             if (Qready)
             {
@@ -263,7 +254,7 @@
             }
         }
 
-        public static void LaneClearLogic()
+        public override void LaneClear()
         {
             var target = EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(m => m.IsValidTarget(Q.Range + 50));
 
@@ -272,11 +263,11 @@
                 return;
             }
 
-            var Qready = LaneClear["Q"].Cast<CheckBox>().CurrentValue && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(LaneClear);
+            var Qready = LaneClearMenu["Q"].Cast<CheckBox>().CurrentValue && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(LaneClearMenu);
 
-            var Wready = LaneClear["W"].Cast<CheckBox>().CurrentValue && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(LaneClear);
+            var Wready = LaneClearMenu["W"].Cast<CheckBox>().CurrentValue && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(LaneClearMenu);
 
-            var Eready = LaneClear["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(LaneClear);
+            var Eready = LaneClearMenu["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(LaneClearMenu);
 
             if (Qready)
             {
@@ -292,7 +283,7 @@
             }
         }
 
-        public static void JungleClearLogic()
+        public override void JungleClear()
         {
             var target = EntityManager.MinionsAndMonsters.GetJungleMonsters().FirstOrDefault(m => m.IsValidTarget(Q.Range + 50));
 
@@ -301,9 +292,9 @@
                 return;
             }
 
-            var Qready = JungleClear.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(JungleClear);
-            var Wready = JungleClear.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(JungleClear);
-            var Eready = JungleClear.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(JungleClear);
+            var Qready = JungleClearMenu.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(JungleClearMenu);
+            var Wready = JungleClearMenu.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(JungleClearMenu);
+            var Eready = JungleClearMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(JungleClearMenu);
 
             if (Qready)
             {
@@ -319,62 +310,38 @@
             }
         }
 
-        public static void KillStealLogic()
+        public override void KillSteal()
         {
             foreach (var spell in SpellList)
             {
-                if (KillSteal.checkbox(spell.Slot + "ks") && spell.GetKStarget() != null)
+                if (KillStealMenu.checkbox(spell.Slot + "ks") && spell.GetKStarget() != null)
                 {
                     spell.Cast(spell.GetKStarget());
                 }
 
-                if (KillSteal.checkbox(spell.Slot + "js") && spell.GetJStarget() != null)
+                if (KillStealMenu.checkbox(spell.Slot + "js") && spell.GetJStarget() != null)
                 {
                     spell.Cast(spell.GetJStarget());
                 }
             }
         }
 
-        public static void Automated()
+        public override void Draw()
         {
-            var targets = EntityManager.Heroes.Enemies.Where(e => e.countpassive() >= 2 && e.IsValidTarget() && e.IsKillable());
+        }
 
-            if (targets != null)
+        private static void Orbwalker_OnUnkillableMinion(Obj_AI_Base target, Orbwalker.UnkillableMinionArgs args)
+        {
+            if (target == null || !Common.orbmode(Orbwalker.ActiveModes.LaneClear))
             {
-                var aiHeroClients = targets as AIHeroClient[] ?? targets.ToArray();
-                if (Auto.checkbox("AutoQ"))
-                {
-                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(Q.Range));
-                    if (target != null)
-                    {
-                        Q.Cast(target, Q.hitchance(MenuIni));
-                    }
-                }
-                if (Auto.checkbox("AutoW"))
-                {
-                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(W.Range));
-                    if (target != null)
-                    {
-                        W.Cast(target, W.hitchance(MenuIni));
-                    }
-                }
-                if (Auto.checkbox("AutoE"))
-                {
-                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(E.Range));
-                    if (target != null)
-                    {
-                        E.Cast(target);
-                    }
-                }
+                return;
             }
 
-            var hits = Auto.slider("AutoR");
-            var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsValidTarget(R.Range) && e.IsKillable());
-            var aoetarget = enemies.FirstOrDefault(e => Player.Instance.CountEnemeis(400) >= hits);
+            var Eready = LaneClearMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(LaneClearMenu);
 
-            if (aoetarget != null)
+            if (Eready && E.GetDamage(target) >= Prediction.Health.GetPrediction(target, E.CastDelay))
             {
-                R.Cast(aoetarget);
+                E.Cast(target);
             }
         }
 
@@ -391,32 +358,32 @@
 
             if (Combomode)
             {
-                if (Combo.checkbox("Qp"))
+                if (ComboMenu.checkbox("Qp"))
                 {
                     if (target.brandpassive())
                     {
-                        Q.Cast(target, Q.hitchance(MenuIni));
+                        Q.Cast(target, Q.hitchance(Menuini));
                     }
                 }
                 else
                 {
-                    Q.Cast(target, Q.hitchance(MenuIni));
+                    Q.Cast(target, Q.hitchance(Menuini));
                 }
             }
 
             if (Harassmode)
             {
-                Q.Cast(target, Q.hitchance(MenuIni));
+                Q.Cast(target, Q.hitchance(Menuini));
             }
 
             if (LaneClearmode)
             {
                 var minion =
                     EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(
-                        m => Q.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay) && Q.GetPrediction(m).HitChance >= HitChance.High);
+                        m => Q.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay) && Q.GetPrediction(m).HitChance >= HitChance.High);
                 if (minion != null)
                 {
-                    if (Player.Instance.GetAutoAttackDamage(minion, true) >= Prediction.Health.GetPrediction(minion, (int)Orbwalker.AttackDelay))
+                    if (user.GetAutoAttackDamage(minion, true) >= Prediction.Health.GetPrediction(minion, (int)Orbwalker.AttackDelay))
                     {
                         return;
                     }
@@ -460,7 +427,7 @@
                 pred.OrderByDescending(p => p.GetCollisionObjects<AIHeroClient>().Length).FirstOrDefault(p => p.CollisionObjects.Contains(target));
             if (Combomode)
             {
-                if (Combo.checkbox("Wp"))
+                if (ComboMenu.checkbox("Wp"))
                 {
                     if (castpos != null && castpos.CollisionObjects.Length > 1)
                     {
@@ -468,12 +435,12 @@
                     }
                     if (target.brandpassive())
                     {
-                        W.Cast(target, W.hitchance(MenuIni));
+                        W.Cast(target, W.hitchance(Menuini));
                     }
                 }
                 else
                 {
-                    W.Cast(target, W.hitchance(MenuIni));
+                    W.Cast(target, W.hitchance(Menuini));
                 }
             }
 
@@ -483,7 +450,7 @@
                 {
                     W.Cast(castpos.CastPosition);
                 }
-                W.Cast(target, W.hitchance(MenuIni));
+                W.Cast(target, W.hitchance(Menuini));
             }
 
             if (LaneClearmode)
@@ -539,7 +506,7 @@
 
             if (Combomode)
             {
-                if (Combo.checkbox("Ep") && target.brandpassive())
+                if (ComboMenu.checkbox("Ep") && target.brandpassive())
                 {
                     E.Cast(target);
                 }
@@ -596,11 +563,11 @@
             }
 
             var Combomode = Common.orbmode(Orbwalker.ActiveModes.Combo);
-            var hits = Combo.slider("Rhit");
+            var hits = ComboMenu.slider("Rhit");
 
             if (Combomode)
             {
-                if (Combo.checkbox("RAoe"))
+                if (ComboMenu.checkbox("RAoe"))
                 {
                     var AoeHit = target.CountEnemeis(400) >= hits;
                     var bestaoe =
@@ -619,20 +586,20 @@
                     }
                 }
 
-                if (Combo.checkbox("RFinisher"))
+                if (ComboMenu.checkbox("RFinisher"))
                 {
-                    var pred = R.Slot.GetDamage(target) >= Prediction.Health.GetPrediction(target, Q.CastDelay);
-                    var health = R.Slot.GetDamage(target) >= target.TotalShieldHealth();
+                    var pred = R.GetDamage(target) >= Prediction.Health.GetPrediction(target, Q.CastDelay);
+                    var health = R.GetDamage(target) >= target.TotalShieldHealth();
 
-                    if (Q.Slot.GetDamage(target) >= Prediction.Health.GetPrediction(target, Q.CastDelay))
+                    if (Q.GetDamage(target) >= Prediction.Health.GetPrediction(target, Q.CastDelay))
                     {
                         return;
                     }
-                    if (W.Slot.GetDamage(target) >= Prediction.Health.GetPrediction(target, W.CastDelay))
+                    if (W.GetDamage(target) >= Prediction.Health.GetPrediction(target, W.CastDelay))
                     {
                         return;
                     }
-                    if (E.Slot.GetDamage(target) >= Prediction.Health.GetPrediction(target, E.CastDelay))
+                    if (E.GetDamage(target) >= Prediction.Health.GetPrediction(target, E.CastDelay))
                     {
                         return;
                     }
@@ -647,18 +614,18 @@
 
         private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
-            if (!sender.IsEnemy || !Auto.checkbox("Int") || sender == null || e == null)
+            if (!sender.IsEnemy || !AutoMenu.checkbox("Int") || sender == null || e == null)
             {
                 return;
             }
 
-            if (e.DangerLevel >= Common.danger(Auto) && sender.IsValidTarget(Q.Range))
+            if (e.DangerLevel >= Common.danger(AutoMenu) && sender.IsValidTarget(Q.Range))
             {
                 if (sender.brandpassive())
                 {
                     if (Q.IsReady())
                     {
-                        Q.Cast(sender, Q.hitchance(MenuIni));
+                        Q.Cast(sender, Q.hitchance(Menuini));
                     }
                 }
                 else
@@ -669,7 +636,7 @@
                         {
                             if (sender.brandpassive())
                             {
-                                Q.Cast(sender, Q.hitchance(MenuIni));
+                                Q.Cast(sender, Q.hitchance(Menuini));
                             }
                         }
                     }
@@ -679,19 +646,19 @@
 
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
-            if (!sender.IsEnemy || !Auto.checkbox("Gap") || sender == null || e == null || e.End == Vector3.Zero
-                || !e.End.IsInRange(Player.Instance, Q.Range))
+            if (!sender.IsEnemy || !AutoMenu.checkbox("Gap") || sender == null || e == null || e.End == Vector3.Zero
+                || !e.End.IsInRange(user, Q.Range))
             {
                 return;
             }
 
-            if (Auto.checkbox(e.SpellName) && sender.IsValidTarget(Q.Range))
+            if (kCore.GapMenu.checkbox(e.SpellName) && sender.IsValidTarget(Q.Range))
             {
                 if (sender.brandpassive())
                 {
                     if (Q.IsReady())
                     {
-                        Q.Cast(sender, Q.hitchance(MenuIni));
+                        Q.Cast(sender, Q.hitchance(Menuini));
                     }
                 }
                 else
@@ -702,23 +669,12 @@
                         {
                             if (sender.brandpassive())
                             {
-                                Q.Cast(sender, Q.hitchance(MenuIni));
+                                Q.Cast(sender, Q.hitchance(Menuini));
                             }
                         }
                     }
                 }
             }
-        }
-
-        private static void Drawing_OnDraw(EventArgs args)
-        {
-            foreach (var spell in SpellList)
-            {
-                var color = ColorMenu.Color(spell.Slot.ToString());
-                spell.SpellRange(color, DrawMenu.checkbox(spell.Slot.ToString()));
-            }
-
-            DrawingsManager.DrawTotalDamage(DamageType.Magical, DrawMenu.checkbox("damage"));
         }
     }
 }

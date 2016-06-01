@@ -17,23 +17,30 @@
 
     using SharpDX;
 
-    internal static class Azir
+    internal class Azir : Base
     {
-        private static Menu Menuini, Auto, JumperMenu, ComboMenu, HarassMenu, LaneClearMenu, JungleClearMenu, KillstealMenu, DrawMenu, ColorMenu;
+        private static Spell.Skillshot Q { get; }
 
-        private static Spell.Skillshot Q;
+        private static Spell.Skillshot W { get; }
 
-        private static Spell.Skillshot W;
+        private static Spell.Skillshot E { get; }
 
-        private static Spell.Skillshot E;
+        private static Spell.Skillshot R { get; }
 
-        private static Spell.Skillshot R;
+        public static Vector3 Rpos(Obj_AI_Base target)
+        {
+            Common.ally =
+                EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(R.Range))
+                    .FirstOrDefault(a => a.IsKillable() && a.IsValidTarget(1250) && !a.IsMe);
+            Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(s => s.IsValidTarget(1250));
+            if (Common.tower != null)
+            {
+                return user.ServerPosition.Extend(Common.tower.ServerPosition, R.Range).To3D();
+            }
+            return Common.ally != null ? user.ServerPosition.Extend(Common.ally.ServerPosition, R.Range).To3D() : R.GetPrediction(target).CastPosition;
+        }
 
-        private static Spell.Skillshot Flash;
-
-        private static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
-
-        internal static bool Ehit(this Obj_AI_Base target)
+        internal static bool Ehit(Obj_AI_Base target)
         {
             return
                 Orbwalker.AzirSoldiers.Select(
@@ -41,13 +48,13 @@
                     .Any(rectangle => rectangle.IsInside(target));
         }
 
-        internal static bool Ehit(this Obj_AI_Base target, Vector3 pos)
+        internal static bool Ehit(Obj_AI_Base target, Vector3 pos)
         {
             var targetpos = Prediction.Position.PredictUnitPosition(target, E.CastDelay);
             return new Geometry.Polygon.Rectangle(ObjectManager.Player.ServerPosition, pos, target.BoundingRadius + 35).IsInside(targetpos);
         }
 
-        public static void Execute()
+        static Azir()
         {
             try
             {
@@ -58,7 +65,7 @@
 
                 if (Player.Spells.FirstOrDefault(o => o.SData.Name.Contains("SummonerFlash")) != null)
                 {
-                    Flash = new Spell.Skillshot(Player.Instance.GetSpellSlotFromName("SummonerFlash"), 450, SkillShotType.Circular);
+                    Flash = new Spell.Skillshot(user.GetSpellSlotFromName("SummonerFlash"), 450, SkillShotType.Circular);
                 }
 
                 SpellList.Add(Q);
@@ -67,13 +74,13 @@
                 SpellList.Add(R);
 
                 Menuini = MainMenu.AddMenu("KappAzir", "KappAzir");
-                Auto = Menuini.AddSubMenu("Auto Settings");
+                AutoMenu = Menuini.AddSubMenu("Auto Settings");
                 JumperMenu = Menuini.AddSubMenu("Jumper Settings");
                 ComboMenu = Menuini.AddSubMenu("Combo Settings");
                 HarassMenu = Menuini.AddSubMenu("Harass Settings");
                 LaneClearMenu = Menuini.AddSubMenu("LaneClear Settings");
                 JungleClearMenu = Menuini.AddSubMenu("JungleClear Settings");
-                KillstealMenu = Menuini.AddSubMenu("KillSteal Settings");
+                KillStealMenu = Menuini.AddSubMenu("KillSteal Settings");
                 DrawMenu = Menuini.AddSubMenu("Drawings Settings");
                 ColorMenu = Menuini.AddSubMenu("ColorPicker");
 
@@ -83,25 +90,16 @@
                     Menuini.AddSeparator(0);
                 }
 
-                Auto.AddGroupLabel("Settings");
-                Auto.Add("gap", new CheckBox("Anti-GapCloser"));
-                Auto.Add("int", new CheckBox("Interrupter"));
-                Auto.Add("Danger", new ComboBox("Interrupter DangerLevel", 1, "High", "Medium", "Low"));
-                Auto.AddGroupLabel("Turret Settings");
-                Auto.Add("tower", new CheckBox("Create Turrets"));
-                Auto.Add("Tenemy", new Slider("Create Turret If [{0}] Enemies Near", 3, 1, 6));
-                Auto.AddGroupLabel("Anti GapCloser Spells");
-                foreach (var spell in
-                    from spell in Gapcloser.GapCloserList
-                    from enemy in EntityManager.Heroes.Enemies.Where(enemy => spell.ChampName == enemy.ChampionName)
-                    select spell)
-                {
-                    Auto.Add(spell.SpellName, new CheckBox(spell.ChampName + " " + spell.SpellSlot));
-                }
-
+                AutoMenu.AddGroupLabel("Settings");
+                AutoMenu.Add("gap", new CheckBox("Anti-GapCloser"));
+                AutoMenu.Add("int", new CheckBox("Interrupter"));
+                AutoMenu.Add("Danger", new ComboBox("Interrupter DangerLevel", 1, "High", "Medium", "Low"));
+                AutoMenu.AddGroupLabel("Turret Settings");
+                AutoMenu.Add("tower", new CheckBox("Create Turrets"));
+                AutoMenu.Add("Tenemy", new Slider("Create Turret If [{0}] Enemies Near", 3, 1, 6));
                 if (EntityManager.Heroes.Enemies.Any(e => e.Hero == Champion.Rengar))
                 {
-                    Auto.Add("rengar", new CheckBox("Rengar Leap"));
+                    AutoMenu.Add("rengar", new CheckBox("Anti-Rengar Leap"));
                 }
 
                 JumperMenu.Add("jump", new KeyBind("WEQ Flee Key", false, KeyBind.BindTypes.HoldActive, 'A'));
@@ -112,8 +110,6 @@
                 JumperMenu.Add("range", new Slider("Check for soldiers Range", 800, 0, 1000));
 
                 ComboMenu.AddGroupLabel("Combo Settings");
-                ComboMenu.Add("key", new KeyBind("Combo Key", false, KeyBind.BindTypes.HoldActive, 32));
-                ComboMenu.AddSeparator(0);
                 ComboMenu.AddGroupLabel("Q Settings");
                 ComboMenu.Add("Q", new CheckBox("Use Q"));
                 ComboMenu.Add("WQ", new CheckBox("Use W > Q"));
@@ -141,7 +137,6 @@
                 ComboMenu.Add("RHP", new Slider("Push Enemy If my health is less than [{0}%]", 35));
 
                 HarassMenu.AddGroupLabel("Harass Settings");
-                HarassMenu.Add("key", new KeyBind("Harass Key", false, KeyBind.BindTypes.HoldActive, 'C'));
                 HarassMenu.Add("toggle", new KeyBind("Auto Harass Key", false, KeyBind.BindTypes.PressToggle, 'H'));
                 HarassMenu.AddSeparator(0);
                 HarassMenu.AddGroupLabel("Q Settings");
@@ -164,7 +159,6 @@
                 HarassMenu.Add(E.Slot + "mana", new Slider("Stop using E if Mana < [{0}%]", 65));
 
                 LaneClearMenu.AddGroupLabel("LaneClear Settings");
-                LaneClearMenu.Add("key", new KeyBind("LaneClear Key", false, KeyBind.BindTypes.HoldActive, 'V'));
                 LaneClearMenu.Add("Q", new CheckBox("Use Q"));
                 LaneClearMenu.Add(Q.Slot + "mana", new Slider("Stop using Q if Mana < [{0}%]", 65));
                 LaneClearMenu.Add("W", new CheckBox("Use W"));
@@ -172,18 +166,17 @@
                 LaneClearMenu.Add(W.Slot + "mana", new Slider("Stop using W if Mana < [{0}%]", 65));
 
                 JungleClearMenu.AddGroupLabel("JungleClear Settings");
-                JungleClearMenu.Add("key", new KeyBind("JungleClear Key", false, KeyBind.BindTypes.HoldActive, 'V'));
                 JungleClearMenu.Add("Q", new CheckBox("Use Q"));
                 JungleClearMenu.Add(Q.Slot + "mana", new Slider("Stop using Q if Mana < [{0}%]", 65));
                 JungleClearMenu.Add("W", new CheckBox("Use W"));
                 JungleClearMenu.Add("Wsave", new CheckBox("Save 1 W Stack"));
                 JungleClearMenu.Add(W.Slot + "mana", new Slider("Stop using W if Mana < [{0}%]", 65));
 
-                KillstealMenu.AddGroupLabel("Stealer Settings");
+                KillStealMenu.AddGroupLabel("Stealer Settings");
                 foreach (var spell in SpellList.Where(s => s != W && s != E))
                 {
-                    KillstealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
-                    KillstealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
+                    KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
+                    KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
                 }
 
                 DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));
@@ -197,13 +190,9 @@
 
                 DrawMenu.Add("insec", new CheckBox("Draw Insec Helpers"));
 
-                Common.ShowNotification("KappaAzir - Loaded", 5000);
-
-                Game.OnTick += Game_OnTick;
                 Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
                 Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
                 Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
-                Drawing.OnDraw += Drawing_OnDraw;
                 GameObject.OnCreate += GameObject_OnCreate;
                 Orbwalker.OnPreAttack += Orbwalker_OnPreAttack;
             }
@@ -213,13 +202,13 @@
             }
         }
 
-        public static void Game_OnTick(EventArgs args)
+        public override void Active()
         {
             updatespells();
 
             if (NewInsec)
             {
-                var rpos = Player.Instance.ServerPosition.Extend(insectpos(), R.Range).To3D();
+                var rpos = user.ServerPosition.Extend(insectpos(), R.Range).To3D();
 
                 var qtime = Game.Time - insecqtime;
                 if ((qtime > 0.1f && qtime < 0.1) || TargetSelector.SelectedTarget.IsValidTarget(R.Range - 75))
@@ -227,23 +216,9 @@
                     R.Cast(rpos);
                 }
             }
-
-            if (ComboMenu.keybind("key"))
+            if (HarassMenu.keybind("toggle"))
             {
-                Combo();
-            }
-
-            if (HarassMenu.keybind("key") || HarassMenu.keybind("toggle"))
-            {
-                Harass();
-            }
-            if (LaneClearMenu.keybind("key"))
-            {
-                LaneClear();
-            }
-            if (JungleClearMenu.keybind("key"))
-            {
-                JungleClear();
+                this.Harass();
             }
             if (JumperMenu.keybind("jump"))
             {
@@ -259,12 +234,12 @@
                 New();
             }
 
-            if (Auto.checkbox("tower"))
+            if (AutoMenu.checkbox("tower"))
             {
                 var azirtower =
                     ObjectManager.Get<GameObject>()
-                        .FirstOrDefault(o => o != null && o.Name.ToLower().Contains("towerclicker") && Player.Instance.Distance(o) < 500);
-                if (azirtower != null && azirtower.CountEnemeis(800) >= Auto.slider("Tenemy"))
+                        .FirstOrDefault(o => o != null && o.Name.ToLower().Contains("towerclicker") && user.Distance(o) < 500);
+                if (azirtower != null && azirtower.CountEnemeis(800) >= AutoMenu.slider("Tenemy"))
                 {
                     Player.UseObject(azirtower);
                 }
@@ -274,95 +249,7 @@
             NewInsec = JumperMenu.keybind("new");
         }
 
-        public static void Orbwalker_OnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
-        {
-            if (target == null || args.Target == null || !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear)
-                || Orbwalker.ValidAzirSoldiers.Count(s => s.IsAlly) < 1)
-            {
-                return;
-            }
-            var orbtarget = args.Target as Obj_AI_Base;
-            foreach (var sold in Orbwalker.ValidAzirSoldiers)
-            {
-                if (sold != null)
-                {
-                    var sold1 = sold;
-                    var minion =
-                        EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(
-                            m => m.IsInRange(sold1, sold1.GetAutoAttackRange()) && m.IsKillable());
-                    if (minion != null && minion != orbtarget)
-                    {
-                        var killable = Player.Instance.GetAutoAttackDamage(orbtarget, true)
-                                       >= Prediction.Health.GetPrediction(orbtarget, (int)Player.Instance.AttackDelay);
-                        if (!killable)
-                        {
-                            args.Process = false;
-                            Player.IssueOrder(GameObjectOrder.AttackUnit, minion);
-                        }
-                    }
-                }
-            }
-        }
-
-        public static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-        {
-            if (!sender.IsMe)
-            {
-                return;
-            }
-
-            if (args.Slot == SpellSlot.Q || args.Slot == SpellSlot.W)
-            {
-                Orbwalker.ResetAutoAttack();
-            }
-
-            Common.LastCastedSpell.Spell = args.Slot;
-            Common.LastCastedSpell.Time = Game.Time;
-        }
-
-        public static void updatespells()
-        {
-            R.Width = 107 * (R.Level - 1) < 200 ? 220 : (107 * (R.Level - 1)) + 5;
-
-            int count = Orbwalker.AzirSoldiers.Count(s => s.IsAlly);
-            Q.Width = count != 0 ? 65 * count : 65;
-        }
-
-        public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
-        {
-            if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(300) || e.End == Vector3.Zero
-                || !e.End.IsInRange(Player.Instance, 300) || !Auto.checkbox(e.SpellName) || !Auto.checkbox("Gap") || !R.IsReady())
-            {
-                return;
-            }
-
-            R.Cast(sender);
-        }
-
-        public static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
-        {
-            if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(R.Range) || e.DangerLevel == Common.danger(Auto)
-                || !Auto.checkbox("int") || !R.IsReady())
-            {
-                return;
-            }
-
-            R.Cast(sender);
-        }
-
-        public static void GameObject_OnCreate(GameObject sender, EventArgs args)
-        {
-            if (sender.Name == "Rengar_LeapSound.troy" && sender != null)
-            {
-                var rengar = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.Hero == Champion.Rengar);
-                if (rengar != null && R.IsReady() && Auto.checkbox("gap") && Auto.checkbox("rengar") && rengar.IsValidTarget(R.Range))
-                {
-                    R.Cast(rengar);
-                }
-            }
-        }
-
-        public static void Drawing_OnDraw(EventArgs args)
+        public override void Draw()
         {
             // Insec Helper
             var target = TargetSelector.SelectedTarget;
@@ -409,26 +296,103 @@
                 if (target != null && insecpos != Vector3.Zero)
                 {
                     var pos = target.ServerPosition.Extend(insecpos, -200).To3D();
-                    var rpos = Player.Instance.ServerPosition.Extend(insecpos, R.Range).To3D();
+                    var rpos = user.ServerPosition.Extend(insecpos, R.Range).To3D();
                     Circle.Draw(Color.White, 100, rpos);
                     Circle.Draw(Color.White, 100, pos);
                     Circle.Draw(Color.White, 200, insecpos);
                     Line.DrawLine(colors, pos, rpos);
                 }
             }
-
-            // Spells Drawings
-            foreach (var spell in SpellList)
-            {
-                var color = ColorMenu.Color(spell.Slot.ToString());
-                spell.SpellRange(color, DrawMenu.checkbox(spell.Slot.ToString()));
-            }
-
-            // Damage
-            DrawingsManager.DrawTotalDamage(DamageType.Magical, DrawMenu.checkbox("damage"));
         }
 
-        public static void Combo()
+        public static void Orbwalker_OnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
+        {
+            if (target == null || args.Target == null || !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear)
+                || Orbwalker.ValidAzirSoldiers.Count(s => s.IsAlly) < 1)
+            {
+                return;
+            }
+            var orbtarget = args.Target as Obj_AI_Base;
+            foreach (var sold in Orbwalker.ValidAzirSoldiers)
+            {
+                if (sold != null)
+                {
+                    var sold1 = sold;
+                    var minion =
+                        EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(
+                            m => m.IsInRange(sold1, sold1.GetAutoAttackRange()) && m.IsKillable());
+                    if (minion != null && minion != orbtarget)
+                    {
+                        var killable = user.GetAutoAttackDamage(orbtarget, true) >= Prediction.Health.GetPrediction(orbtarget, (int)user.AttackDelay);
+                        if (!killable)
+                        {
+                            args.Process = false;
+                            Player.IssueOrder(GameObjectOrder.AttackUnit, minion);
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (!sender.IsMe)
+            {
+                return;
+            }
+
+            if (args.Slot == SpellSlot.Q || args.Slot == SpellSlot.W)
+            {
+                Orbwalker.ResetAutoAttack();
+            }
+
+            Common.LastCastedSpell.Spell = args.Slot;
+            Common.LastCastedSpell.Time = Game.Time;
+        }
+
+        public static void updatespells()
+        {
+            R.Width = 107 * (R.Level - 1) < 200 ? 220 : (107 * (R.Level - 1)) + 5;
+
+            int count = Orbwalker.AzirSoldiers.Count(s => s.IsAlly);
+            Q.Width = count != 0 ? 65 * count : 65;
+        }
+
+        public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
+        {
+            if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(300) || e.End == Vector3.Zero || !e.End.IsInRange(user, 300)
+                || !kCore.GapMenu.checkbox(e.SpellName) || !AutoMenu.checkbox("Gap") || !R.IsReady())
+            {
+                return;
+            }
+
+            R.Cast(sender);
+        }
+
+        public static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
+        {
+            if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(R.Range) || e.DangerLevel == Common.danger(AutoMenu)
+                || !AutoMenu.checkbox("int") || !R.IsReady())
+            {
+                return;
+            }
+
+            R.Cast(sender);
+        }
+
+        public static void GameObject_OnCreate(GameObject sender, EventArgs args)
+        {
+            if (sender.Name == "Rengar_LeapSound.troy" && sender != null)
+            {
+                var rengar = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.Hero == Champion.Rengar);
+                if (rengar != null && R.IsReady() && AutoMenu.checkbox("gap") && AutoMenu.checkbox("rengar") && rengar.IsValidTarget(R.Range))
+                {
+                    R.Cast(rengar);
+                }
+            }
+        }
+
+        public override void Combo()
         {
             var menu = ComboMenu;
             var QS = Orbwalker.ValidAzirSoldiers.Count(s => s.IsAlly) >= menu.slider("QS");
@@ -458,10 +422,10 @@
                     var pred = W.GetPrediction(target);
                     W.Cast(pred.CastPosition);
                 }
-                if (menu.checkbox("Q") && !target.IsValidTarget(W.Range) && Q.IsReady() && Player.Instance.Mana > Q.Mana() + W.Mana()
+                if (menu.checkbox("Q") && !target.IsValidTarget(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana()
                     && target.IsValidTarget(Q.Range - 25) && menu.checkbox("WQ"))
                 {
-                    var p = Player.Instance.Position.Extend(target.Position, W.Range);
+                    var p = user.Position.Extend(target.Position, W.Range);
                     W.Cast(p.To3D());
                 }
             }
@@ -476,9 +440,9 @@
                 var predQ = Q.GetPrediction(target);
                 Q.Cast(target, Q.hitchance(Menuini), target.IsCC());
 
-                if (Ec && Player.Instance.Mana > Q.Mana() + E.Mana() && target.Ehit(predQ.CastPosition) && predQ.HitChance >= HitChance.Medium)
+                if (Ec && user.Mana > Q.Mana() + E.Mana() && Ehit(target, predQ.CastPosition) && predQ.HitChance >= HitChance.Medium)
                 {
-                    if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= Player.Instance.HealthPercent)
+                    if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= user.HealthPercent)
                         || (!menu.checkbox("Edive") && target.IsUnderHisturret()))
                     {
                         return;
@@ -508,17 +472,17 @@
                 }
             }
 
-            if (Ec && target.Ehit())
+            if (Ec && Ehit(target))
             {
-                if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= Player.Instance.HealthPercent)
+                if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= user.HealthPercent)
                     || (menu.checkbox("Edive") && target.IsUnderEnemyturret() && target.IsUnderHisturret()))
                 {
                     return;
                 }
 
-                var time = Player.Instance.Distance(target) / E.Speed;
-                var killable = target.TotalDamage(DamageType.Magical) >= Prediction.Health.GetPrediction(target, (int)time);
-                if (menu.checkbox("Ekill") && killable && Player.Instance.Mana >= Common.Mana())
+                var time = user.Distance(target) / E.Speed;
+                var killable = target.TotalDamage(SpellList) >= Prediction.Health.GetPrediction(target, (int)time);
+                if (menu.checkbox("Ekill") && killable && user.Mana >= Common.Mana())
                 {
                     E.Cast(target);
                 }
@@ -529,28 +493,27 @@
             }
             if (Rc)
             {
-                var Raoe = Player.Instance.CountEnemeis(R.Range) >= menu.slider("Raoe")
-                           || Player.Instance.CountEnemeis(R.Width) >= menu.slider("Raoe");
+                var Raoe = user.CountEnemeis(R.Range) >= menu.slider("Raoe") || user.CountEnemeis(R.Width) >= menu.slider("Raoe");
 
                 if (target.IsValidTarget(R.Range - 25))
                 {
-                    if ((menu.checkbox("Rkill") && R.Slot.GetDamage(target) >= Prediction.Health.GetPrediction(target, R.CastDelay))
-                        || (menu.checkbox("Rsave") && menu.slider("RHP") >= Player.Instance.HealthPercent) || (Raoe))
+                    if ((menu.checkbox("Rkill") && R.GetDamage(target) >= Prediction.Health.GetPrediction(target, R.CastDelay))
+                        || (menu.checkbox("Rsave") && menu.slider("RHP") >= user.HealthPercent) || (Raoe))
                     {
-                        R.Cast(target.Rpos());
+                        R.Cast(Rpos(target));
                     }
                 }
             }
 
             if (menu.checkbox("insec") && target.IsKillable() && !target.IsValidTarget(R.Range))
             {
-                if (target.CountEnemeis(750) >= menu.slider("Esafe") || menu.slider("EHP") >= Player.Instance.HealthPercent)
+                if (target.CountEnemeis(750) >= menu.slider("Esafe") || menu.slider("EHP") >= user.HealthPercent)
                 {
                     return;
                 }
 
                 var time = R.CastDelay + Q.CastDelay + E.CastDelay;
-                var kill = target.TotalDamage(DamageType.Magical) + 100 > Prediction.Health.GetPrediction(target, time);
+                var kill = target.TotalDamage(SpellList) + 100 > Prediction.Health.GetPrediction(target, time);
                 if (kill)
                 {
                     Normal(target);
@@ -558,22 +521,7 @@
             }
         }
 
-        public static Vector3 Rpos(this Obj_AI_Base target)
-        {
-            Common.ally =
-                EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(R.Range))
-                    .FirstOrDefault(a => a.IsKillable() && a.IsValidTarget(1250) && !a.IsMe);
-            Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(s => s.IsValidTarget(1250));
-            if (Common.tower != null)
-            {
-                return Player.Instance.ServerPosition.Extend(Common.tower.ServerPosition, R.Range).To3D();
-            }
-            return Common.ally != null
-                       ? Player.Instance.ServerPosition.Extend(Common.ally.ServerPosition, R.Range).To3D()
-                       : R.GetPrediction(target).CastPosition;
-        }
-
-        public static void Harass()
+        public override void Harass()
         {
             var menu = HarassMenu;
             var Qmana = Q.Mana(menu);
@@ -599,10 +547,10 @@
                     var pred = W.GetPrediction(target);
                     W.Cast(pred.CastPosition);
                 }
-                if (menu.checkbox("Q") && !target.IsValidTarget(W.Range) && Q.IsReady() && Player.Instance.Mana > Q.Mana() + W.Mana()
+                if (menu.checkbox("Q") && !target.IsValidTarget(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana()
                     && target.IsValidTarget(Q.Range - 25) && menu.checkbox("WQ"))
                 {
-                    var p = Player.Instance.Position.Extend(target.Position, W.Range);
+                    var p = user.Position.Extend(target.Position, W.Range);
                     W.Cast(p.To3D());
                 }
             }
@@ -621,9 +569,9 @@
                 Q.Cast(target, Q.hitchance(Menuini));
             }
 
-            if (Ec && target.Ehit())
+            if (Ec && Ehit(target))
             {
-                if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= Player.Instance.HealthPercent)
+                if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= user.HealthPercent)
                     || (!menu.checkbox("Edive") && target.IsUnderHisturret()))
                 {
                     return;
@@ -642,13 +590,13 @@
         public static void Normal(Obj_AI_Base target, bool Combo = false)
         {
             Orbwalker.OrbwalkTo(Game.CursorPos);
-            if (target == null || insectpos(target) == null || Common.Mana() > Player.Instance.Mana || !R.IsReady())
+            if (target == null || insectpos(target) == null || Common.Mana() > user.Mana || !R.IsReady())
             {
                 return;
             }
 
             var insecpos = target.ServerPosition.Extend(insectpos(target), -200).To3D();
-            var rpos = Player.Instance.ServerPosition.Extend(insectpos(target), R.Range).To3D();
+            var rpos = user.ServerPosition.Extend(insectpos(target), R.Range).To3D();
 
             if (target.IsValidTarget(R.Range))
             {
@@ -665,7 +613,7 @@
                     var castpos =
                         pred.OrderByDescending(p => p.GetCollisionObjects<AIHeroClient>().Length)
                             .FirstOrDefault(p => p.CollisionObjects.Contains(target));
-                    if (castpos?.GetCollisionObjects<AIHeroClient>().Length > Player.Instance.CountEnemeis(R.Range))
+                    if (castpos?.GetCollisionObjects<AIHeroClient>().Length > user.CountEnemeis(R.Range))
                     {
                         Flash.Cast(castpos.CastPosition);
                     }
@@ -674,7 +622,7 @@
             }
             else
             {
-                if (Q.IsInRange(insecpos))
+                if (Q.IsInRange(target))
                 {
                     Jump(insecpos);
                 }
@@ -687,17 +635,16 @@
         {
             Orbwalker.OrbwalkTo(Game.CursorPos);
             var target = TargetSelector.SelectedTarget;
-            if (target == null || insectpos(target) == null || !R.IsReady() || Player.Instance.Mana < Common.Mana() || !target.IsValidTarget()
-                || NormalInsec)
+            if (target == null || insectpos(target) == null || !R.IsReady() || user.Mana < Common.Mana() || !target.IsValidTarget() || NormalInsec)
             {
                 return;
             }
 
             var delay = JumperMenu.slider("delay");
             var insecpos = target.ServerPosition.Extend(insectpos(target), -200).To3D();
-            var qpos = Player.Instance.ServerPosition.Extend(insectpos(target), Q.Range - 200).To3D();
+            var qpos = user.ServerPosition.Extend(insectpos(target), Q.Range - 200).To3D();
             var soldier = Orbwalker.AzirSoldiers.FirstOrDefault(s => s.IsAlly && s.IsInRange(target, 200));
-            var ready = E.IsReady() && Q.IsReady() && Player.Instance.Mana > Q.Mana() + E.Mana();
+            var ready = E.IsReady() && Q.IsReady() && user.Mana > Q.Mana() + E.Mana();
 
             if (ready && soldier != null)
             {
@@ -727,7 +674,7 @@
                 return Common.tower.ServerPosition;
             }
 
-            return Common.ally != null ? Common.ally.ServerPosition : Player.Instance.ServerPosition;
+            return Common.ally != null ? Common.ally.ServerPosition : user.ServerPosition;
         }
 
         public static Vector3 insectpos()
@@ -740,19 +687,19 @@
                 return Common.tower.ServerPosition;
             }
 
-            return Common.ally != null ? Common.ally.ServerPosition : Player.Instance.ServerPosition;
+            return Common.ally != null ? Common.ally.ServerPosition : user.ServerPosition;
         }
 
         public static void Jump(Vector3 pos)
         {
             var delay = JumperMenu.slider("delay");
             var range = JumperMenu.slider("range");
-            var qpos = Player.Instance.ServerPosition.Extend(pos, Q.Range - 100).To3D();
-            var wpos = Player.Instance.ServerPosition.Extend(pos, W.Range).To3D();
-            var epos = Player.Instance.ServerPosition.Extend(pos, E.Range).To3D();
-            var ready = E.IsReady() && Q.IsReady() && Player.Instance.Mana > Q.Mana() + E.Mana() + W.Mana();
+            var qpos = user.ServerPosition.Extend(pos, Q.Range - 100).To3D();
+            var wpos = user.ServerPosition.Extend(pos, W.Range).To3D();
+            var epos = user.ServerPosition.Extend(pos, E.Range).To3D();
+            var ready = E.IsReady() && Q.IsReady() && user.Mana > Q.Mana() + E.Mana() + W.Mana();
 
-            if (ready && Orbwalker.AzirSoldiers.Count(s => s.IsAlly && s.IsInRange(Player.Instance, range)) < 1)
+            if (ready && Orbwalker.AzirSoldiers.Count(s => s.IsAlly && s.IsInRange(user, range)) < 1)
             {
                 if (Common.LastCastedSpell.Spell == SpellSlot.E)
                 {
@@ -786,7 +733,7 @@
             }
         }
 
-        public static void JungleClear()
+        public override void JungleClear()
         {
             var mobs = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderByDescending(m => m.MaxHealth).Where(m => m.IsKillable());
 
@@ -817,22 +764,22 @@
             }
         }
 
-        public static void Killsteal()
+        public override void KillSteal()
         {
             foreach (var spell in SpellList.Where(s => s != W && s != E))
             {
-                if (KillstealMenu.checkbox(spell.Slot + "ks") && spell.GetKStarget() != null)
+                if (KillStealMenu.checkbox(spell.Slot + "ks") && spell.GetKStarget() != null)
                 {
                     spell.Cast(spell.GetKStarget());
                 }
-                if (KillstealMenu.checkbox(spell.Slot + "js") && spell.GetJStarget() != null)
+                if (KillStealMenu.checkbox(spell.Slot + "js") && spell.GetJStarget() != null)
                 {
                     spell.Cast(spell.GetJStarget());
                 }
             }
         }
 
-        public static void LaneClear()
+        public override void LaneClear()
         {
             var minions = EntityManager.MinionsAndMonsters.EnemyMinions.OrderByDescending(m => m.MaxHealth).Where(m => m.IsKillable());
             if (minions != null)

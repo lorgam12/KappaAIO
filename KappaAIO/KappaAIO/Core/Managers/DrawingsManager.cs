@@ -1,5 +1,6 @@
 ﻿namespace KappaAIO.Core.Managers
 {
+    using System.Collections.Generic;
     using System.Linq;
 
     using EloBuddy;
@@ -33,7 +34,7 @@
                     {
                         var hpx = enemy.HPBarPosition.X;
                         var hpy = enemy.HPBarPosition.Y;
-                        var dmg = (int)spell.Slot.GetDamage(enemy);
+                        var dmg = (int)spell.GetDamage(enemy);
                         var c = Color.GreenYellow;
                         Drawing.DrawText(hpx + 145, hpy, c, dmg + " / " + (int)enemy.TotalShieldHealth(), 3);
                     }
@@ -41,7 +42,7 @@
             }
         }
 
-        public static void DrawTotalDamage(DamageType damageType, bool draw = false)
+        public static void DrawTotalDamage(List<Spell.SpellBase> list, DamageType damageType, bool draw = false)
         {
             if (draw)
             {
@@ -49,10 +50,10 @@
                 {
                     if (enemy != null)
                     {
+                        var totaldmg = (int)enemy.TotalDamage(list);
                         var hpx = enemy.HPBarPosition.X;
                         var hpy = enemy.HPBarPosition.Y;
                         string damage = null;
-                        var totaldmg = (int)enemy.TotalDamage(damageType);
                         var c = Color.GreenYellow;
 
                         if (totaldmg >= enemy.TotalShieldHealth() / 2)
@@ -73,7 +74,7 @@
             }
         }
 
-        public static void DrawTotalDamage(this Obj_AI_Base target, DamageType damageType, bool draw = false)
+        public static void DrawTotalDamage(this Obj_AI_Base target, List<Spell.SpellBase> list, bool draw = false)
         {
             if (draw)
             {
@@ -81,7 +82,7 @@
                 {
                     var hpx = target.HPBarPosition.X;
                     var hpy = target.HPBarPosition.Y;
-                    var dmg = (int)target.TotalDamage(damageType);
+                    var dmg = (int)target.TotalDamage(list);
                     var c = Color.GreenYellow;
                     Drawing.DrawText(hpx + 145, hpy, c, dmg + " / " + (int)target.TotalShieldHealth(), 3);
                 }

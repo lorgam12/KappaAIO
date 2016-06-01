@@ -1,7 +1,6 @@
 ﻿namespace KappaAIO.Champions
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
 
     using EloBuddy;
@@ -14,23 +13,19 @@
     using Core;
     using Core.Managers;
 
-    internal class Malzahar
+    internal class Malzahar : Base
     {
-        private static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
+        private static Spell.Skillshot Q { get; }
 
-        private static Spell.Skillshot Q { get; set; }
+        private static Spell.Skillshot W { get; }
 
-        private static Spell.Skillshot W { get; set; }
+        private static Spell.Targeted E { get; }
 
-        private static Spell.Targeted E { get; set; }
-
-        private static Spell.Targeted R { get; set; }
-
-        private static Menu menuIni, ComboMenu, HarassMenu, LaneClearMenu, JungleClearMenu, KillStealMenu, MiscMenu, DrawMenu, ColorMenu;
+        private static Spell.Targeted R { get; }
 
         private static bool IsCastingR;
 
-        public static void Execute()
+        static Malzahar()
         {
             Q = new Spell.Skillshot(SpellSlot.Q, 900, SkillShotType.Circular, 250, 500, 90);
             W = new Spell.Skillshot(SpellSlot.W, 600, SkillShotType.Circular, 250, int.MaxValue, 80);
@@ -42,25 +37,25 @@
             SpellList.Add(E);
             SpellList.Add(R);
 
-            menuIni = MainMenu.AddMenu("Malzahar", "Malzahar");
-            ComboMenu = menuIni.AddSubMenu("Combo Settings");
-            HarassMenu = menuIni.AddSubMenu("Harass Settings");
+            Menuini = MainMenu.AddMenu("Malzahar", "Malzahar");
+            ComboMenu = Menuini.AddSubMenu("Combo Settings");
+            HarassMenu = Menuini.AddSubMenu("Harass Settings");
             HarassMenu.AddGroupLabel("Harass");
-            LaneClearMenu = menuIni.AddSubMenu("LaneClear Settings");
+            LaneClearMenu = Menuini.AddSubMenu("LaneClear Settings");
             LaneClearMenu.AddGroupLabel("LaneClear");
-            JungleClearMenu = menuIni.AddSubMenu("JungleClear Settings");
+            JungleClearMenu = Menuini.AddSubMenu("JungleClear Settings");
             JungleClearMenu.AddGroupLabel("JungleClear");
-            KillStealMenu = menuIni.AddSubMenu("KillSteal Settings");
+            KillStealMenu = Menuini.AddSubMenu("KillSteal Settings");
             KillStealMenu.AddGroupLabel("Stealer");
-            MiscMenu = menuIni.AddSubMenu("Misc Settings");
-            DrawMenu = menuIni.AddSubMenu("Drawings Settings");
+            MiscMenu = Menuini.AddSubMenu("Misc Settings");
+            DrawMenu = Menuini.AddSubMenu("Drawings Settings");
             DrawMenu.AddGroupLabel("Drawings");
-            ColorMenu = menuIni.AddSubMenu("ColorPicker");
+            ColorMenu = Menuini.AddSubMenu("ColorPicker");
             ColorMenu.AddGroupLabel("ColorPicker");
 
             foreach (var spell in SpellList.Where(s => s == Q))
             {
-                menuIni.Add(spell.Slot + "hit", new ComboBox(spell.Slot + " HitChance", 0, "High", "Medium", "Low"));
+                Menuini.Add(spell.Slot + "hit", new ComboBox(spell.Slot + " HitChance", 0, "High", "Medium", "Low"));
             }
 
             ComboMenu.AddGroupLabel("Combo");
@@ -115,15 +110,11 @@
             MiscMenu.Add("blockR", new CheckBox("Block R under Enemy Turret", false));
             MiscMenu.Add("danger", new ComboBox("Spells DangerLevel to interrupt", 2, "High", "Medium", "Low"));
 
-            Common.ShowNotification("KappaMalzahar - Loaded", 5000);
-
-            Game.OnUpdate += Game_OnUpdate;
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
             Player.OnIssueOrder += Player_OnIssueOrder;
             Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
             GameObject.OnCreate += GameObject_OnCreate;
-            Drawing.OnDraw += Drawing_OnDraw;
             Orbwalker.OnUnkillableMinion += Orbwalker_OnUnkillableMinion;
         }
 
@@ -137,7 +128,7 @@
             if (Common.orbmode(Orbwalker.ActiveModes.LaneClear))
             {
                 var Eready = LaneClearMenu.checkbox("E") && E.IsReady();
-                if (Eready && E.Slot.GetDamage(target) >= args.RemainingHealth)
+                if (Eready && E.GetDamage(target) >= args.RemainingHealth)
                 {
                     E.Cast(target);
                 }
@@ -151,17 +142,17 @@
                 return;
             }
 
-            if (MiscMenu.checkbox("Qgap") && (e.End.IsInRange(Player.Instance, Q.Range) || sender.IsValidTarget(Q.Range)))
+            if (MiscMenu.checkbox("Qgap") && (e.End.IsInRange(user, Q.Range) || sender.IsValidTarget(Q.Range)))
             {
-                Q.Cast(sender, Q.hitchance(menuIni));
+                Q.Cast(sender, Q.hitchance(Menuini));
             }
 
-            if (MiscMenu.checkbox("blockR") && Player.Instance.IsUnderEnemyturret())
+            if (MiscMenu.checkbox("blockR") && user.IsUnderEnemyturret())
             {
                 return;
             }
 
-            if (MiscMenu.checkbox("Rgap") && (e.End.IsInRange(Player.Instance, R.Range) || sender.IsValidTarget(R.Range)))
+            if (MiscMenu.checkbox("Rgap") && (e.End.IsInRange(user, R.Range) || sender.IsValidTarget(R.Range)))
             {
                 R.Cast(sender);
             }
@@ -190,10 +181,10 @@
             {
                 if (MiscMenu.checkbox("Qint") && sender.IsValidTarget(Q.Range))
                 {
-                    Q.Cast(sender, Q.hitchance(menuIni));
+                    Q.Cast(sender, Q.hitchance(Menuini));
                 }
 
-                if (MiscMenu.checkbox("blockR") && Player.Instance.IsUnderEnemyturret())
+                if (MiscMenu.checkbox("blockR") && user.IsUnderEnemyturret())
                 {
                     return;
                 }
@@ -231,9 +222,9 @@
             }
         }
 
-        private static void Game_OnUpdate(EventArgs args)
+        public override void Active()
         {
-            IsCastingR = Player.Instance.Buffs.FirstOrDefault(b => b.Name.ToLower().Contains("malzaharrsound")) != null;
+            IsCastingR = user.Buffs.FirstOrDefault(b => b.Name.ToLower().Contains("malzaharrsound")) != null;
             Orbwalker.DisableAttacking = IsCastingR;
             Orbwalker.DisableMovement = IsCastingR;
 
@@ -241,32 +232,18 @@
             {
                 return;
             }
-
-            if (Common.orbmode(Orbwalker.ActiveModes.Combo))
-            {
-                ComboLogic();
-            }
-            if (Common.orbmode(Orbwalker.ActiveModes.Harass))
-            {
-                HarassLogic();
-            }
-            if (Common.orbmode(Orbwalker.ActiveModes.LaneClear))
-            {
-                LaneClearLogic();
-            }
-            if (Common.orbmode(Orbwalker.ActiveModes.JungleClear))
-            {
-                JungleClearLogic();
-            }
             Rlogic();
-            KillStealLogic();
+        }
+
+        public override void Draw()
+        {
         }
 
         private static void Rlogic()
         {
             if (MiscMenu.checkbox("RTurret") && R.IsReady())
             {
-                if (MiscMenu.checkbox("blockR") && Player.Instance.IsUnderEnemyturret())
+                if (MiscMenu.checkbox("blockR") && user.IsUnderEnemyturret())
                 {
                     return;
                 }
@@ -284,7 +261,7 @@
             }
         }
 
-        private static void ComboLogic()
+        public override void Combo()
         {
             if (IsCastingR)
             {
@@ -318,7 +295,7 @@
 
             if (Qready)
             {
-                Q.Cast(target, Q.hitchance(menuIni));
+                Q.Cast(target, Q.hitchance(Menuini));
             }
 
             if (Eready)
@@ -328,17 +305,17 @@
 
             if (!ComboMenu.checkbox("DontUlt" + target.BaseSkinName))
             {
-                if (MiscMenu.checkbox("blockR") && Player.Instance.IsUnderEnemyturret())
+                if (MiscMenu.checkbox("blockR") && user.IsUnderEnemyturret())
                 {
                     return;
                 }
 
-                if (Rcomready && target.TotalDamage(DamageType.Magical) >= Prediction.Health.GetPrediction(target, R.CastDelay))
+                if (Rcomready && target.TotalDamage(SpellList) >= Prediction.Health.GetPrediction(target, R.CastDelay))
                 {
                     R.Cast(target);
                 }
 
-                if (Rfinready && R.Slot.GetDamage(target) >= Prediction.Health.GetPrediction(target, R.CastDelay))
+                if (Rfinready && R.GetDamage(target) >= Prediction.Health.GetPrediction(target, R.CastDelay))
                 {
                     R.Cast(target);
                 }
@@ -350,7 +327,7 @@
             }
         }
 
-        private static void HarassLogic()
+        public override void Harass()
         {
             if (IsCastingR)
             {
@@ -377,7 +354,7 @@
 
             if (Qready)
             {
-                Q.Cast(target, Q.hitchance(menuIni));
+                Q.Cast(target, Q.hitchance(Menuini));
             }
 
             if (Eready)
@@ -386,7 +363,7 @@
             }
         }
 
-        private static void LaneClearLogic()
+        public override void LaneClear()
         {
             if (IsCastingR)
             {
@@ -445,7 +422,7 @@
 
                 if (minions != null)
                 {
-                    foreach (var minion in minions.Where(minion => E.Slot.GetDamage(minion) >= minion?.TotalShield()))
+                    foreach (var minion in minions.Where(minion => E.GetDamage(minion) >= minion?.TotalShield()))
                     {
                         E.Cast(minion);
                     }
@@ -453,7 +430,7 @@
             }
         }
 
-        private static void JungleClearLogic()
+        public override void JungleClear()
         {
             if (IsCastingR)
             {
@@ -494,7 +471,7 @@
 
                 if (minions != null)
                 {
-                    foreach (var minion in minions.Where(minion => E.Slot.GetDamage(minion) >= minion?.TotalShield()))
+                    foreach (var minion in minions.Where(minion => E.GetDamage(minion) >= minion?.TotalShield()))
                     {
                         E.Cast(minion);
                     }
@@ -502,7 +479,7 @@
             }
         }
 
-        private static void KillStealLogic()
+        public override void KillSteal()
         {
             if (IsCastingR)
             {
@@ -526,17 +503,6 @@
                     }
                 }
             }
-        }
-
-        private static void Drawing_OnDraw(EventArgs args)
-        {
-            foreach (var spell in SpellList)
-            {
-                var color = ColorMenu.Color(spell.Slot.ToString());
-                spell.SpellRange(color, DrawMenu.checkbox(spell.Slot.ToString()));
-            }
-
-            DrawingsManager.DrawTotalDamage(DamageType.Magical, DrawMenu.checkbox("damage"));
         }
     }
 }

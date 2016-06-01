@@ -1,277 +1,204 @@
 ﻿namespace KappaAIO.Core
 {
+    using System.Collections.Generic;
+    using System.Linq;
+
     using EloBuddy;
     using EloBuddy.SDK;
 
     public static class DamageLib
     {
-        public static float GetDamage(this SpellSlot slot, Obj_AI_Base target)
+        public static readonly List<Data> Database = new List<Data>();
+
+        public struct Data
+        {
+            public SpellSlot slot;
+
+            public DamageType DamageType;
+
+            public float[] Floats;
+
+            public float Float;
+        }
+
+        public static void DamageDatabase()
         {
             var AD = Player.Instance.TotalAttackDamage;
             var AP = Player.Instance.TotalMagicalDamage;
-            var damageType = DamageType.Mixed;
-            var spell = Player.GetSpell(slot);
-            var sLevel = spell.Level - 1;
-            var dmg = 0f;
-            var ready = spell.IsLearned && spell.IsReady;
-
+            var level = Player.Instance.Level;
+            Database.Clear();
             switch (Player.Instance.Hero)
             {
-                // AurelioSol
+                // AurelionSol
                 case Champion.AurelionSol:
-                    {
-                        damageType = DamageType.Magical;
-                        switch (slot)
-                        {
-                            case SpellSlot.Q:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 70, 110, 150, 190, 230 }[sLevel] + 0.75f * AP;
-                                    }
-                                }
-                                break;
-                            case SpellSlot.W:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += (8 * Player.Instance.Level) + new float[] { 15, 30, 45, 60, 75 }[sLevel]
-                                               + (0.255f + (0.015f * Player.Instance.Level)) * AP;
-                                    }
-                                }
-                                break;
-                            case SpellSlot.R:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 150, 250, 350 }[sLevel] + 0.7f * AP;
-                                    }
-                                }
-                                break;
-                        }
-                        break;
-                    }
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 70, 110, 150, 190, 230 }, Float = 0.75f
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.W, DamageType = DamageType.Magical, Floats = new float[] { 15, 30, 45, 60, 75 },
+                                Float = (8 * level) + (0.255f + (0.015f * level))
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 150, 250, 350 }, Float = 0.7f
+                            });
+                    break;
 
                 // Azir
                 case Champion.Azir:
-                    {
-                        damageType = DamageType.Magical;
-                        switch (slot)
-                        {
-                            case SpellSlot.Q:
-                                if (ready)
-                                {
-                                    dmg += new float[] { 65, 85, 105, 125, 145 }[sLevel] + 0.5f * AP;
-                                }
-
-                                break;
-                            case SpellSlot.W:
-                                if (ready)
-                                {
-                                    dmg += 50 + (10 * Player.Instance.Level) + 0.4f * AP;
-                                }
-
-                                break;
-                            case SpellSlot.E:
-                                if (ready)
-                                {
-                                    dmg += new float[] { 60, 90, 120, 150, 180 }[sLevel] + 0.4f * AP;
-                                }
-
-                                break;
-                            case SpellSlot.R:
-                                if (ready)
-                                {
-                                    dmg += new float[] { 150, 225, 300 }[sLevel] + 0.6f * AP;
-                                }
-
-                                break;
-                        }
-
-                        break;
-                    }
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 65, 85, 105, 125, 145 }, Float = 0.5f 
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.W, DamageType = DamageType.Magical, Float = 50 + (10 * Player.Instance.Level) + 0.4f
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 60, 90, 120, 150, 180 }, Float = 0.4f 
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 150, 225, 300 }, Float = 0.6f
+                            });
+                    break;
 
                 // Brand
                 case Champion.Brand:
-                    {
-                        damageType = DamageType.Magical;
-                        switch (slot)
-                        {
-                            case SpellSlot.Q:
-                                if (ready)
-                                {
-                                    dmg += new float[] { 80, 110, 140, 170, 200 }[sLevel] + 0.55f * AP;
-                                }
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 80, 110, 140, 170, 200 }, Float = 0.55f
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.W, DamageType = DamageType.Magical, Floats = new float[] { 75, 120, 165, 210, 255 }, Float = 0.6f
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 80, 110, 140, 170, 200 }, Float = 0.35f
+                            });
+                    Database.Add(
+                        new Data { slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 150, 300, 500 }, Float = 0.5f });
+                    break;
 
-                                break;
-                            case SpellSlot.W:
-                                if (ready)
-                                {
-                                    if (target.brandpassive())
-                                    {
-                                        dmg += new float[] { 93, 150, 205, 260, 320 }[sLevel] + 0.75f * AP;
-                                    }
-                                    else
-                                    {
-                                        dmg += new float[] { 75, 120, 165, 210, 255 }[sLevel] + 0.6f * AP;
-                                    }
-                                }
-
-                                break;
-                            case SpellSlot.E:
-                                if (ready)
-                                {
-                                    dmg += new float[] { 80, 110, 140, 170, 200 }[sLevel] + 0.35f * AP;
-                                }
-
-                                break;
-                            case SpellSlot.R:
-                                if (ready)
-                                {
-                                    dmg += new float[] { 150, 300, 500 }[sLevel] + 0.5f * AP;
-                                }
-
-                                break;
-                        }
-
-                        break;
-                    }
                 // Kindred
                 case Champion.Kindred:
-                    {
-                        damageType = DamageType.Physical;
-                        dmg += Player.Instance.GetAutoAttackDamage(target, true);
-                        switch (slot)
-                        {
-                            case SpellSlot.Q:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 60, 90, 120, 150, 180 }[sLevel] + 0.2f * AD;
-                                    }
-                                }
-
-                                break;
-                            case SpellSlot.W:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += (new float[] { 25, 30, 35, 40, 45 }[sLevel] + 0.4f * AD);
-                                    }
-                                }
-
-                                break;
-                            case SpellSlot.E:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += (new float[] { 60, 90, 120, 150, 180 }[sLevel] + 0.2f * AD) + target.MaxHealth * 0.05f;
-                                    }
-                                }
-                                break;
-                        }
-                    }
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Physical, Floats = new float[] { 60, 90, 120, 150, 180 }, Float = 0.2f
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.W, DamageType = DamageType.Physical, Floats = new float[] { 25, 30, 35, 40, 45 }, Float = 0.4f 
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.E, DamageType = DamageType.Physical, Floats = new float[] { 60, 90, 120, 150, 180 },
+                                Float = 0.2f
+                            });
                     break;
 
                 // Malzahar
                 case Champion.Malzahar:
-                    {
-                        damageType = DamageType.Magical;
-                        switch (slot)
-                        {
-                            case SpellSlot.Q:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 70, 110, 150, 190, 230 }[sLevel] + 0.70f * AP;
-                                    }
-                                }
-
-                                break;
-                            case SpellSlot.W:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += (new float[] { 30, 33, 35, 37, 40 }[sLevel] + 0.40f * AD)
-                                               + (new float[] { 10, 15, 20, 25, 30 }[sLevel] + 0.10f * AP);
-                                    }
-                                }
-
-                                break;
-                            case SpellSlot.E:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 80, 115, 150, 185, 220 }[sLevel] + 0.65f * AP;
-                                    }
-                                }
-
-                                break;
-                            case SpellSlot.R:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new[] { target.MaxHealth * 0.25f, target.MaxHealth * 0.35f, target.MaxHealth * 0.45f }[sLevel]
-                                               + (0.07f * (AP / 100));
-                                    }
-                                }
-
-                                break;
-                        }
-
-                        break;
-                    }
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 70, 110, 150, 190, 230 }, Float = 0.7f
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.W, DamageType = DamageType.Mixed, Floats = new float[] { 30 + 10, 33 + 15, 35 + 20, 37 + 25, 40 + 35 },
+                                Float = (0.4f * AD) + (0.1f * AP)
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 80, 115, 150, 185, 220 }, Float = 0.65f
+                            });
+                    break;
 
                 // Xerath
                 case Champion.Xerath:
-                    {
-                        damageType = DamageType.Magical;
-                        switch (slot)
-                        {
-                            case SpellSlot.Q:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 80, 120, 160, 200, 240 }[sLevel] + 0.75f * AP;
-                                    }
-                                }
-                                break;
-                            case SpellSlot.W:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 60, 90, 120, 150, 180 }[sLevel] + 0.6f * AP;
-                                    }
-                                }
-                                break;
-                            case SpellSlot.E:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 80, 110, 140, 170, 200 }[sLevel] + 0.45f * AP;
-                                    }
-                                }
-                                break;
-                            case SpellSlot.R:
-                                {
-                                    if (ready)
-                                    {
-                                        dmg += new float[] { 200, 230, 260 }[sLevel] + 0.43f * AP;
-                                    }
-                                }
-                                break;
-                        }
-                        break;
-                    }
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 80, 120, 160, 200, 240 }, Float = 0.75f
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.W, DamageType = DamageType.Magical, Floats = new float[] { 60, 90, 120, 150, 180 }, Float = 0.6f 
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 80, 110, 140, 170, 200 }, Float = 0.45f
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 200, 230, 260 }, Float = 0.43f
+                            });
+                    break;
             }
-
-            return target != null ? Player.Instance.CalculateDamageOnUnit(target, damageType, dmg - 15) : dmg;
         }
 
-        public static float TotalDamage(this Obj_AI_Base target, DamageType damageType)
+        public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target)
         {
-            var damage = SpellSlot.Q.GetDamage(target) + SpellSlot.W.GetDamage(target) + SpellSlot.E.GetDamage(target) + SpellSlot.R.GetDamage(target);
-            return target != null ? Player.Instance.CalculateDamageOnUnit(target, damageType, damage) : 0;
+            var spell = Database.FirstOrDefault(s => s.slot == Spell.Slot);
+            if (spell.slot == SpellSlot.Unknown) return 0f;
+            var dmg = 0f;
+            var AP = Player.Instance.TotalMagicalDamage;
+            var AD = Player.Instance.TotalAttackDamage;
+            var sLevel = Spell.Level - 1;
+            var ready = Spell.IsLearned && Spell.IsReady();
+            var dmg2 = 0f;
+
+            if (ready)
+            {
+                if (Player.Instance.Hero == Champion.Malzahar && Spell.Slot == SpellSlot.R && ready)
+                {
+                    dmg += new[] { target.MaxHealth * 0.25f, target.MaxHealth * 0.35f, target.MaxHealth * 0.45f }[sLevel] + (0.07f * (AP / 100));
+                }
+
+                if (Player.Instance.Hero == Champion.Kindred && Spell.Slot == SpellSlot.E && ready)
+                {
+                    dmg2 += 0.05f * target.MaxHealth;
+                }
+                if (spell.DamageType == DamageType.Magical)
+                {
+                    dmg2 += spell.Float * AP;
+                }
+                if (spell.DamageType == DamageType.Physical)
+                {
+                    dmg2 += spell.Float * AD;
+                }
+
+                dmg += spell.Floats[sLevel] + dmg2;
+            }
+            return ready ? Player.Instance.CalculateDamageOnUnit(target, spell.DamageType, dmg - 15) : 0;
+        }
+
+        public static float TotalDamage(this Obj_AI_Base target, List<Spell.SpellBase> list)
+        {
+            return list.Where(spell => spell != null).Sum(spell => spell.GetDamage(target));
         }
     }
 }

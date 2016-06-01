@@ -11,7 +11,7 @@
         {
             return spell.IsReady()
                        ? EntityManager.Heroes.Enemies.Where(e => e.IsKillable() && e.IsValidTarget(spell.Range) && kCore.ks.checkbox(e.ChampionName))
-                             .FirstOrDefault(enemy => spell.Slot.GetDamage(enemy) >= Prediction.Health.GetPrediction(enemy, spell.CastDelay))
+                             .FirstOrDefault(enemy => spell.GetDamage(enemy) >= Prediction.Health.GetPrediction(enemy, spell.CastDelay))
                        : null;
         }
 
@@ -23,7 +23,7 @@
                         j =>
                         j.IsKillable() && kCore.Junglemobs.Contains(j.BaseSkinName) && j.IsValidTarget(spell.Range)
                         && kCore.ks.checkbox(j.BaseSkinName))
-                    .FirstOrDefault(jmob => spell.Slot.GetDamage(jmob) >= Prediction.Health.GetPrediction(jmob, spell.CastDelay));
+                    .FirstOrDefault(jmob => spell.GetDamage(jmob) >= Prediction.Health.GetPrediction(jmob, spell.CastDelay));
         }
     }
 }

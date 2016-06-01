@@ -1,16 +1,18 @@
 ﻿namespace KappaAIO
 {
     using System;
+    using System.Linq;
 
     using EloBuddy;
     using EloBuddy.SDK.Events;
 
     using KappaAIO.Champions;
-
-    using SharpDX;
+    using KappaAIO.Core;
 
     internal class Program
     {
+        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.Malzahar, Champion.Xerath };
+
         internal static bool loaded;
 
         private static void Main(string[] args)
@@ -21,46 +23,23 @@
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
-            var info = "[" + DateTime.Now.ToString("h:mm:ss") + " - Info]";
-            var warn = "[" + DateTime.Now.ToString("h:mm:ss") + " - Warn]";
+            var info = "[" + DateTime.Now.ToString("HH:mm:ss") + " - Info]";
+            var warn = "[" + DateTime.Now.ToString("HH:mm:ss") + " - Warn]";
 
             Chat.Print("<font color='#FFFFFF'><b>KappaAIO Loaded</b></font>");
-            switch (Player.Instance.Hero)
+            if (hero.Contains(Player.Instance.Hero))
             {
-                case Champion.AurelionSol:
-                    AurelionSol.Execute();
-                    loaded = true;
-                    break;
-                case Champion.Azir:
-                    Azir.Execute();
-                    loaded = true;
-                    break;
-                case Champion.Brand:
-                    Brand.Execute();
-                    loaded = true;
-                    break;
-                case Champion.Kindred:
-                    Kindred.Execute();
-                    loaded = true;
-                    break;
-                case Champion.Malzahar:
-                    Malzahar.Execute();
-                    loaded = true;
-                    break;
-                case Champion.Xerath:
-                    Xerath.Execute();
-                    loaded = true;
-                    break;
-            }
-            if (loaded)
-            {
-                Core.kCore.Execute();
+                var Instance = Activator.CreateInstance(null, "KappaAIO.Champions." + Player.Instance.ChampionName);
+                var Model = (Base)Instance.Unwrap();
+                DamageLib.DamageDatabase();
+                kCore.Execute();
                 Console.WriteLine(info + " KappaAIO: " + Player.Instance.Hero + " Loaded !");
                 Console.WriteLine(info + " Have Fun !");
+                Common.ShowNotification(Player.Instance.ChampionName + " - Loaded", 5000);
             }
-            if (!loaded)
+            else
             {
-                Console.WriteLine(warn + " KappaAIO: Failed To Loaded ! ");
+                Console.WriteLine(warn + " KappaAIO: Failed To Load ! ");
                 Console.WriteLine(warn + " Case: " + Player.Instance.Hero + " Not Supported ");
             }
             Console.WriteLine(info + " ----------------------------------");

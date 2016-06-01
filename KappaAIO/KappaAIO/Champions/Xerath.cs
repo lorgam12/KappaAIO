@@ -1,7 +1,6 @@
 ﻿namespace KappaAIO.Champions
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
 
     using Core;
@@ -19,23 +18,19 @@
 
     using Color = System.Drawing.Color;
 
-    internal class Xerath
+    internal class Xerath : Base
     {
-        private static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
-
         private static bool hasbought;
 
-        private static Item Scryb;
+        private static Item Scryb { get; }
 
-        private static Spell.Chargeable Q;
+        private static Spell.Chargeable Q { get; }
 
-        private static Spell.Skillshot W;
+        private static Spell.Skillshot W { get; }
 
-        private static Spell.Skillshot E;
+        private static Spell.Skillshot E { get; }
 
-        private static Spell.Skillshot R;
-
-        private static Menu Menuini, RMenu, ComboMenu, HarassMenu, LaneClearMenu, JungleClearMenu, KillStealMenu, MiscMenu, DrawMenu, ColorMenu;
+        private static Spell.Skillshot R { get; }
 
         private static bool AttacksEnabled
         {
@@ -88,7 +83,7 @@
             public static bool TapKeyPressed;
         }
 
-        public static void Execute()
+        static Xerath()
         {
             switch (Game.MapId)
             {
@@ -146,11 +141,7 @@
             RMenu.Add("Rnear", new CheckBox("Focus Targets Near Mouse Only"));
             RMenu.Add("Mradius", new Slider("Mouse Radius", 750, 300, 1500));
 
-            ComboMenu.Add("key", new KeyBind("Combo Key", false, KeyBind.BindTypes.HoldActive, 32));
-            HarassMenu.Add("key", new KeyBind("Harass Key", false, KeyBind.BindTypes.HoldActive, 'C'));
             HarassMenu.Add("toggle", new KeyBind("Auto Harass", false, KeyBind.BindTypes.PressToggle, 'H'));
-            LaneClearMenu.Add("key", new KeyBind("LaneClear Key", false, KeyBind.BindTypes.HoldActive, 'V'));
-            JungleClearMenu.Add("key", new KeyBind("JungleClear Key", false, KeyBind.BindTypes.HoldActive, 'V'));
 
             foreach (var spell in SpellList.Where(s => s != R))
             {
@@ -179,7 +170,7 @@
             MiscMenu.Add("int", new CheckBox("E Interrupter"));
             MiscMenu.Add("Danger", new ComboBox("Interrupter Danger Level", 1, "High", "Medium", "Low"));
             MiscMenu.Add("flee", new KeyBind("Escape with E", false, KeyBind.BindTypes.HoldActive, 'A'));
-            var notifi = MiscMenu.Add("Notifications", new CheckBox("Use Notifications"));
+            MiscMenu.Add("Notifications", new CheckBox("Use Notifications"));
             MiscMenu.Add("autoECC", new CheckBox("Auto E On CC enemy"));
             MiscMenu.Add("scrybebuy", new CheckBox("Auto Scrybing Orb Buy"));
             MiscMenu.Add("scrybebuylevel", new Slider("Buy Orb at level [{0}]", 9, 1, 18));
@@ -204,13 +195,6 @@
                 ColorMenu.Add(spell.Slot + "Color", new ColorPicker(spell.Slot + " Color", Color.Chartreuse));
             }
 
-            if (notifi.CurrentValue)
-            {
-                Common.ShowNotification("KappaXerath - Loaded", 5000);
-            }
-
-            Game.OnUpdate += Game_OnGameUpdate;
-            Drawing.OnDraw += Drawing_OnDraw;
             Drawing.OnEndScene += Drawing_OnEndScene;
             Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
@@ -252,7 +236,7 @@
             {
                 return;
             }
-            if (e.End.IsInRange(Player.Instance, 650) || sender.IsValidTarget(650))
+            if (e.End.IsInRange(user, 650) || sender.IsValidTarget(650))
             {
                 E.Cast(sender);
             }
@@ -295,12 +279,12 @@
             E.Cast(sender);
         }
 
-        private static void Combo()
+        public override void Combo()
         {
             UseSpells(ComboMenu.checkbox("Q"), ComboMenu.checkbox("W"), ComboMenu.checkbox("E"));
         }
 
-        private static void Harass()
+        public override void Harass()
         {
             UseSpells(
                 HarassMenu.checkbox("Q") && Q.Mana(HarassMenu),
@@ -314,7 +298,7 @@
 
             if (Target != null && useE && E.IsReady())
             {
-                if (Player.Instance.Distance(Target) < E.Range * 0.4f)
+                if (user.Distance(Target) < E.Range * 0.4f)
                 {
                     E.Cast(Target, E.hitchance(Menuini));
                 }
@@ -335,7 +319,7 @@
                 {
                     Q.Cast(Target, Q.hitchance(Menuini));
                 }
-                else if (!useW || !W.IsReady() || Player.Instance.Distance(Target) > W.Range)
+                else if (!useW || !W.IsReady() || user.Distance(Target) > W.Range)
                 {
                     Q.StartCharging();
                 }
@@ -348,7 +332,7 @@
             var bestRatio = 0f;
             var target = TargetSelector.SelectedTarget;
             if (target.IsValidTarget() && target.IsKillable()
-                && (Game.CursorPos.Distance(target.ServerPosition) < distance && Player.Instance.Distance(target) < R.Range))
+                && (Game.CursorPos.Distance(target.ServerPosition) < distance && user.Distance(target) < R.Range))
             {
                 return TargetSelector.SelectedTarget;
             }
@@ -360,7 +344,7 @@
                     continue;
                 }
 
-                var damage = Player.Instance.CalculateDamageOnUnit(hero, DamageType.Magical, 100);
+                var damage = user.CalculateDamageOnUnit(hero, DamageType.Magical, 100);
                 var ratio = damage / (1 + hero.Health) * TargetSelector.GetPriority(hero);
 
                 if (ratio > bestRatio)
@@ -387,7 +371,7 @@
 
             if (rTarget != null)
             {
-                if (rTarget.TotalShieldHealth() - R.Slot.GetDamage(rTarget) < 0)
+                if (rTarget.TotalShieldHealth() - R.GetDamage(rTarget) < 0)
                 {
                     if (Core.GameTickCount - RCharge.CastT <= 0)
                     {
@@ -427,7 +411,7 @@
             }
         }
 
-        private static void KillStealLogic()
+        public override void KillSteal()
         {
             foreach (var spell in SpellList.Where(s => s != R))
             {
@@ -478,7 +462,7 @@
             }
         }
 
-        private static void Farm()
+        public override void LaneClear()
         {
             var useQ = LaneClearMenu.checkbox("Q") && Q.IsReady() && Q.Mana(LaneClearMenu);
 
@@ -515,7 +499,7 @@
                 }
                 if (useQi == 1 || useQi == 2)
                 {
-                    var minion = objAiMinionsQ.FirstOrDefault(m => Q.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay));
+                    var minion = objAiMinionsQ.FirstOrDefault(m => Q.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay));
                     if (Q.IsCharging && minion != null)
                     {
                         Q.Cast(minion);
@@ -549,7 +533,7 @@
 
                 if (useWi == 1 || useWi == 2)
                 {
-                    var minion = objAiMinions.FirstOrDefault(m => W.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, W.CastDelay));
+                    var minion = objAiMinions.FirstOrDefault(m => W.GetDamage(m) >= Prediction.Health.GetPrediction(m, W.CastDelay));
                     if (minion != null)
                     {
                         W.Cast(minion);
@@ -569,7 +553,7 @@
 
                     if (minion != null && (useEi == 1 || useEi == 2))
                     {
-                        if (E.Slot.GetDamage(minion) >= Prediction.Health.GetPrediction(minion, E.CastDelay))
+                        if (E.GetDamage(minion) >= Prediction.Health.GetPrediction(minion, E.CastDelay))
                         {
                             E.Cast(minion);
                         }
@@ -578,7 +562,7 @@
             }
         }
 
-        private static void JungleFarm()
+        public override void JungleClear()
         {
             var useQ = JungleClearMenu.checkbox("Q") && Q.IsReady() && Q.Mana(JungleClearMenu);
 
@@ -608,7 +592,7 @@
                     Q.StartCharging();
                 }
 
-                var minion = objAiMinionsQ.FirstOrDefault(m => Q.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay));
+                var minion = objAiMinionsQ.FirstOrDefault(m => Q.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay));
                 if (Q.IsCharging && minion != null)
                 {
                     Q.Cast(minion);
@@ -634,7 +618,7 @@
                     W.Cast(locW);
                 }
 
-                var minion = objAiMinionsW.FirstOrDefault(m => W.Slot.GetDamage(m) >= Prediction.Health.GetPrediction(m, W.CastDelay));
+                var minion = objAiMinionsW.FirstOrDefault(m => W.GetDamage(m) >= Prediction.Health.GetPrediction(m, W.CastDelay));
                 if (minion != null)
                 {
                     W.Cast(minion);
@@ -645,7 +629,7 @@
             {
                 foreach (var minion in EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsValidTarget(E.Range)))
                 {
-                    if (E.Slot.GetDamage(minion) >= Prediction.Health.GetPrediction(minion, E.CastDelay))
+                    if (E.GetDamage(minion) >= Prediction.Health.GetPrediction(minion, E.CastDelay))
                     {
                         E.Cast(minion);
                     }
@@ -654,8 +638,12 @@
             }
         }
 
-        private static void Game_OnGameUpdate(EventArgs args)
+        public override void Active()
         {
+            if (user.IsDead)
+            {
+                return;
+            }
             if (MiscMenu.keybind("flee"))
             {
                 var target = TargetSelector.GetTarget(E.Range, DamageType.Magical);
@@ -665,8 +653,6 @@
                 }
                 Orbwalker.OrbwalkTo(Game.CursorPos);
             }
-
-            KillStealLogic();
 
             if (MiscMenu.checkbox("autoECC"))
             {
@@ -679,31 +665,11 @@
 
             ScrybingOrb();
 
-            if (Player.Instance.IsDead)
-            {
-                return;
-            }
-
             R.Range = (uint)(1925 + R.Level * 1200);
 
-            if (ComboMenu.keybind("key"))
+            if (HarassMenu.keybind("toggle"))
             {
-                Combo();
-            }
-
-            if (HarassMenu.keybind("key") || HarassMenu.keybind("toggle"))
-            {
-                Harass();
-            }
-
-            if (LaneClearMenu.keybind("key"))
-            {
-                Farm();
-            }
-
-            if (JungleClearMenu.keybind("key"))
-            {
-                JungleFarm();
+                this.Harass();
             }
 
             Orbwalker.DisableAttacking = IsCastingR;
@@ -719,7 +685,7 @@
             if (R.IsReady() && MiscMenu.checkbox("Notifications") && Environment.TickCount - Common.lastNotification > 5000)
             {
                 foreach (var enemy in
-                    EntityManager.Heroes.Enemies.Where(h => h.IsValidTarget() && R.Slot.GetDamage(h) * 3 > h.Health))
+                    EntityManager.Heroes.Enemies.Where(h => h.IsValidTarget() && R.GetDamage(h) * 3 > h.Health))
                 {
                     Common.ShowNotification(enemy.ChampionName + ": is killable R!!!", 4000);
                     Common.lastNotification = Environment.TickCount;
@@ -739,7 +705,7 @@
             {
                 return;
             }
-            if (Scryb.IsOwned(Player.Instance) && (!target.IsHPBarRendered || NavMesh.IsWallOfGrass(target.ServerPosition, 50)))
+            if (Scryb.IsOwned(user) && (!target.IsHPBarRendered || NavMesh.IsWallOfGrass(target.ServerPosition, 50)))
             {
                 Scryb.Cast(target.ServerPosition);
             }
@@ -760,7 +726,7 @@
                 return;
             }
 
-            if (!Scryb.IsOwned(Player.Instance) && Player.Instance.IsInShopRange() && Player.Instance.Level >= level)
+            if (!Scryb.IsOwned(user) && user.IsInShopRange() && user.Level >= level)
             {
                 Scryb.Buy();
                 hasbought = true;
@@ -769,7 +735,7 @@
 
         private static void Drawing_OnEndScene(EventArgs args)
         {
-            if (Player.Instance.IsDead)
+            if (user.IsDead)
             {
                 return;
             }
@@ -778,13 +744,18 @@
 
             if (Rcirclemap && R.IsReady())
             {
-                DrawingsManager.DrawCricleMinimap(Color.White, R.Range, Player.Instance.ServerPosition, 2, 20);
+                DrawingsManager.DrawCricleMinimap(Color.White, R.Range, user.ServerPosition, 2, 20);
             }
             */
         }
 
-        private static void Drawing_OnDraw(EventArgs args)
+        public override void Draw()
         {
+            if (user.IsDead)
+            {
+                return;
+            }
+
             if (IsCastingR)
             {
                 if (RMenu.checkbox("Rnear"))
@@ -792,20 +763,13 @@
                     Circle.Draw(SharpDX.Color.Red, RMenu.slider("Mradius"), Game.CursorPos);
                 }
             }
-
-            foreach (var spell in SpellList)
-            {
-                var color = ColorMenu.Color(spell.Slot + "Color");
-                spell.SpellRange(color, DrawMenu.checkbox(spell.Slot.ToString()));
-            }
-
             if (MiscMenu.checkbox("Notifications") && R.IsReady())
             {
                 var t = TargetSelector.GetTarget(R.Range, DamageType.Physical);
 
                 if (t.IsValidTarget())
                 {
-                    var rDamage = R.Slot.GetDamage(t);
+                    var rDamage = R.GetDamage(t);
                     if (rDamage * 5 > t.Health)
                     {
                         Drawing.DrawText(
@@ -813,7 +777,7 @@
                             Drawing.Height * 0.5f,
                             Color.Red,
                             (int)(t.Health / rDamage) + " x Ult can kill: " + t.ChampionName + " have: " + t.Health + "hp");
-                        DrawingsManager.drawLine(t.Position, Player.Instance.Position, 10, Color.Yellow);
+                        DrawingsManager.drawLine(t.Position, user.Position, 10, Color.Yellow);
                     }
                 }
             }

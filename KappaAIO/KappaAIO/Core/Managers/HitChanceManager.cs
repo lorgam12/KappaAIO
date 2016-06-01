@@ -39,6 +39,19 @@
             }
         }
 
+        public static void Cast(this Spell.SpellBase spell, Obj_AI_Base target, HitChance hitChance)
+        {
+            var thisspell = spell as Spell.Skillshot;
+            if (target != null && spell.IsReady() && target.IsKillable(spell.Range))
+            {
+                var pred = thisspell.GetPrediction(target);
+                if (pred.HitChance >= hitChance || target.IsCC())
+                {
+                    spell.Cast(pred.CastPosition);
+                }
+            }
+        }
+
         public static void Cast(this Spell.Chargeable spell, Obj_AI_Base target, HitChance hitChance)
         {
             if (target != null && spell.IsReady() && target.IsKillable(spell.MaximumRange))

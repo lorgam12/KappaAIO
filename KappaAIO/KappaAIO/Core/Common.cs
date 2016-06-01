@@ -1,6 +1,7 @@
 ﻿namespace KappaAIO.Core
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
@@ -13,6 +14,8 @@
     using EloBuddy.SDK.Notifications;
 
     using Managers;
+
+    using SharpDX;
 
     public static class Common
     {

@@ -163,7 +163,6 @@
         public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target)
         {
             var spell = Database.FirstOrDefault(s => s.slot == Spell.Slot);
-            if (spell.slot == SpellSlot.Unknown) return 0f;
             var dmg = 0f;
             var AP = Player.Instance.TotalMagicalDamage;
             var AD = Player.Instance.TotalAttackDamage;
@@ -173,19 +172,21 @@
 
             if (ready)
             {
-                if (Player.Instance.Hero == Champion.Malzahar && Spell.Slot == SpellSlot.R && ready)
+                if (Player.Instance.Hero == Champion.Malzahar && Spell.Slot == SpellSlot.R)
                 {
-                    dmg = new[] { target.MaxHealth * 0.25f, target.MaxHealth * 0.35f, target.MaxHealth * 0.45f }[sLevel] + (0.07f * (AP / 100));
+                    return new[] { target.MaxHealth * 0.25f, target.MaxHealth * 0.35f, target.MaxHealth * 0.45f }[sLevel] + (0.07f * (AP / 100));
                 }
 
                 if (Player.Instance.Hero == Champion.Kindred && Spell.Slot == SpellSlot.E && ready)
                 {
-                    dmg2 = 0.05f * target.MaxHealth;
+                    dmg2 += 0.05f * target.MaxHealth;
                 }
+
                 if (spell.DamageType == DamageType.Magical)
                 {
                     dmg2 += spell.Float * AP;
                 }
+
                 if (spell.DamageType == DamageType.Physical)
                 {
                     dmg2 += spell.Float * AD;

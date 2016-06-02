@@ -99,7 +99,7 @@
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.Q, DamageType = DamageType.Physical, Floats = new float[] { 60, 90, 120, 150, 180 }, Float = 0.2f
+                                slot = SpellSlot.Q, DamageType = DamageType.Physical, Floats = new float[] { 55, 75, 95, 115, 135 }, Float = 0.2f
                             });
                     Database.Add(
                         new Data
@@ -109,7 +109,7 @@
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.E, DamageType = DamageType.Physical, Floats = new float[] { 60, 90, 120, 150, 180 },
+                                slot = SpellSlot.E, DamageType = DamageType.Physical, Floats = new float[] { 40, 75, 110, 145, 180 },
                                 Float = 0.2f
                             });
                     break;
@@ -175,12 +175,12 @@
             {
                 if (Player.Instance.Hero == Champion.Malzahar && Spell.Slot == SpellSlot.R && ready)
                 {
-                    dmg += new[] { target.MaxHealth * 0.25f, target.MaxHealth * 0.35f, target.MaxHealth * 0.45f }[sLevel] + (0.07f * (AP / 100));
+                    dmg = new[] { target.MaxHealth * 0.25f, target.MaxHealth * 0.35f, target.MaxHealth * 0.45f }[sLevel] + (0.07f * (AP / 100));
                 }
 
                 if (Player.Instance.Hero == Champion.Kindred && Spell.Slot == SpellSlot.E && ready)
                 {
-                    dmg2 += 0.05f * target.MaxHealth;
+                    dmg2 = 0.05f * target.MaxHealth;
                 }
                 if (spell.DamageType == DamageType.Magical)
                 {

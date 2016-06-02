@@ -23,8 +23,8 @@
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
-            var info = "[" + DateTime.Now.ToString("HH:mm:ss") + " - Info]";
-            var warn = "[" + DateTime.Now.ToString("HH:mm:ss") + " - Warn]";
+            var info = "[" + DateTime.Now.ToString("H:mm:ss") + " - Info]";
+            var warn = "[" + DateTime.Now.ToString("H:mm:ss") + " - Warn]";
 
             Chat.Print("<font color='#FFFFFF'><b>KappaAIO Loaded</b></font>");
             if (hero.Contains(Player.Instance.Hero))

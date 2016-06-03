@@ -218,7 +218,7 @@
             {
                 if (Wtarget != null)
                 {
-                    if (W.Handle.ToggleState != 2 && Wtarget.IsValidTarget(W.Range))
+                    if (W.Handle.ToggleState != 2 && Wtarget.IsValidTarget(W.Range) && !Wtarget.IsValidTarget(W2.Range))
                     {
                         W.Cast();
                     }
@@ -241,14 +241,15 @@
                     var aiHeroClients = enemies as AIHeroClient[] ?? enemies.ToArray();
                     foreach (var enemy in aiHeroClients)
                     {
+                        var predpos = Prediction.Position.PredictUnitPosition(enemy, R.CastDelay);
                         var Rectangle = new Geometry.Polygon.Rectangle(
                             user.ServerPosition,
-                            user.ServerPosition.Extend(enemy.ServerPosition, R.Range).To3D(),
+                            user.ServerPosition.Extend(predpos, R.Range).To3D(),
                             R.Width);
 
-                        if (aiHeroClients.Count(e => Rectangle.IsInside(e)) >= ComboMenu.slider("Raoe"))
+                        if (aiHeroClients.Count(e => Rectangle.IsInside(Prediction.Position.PredictUnitPosition(e, R.CastDelay))) >= ComboMenu.slider("Raoe"))
                         {
-                            R.Cast(enemy.ServerPosition);
+                            R.Cast(predpos.To3D());
                         }
                     }
                 }
@@ -360,7 +361,6 @@
 
         public override void Draw()
         {
-            Q.DrawSpellDamage(true);
             W2.SpellRange(ColorMenu.Color("W2"), DrawMenu.checkbox("w2"));
         }
 

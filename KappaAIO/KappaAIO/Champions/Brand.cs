@@ -131,8 +131,6 @@
                     ColorMenu.Add(spell.Slot.ToString(), new ColorPicker(spell.Slot + " Color", System.Drawing.Color.Chartreuse));
                 }
 
-                Common.ShowNotification("KappaBrand - Loaded", 5000);
-
                 Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
                 Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
                 Orbwalker.OnUnkillableMinion += Orbwalker_OnUnkillableMinion;

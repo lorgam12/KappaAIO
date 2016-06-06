@@ -306,13 +306,15 @@
 
         public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target)
         {
+            if (!Database.Exists(s => s.slot == Spell.Slot)) return 0;
+
             var spell = Database.FirstOrDefault(s => s.slot == Spell.Slot);
             var dmg = 0f;
             var AP = Player.Instance.TotalMagicalDamage;
             var AD = Player.Instance.TotalAttackDamage;
             var sLevel = Spell.Level - 1;
             var ready = Spell.IsLearned && Spell.IsReady();
-
+            
             if (ready)
             {
                 dmg = spell.Floats[sLevel] + (target.MaxHealth * spell.MaxHP[sLevel]) + (spell.AD * AD) + (spell.AP * AP);

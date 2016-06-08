@@ -219,12 +219,12 @@
                     Database.Add(
                         new Data
                     {
-                        slot = SpellSlot.E,
+                        slot = SpellSlot.R,
                         DamageType = DamageType.Magical,
                         Floats = new float[] { 0, 0, 0, 0, 0 },
                         AP = 0.07f,
                         AD = 0,
-                        MaxHP = new float[] { 0.25f, 0.35f, 0.45f }
+                        MaxHP = new [] { 0.25f, 0.35f, 0.45f }
                     });
                     break;
 
@@ -304,7 +304,7 @@
             }
         }
 
-        public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target)
+        public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target, int stage = 1)
         {
             if (!Database.Exists(s => s.slot == Spell.Slot)) return 0;
 
@@ -319,6 +319,13 @@
             {
                 dmg = spell.Floats[sLevel] + (target.MaxHealth * spell.MaxHP[sLevel]) + (spell.AD * AD) + (spell.AP * AP);
             }
+
+            if (Player.Instance.Hero == Champion.LeeSin && Spell.Slot == SpellSlot.Q && target.Buffs.Any(b => b.Name.ToLower().Contains("qone")))
+            {
+                var missinghealth = target.MaxHealth - target.Health;
+                dmg += 0.8f * missinghealth;
+            }
+
             return ready ? Player.Instance.CalculateDamageOnUnit(target, spell.DamageType, dmg - 15) : 0;
         }
 

@@ -59,7 +59,7 @@
         public virtual void Drawing_OnDraw(EventArgs args)
         {
             this.Draw();
-
+            
             // Spells Drawings
             foreach (var spell in SpellList)
             {

@@ -162,6 +162,16 @@
                    || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Suppression) || target.HasBuffOfType(BuffType.Taunt);
         }
 
+        public static Vector2 PredPos(this Obj_AI_Base target, int time)
+        {
+            return Prediction.Position.PredictUnitPosition(target, time);
+        }
+
+        public static float PredHP(this Obj_AI_Base target, int time)
+        {
+            return Prediction.Health.GetPrediction(target, time);
+        }
+
         public static bool brandpassive(this Obj_AI_Base target)
         {
             return target.HasBuff("BrandAblaze");

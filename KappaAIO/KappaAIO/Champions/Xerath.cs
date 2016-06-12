@@ -46,7 +46,7 @@
                     return false;
                 }
 
-                if (ComboMenu.keybind("key"))
+                if (Common.orbmode(Orbwalker.ActiveModes.Combo))
                 {
                     return IsPassiveUp || (!Q.IsReady() && !W.IsReady() && !E.IsReady());
                 }
@@ -85,20 +85,11 @@
 
         static Xerath()
         {
-            switch (Game.MapId)
-            {
-                case GameMapId.SummonersRift:
-                    Scryb = new Item((int)ItemId.Farsight_Alteration, 3500f);
-                    break;
-                case GameMapId.CrystalScar:
-                    Scryb = new Item(3462, 2500f);
-                    break;
-            }
-
+            Scryb = new Item((int)ItemId.Farsight_Alteration, 3500f);
             Q = new Spell.Chargeable(SpellSlot.Q, 750, 1500, 1500, 500, int.MaxValue, 100) { AllowedCollisionCount = int.MaxValue };
             W = new Spell.Skillshot(SpellSlot.W, 1100, SkillShotType.Circular, 250, int.MaxValue, 100) { AllowedCollisionCount = int.MaxValue };
             E = new Spell.Skillshot(SpellSlot.E, 1050, SkillShotType.Linear, 250, 1600, 70);
-            R = new Spell.Skillshot(SpellSlot.R, 3200, SkillShotType.Circular, 500, int.MaxValue, 120) { AllowedCollisionCount = int.MaxValue };
+            R = new Spell.Skillshot(SpellSlot.R, 3200, SkillShotType.Circular, 500, 2000, 120) { AllowedCollisionCount = int.MaxValue };
 
             SpellList.Add(Q);
             SpellList.Add(W);
@@ -189,10 +180,12 @@
             }
 
             DrawMenu.Add("Rmini", new CheckBox("Draw R Range (MiniMap)", false));
+            DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));
+            DrawMenu.AddLabel("Draws = ComboDamage / Enemy Current Health");
 
             foreach (var spell in SpellList)
             {
-                ColorMenu.Add(spell.Slot + "Color", new ColorPicker(spell.Slot + " Color", Color.Chartreuse));
+                ColorMenu.Add(spell.Slot.ToString(), new ColorPicker(spell.Slot + " Color", Color.Chartreuse));
             }
 
             Drawing.OnEndScene += Drawing_OnEndScene;
@@ -705,9 +698,9 @@
             {
                 return;
             }
-            if (Scryb.IsOwned(user) && (!target.IsHPBarRendered || NavMesh.IsWallOfGrass(target.ServerPosition, 50)))
+            if (Scryb.IsOwned(user) && (target.IsDashing() || target.Distance(R.GetPrediction(target).CastPosition) > 150 || NavMesh.IsWallOfGrass(Prediction.Position.PredictUnitPosition(target, 150).To3D(), 50)))
             {
-                Scryb.Cast(target.ServerPosition);
+                Scryb.Cast(R.GetPrediction(target).CastPosition);
             }
         }
 

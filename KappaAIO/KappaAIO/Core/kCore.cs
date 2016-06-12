@@ -15,7 +15,7 @@
             {
                 "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water", "SRU_Dragon_Elder",
                 "SRU_Baron", "SRU_Gromp", "SRU_Krug", "SRU_Razorbeak", "Sru_Crab", "SRU_Murkwolf", "SRU_Blue",
-                "SRU_Red", "SRU_RiftHerald", "AscXerath"
+                "SRU_Red", "SRU_RiftHerald", "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss", "AscXerath"
             };
 
         public static void Execute()

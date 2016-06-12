@@ -35,75 +35,49 @@
                     Database.Add(
                         new Data
                             {
-                            slot = SpellSlot.Q,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 70, 110, 150, 190, 230 },
-                            AP = 0.75f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 70, 110, 150, 190, 230 }, AP = 0.75f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                            slot = SpellSlot.W,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 15, 30, 45, 60, 75 },
-                            AP = 1f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.W, DamageType = DamageType.Magical, Floats = new float[] { 15, 30, 45, 60, 75 }, AP = 1f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.R,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 150, 250, 350 },
-                            AP = 0.7f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0 }
-                        });
+                                slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 150, 250, 350 }, AP = 0.7f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0 }
+                            });
                     break;
 
                 // Azir
                 case Champion.Azir:
                     Database.Add(
                         new Data
-                        {
-                            slot = SpellSlot.Q,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 65, 85, 105, 125, 145 },
-                            AP = 0.5f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
-                    Database.Add(new Data
-                                     {
-                        slot = SpellSlot.W,
-                        DamageType = DamageType.Magical,
-                        AP = 50 + (10 * Player.Instance.Level) + 0.4f,
-                        AD = 0,
-                        MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                    });
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 65, 85, 105, 125, 145 }, AP = 0.5f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                            slot = SpellSlot.E,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 60, 90, 120, 150, 180 },
-                            AP = 0.4f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.W, DamageType = DamageType.Magical, AP = 50 + (10 * Player.Instance.Level) + 0.4f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                            slot = SpellSlot.R,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 150, 225, 300 },
-                            AP = 0.6f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0 }
-                        });
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 60, 90, 120, 150, 180 }, AP = 0.4f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 150, 225, 300 }, AP = 0.6f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0 }
+                            });
                     break;
 
                 // Brand
@@ -111,77 +85,49 @@
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.Q,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 80, 110, 140, 170, 200 },
-                            AP = 0.55f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 80, 110, 140, 170, 200 }, AP = 0.55f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.W,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 75, 120, 165, 210, 255 },
-                            AP = 0.6f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.W, DamageType = DamageType.Magical, Floats = new float[] { 75, 120, 165, 210, 255 }, AP = 0.6f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.E,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 80, 110, 140, 170, 200 },
-                            AP = 0.35f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 80, 110, 140, 170, 200 }, AP = 0.35f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
-                        {
-                            slot = SpellSlot.R,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 150, 300, 500 },
-                            AP = 0.5f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0 }
-                        });
+                            {
+                                slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 150, 300, 500 }, AP = 0.5f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0 }
+                            });
                     break;
 
                 // Kindred
                 case Champion.Kindred:
                     Database.Add(
                         new Data
-                        {
-                            slot = SpellSlot.Q,
-                            DamageType = DamageType.Physical,
-                            Floats = new float[] { 55, 75, 95, 115, 135 },
-                            AP = 0,
-                            AD = 0.2f,
-                            MaxHP = new[] { 0.05f, 0.05f, 0.05f, 0.05f, 0.05f }
-                        });
-                    Database.Add(
-                        new Data
-                        {
-                            slot = SpellSlot.W,
-                            DamageType = DamageType.Physical,
-                            Floats = new float[] { 25, 30, 35, 40, 45 },
-                            AP = 0,
-                            AD = 0.4f,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Physical, Floats = new float[] { 55, 75, 95, 115, 135 }, AP = 0, AD = 0.2f,
+                                MaxHP = new[] { 0.05f, 0.05f, 0.05f, 0.05f, 0.05f }
+                            });
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.E,
-                            DamageType = DamageType.Physical,
-                            Floats = new float[] { 40, 75, 110, 145, 180 },
-                            AP = 0,
-                            AD = 0.2f,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.W, DamageType = DamageType.Physical, Floats = new float[] { 25, 30, 35, 40, 45 }, AP = 0, AD = 0.4f,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.E, DamageType = DamageType.Physical, Floats = new float[] { 40, 75, 110, 145, 180 }, AP = 0, AD = 0.2f,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     break;
 
                 // Malzahar
@@ -189,74 +135,49 @@
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.Q,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 70, 110, 150, 190, 230 },
-                            AP = 0.7f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 70, 110, 150, 190, 230 }, AP = 0.7f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.W,
-                            DamageType = DamageType.Mixed,
-                            Floats = new float[] { 30 + 10, 33 + 15, 35 + 20, 37 + 25, 40 + 35 },
-                            AP = 0.1f,
-                            AD = 0.4f,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.W, DamageType = DamageType.Mixed, Floats = new float[] { 30 + 10, 33 + 15, 35 + 20, 37 + 25, 40 + 35 },
+                                AP = 0.1f, AD = 0.4f, MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.E,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 80, 115, 150, 185, 220 },
-                            AP = 0.65f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 80, 115, 150, 185, 220 }, AP = 0.65f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
-                    {
-                        slot = SpellSlot.R,
-                        DamageType = DamageType.Magical,
-                        Floats = new float[] { 0, 0, 0, 0, 0 },
-                        AP = 0.07f,
-                        AD = 0,
-                        MaxHP = new [] { 0.25f, 0.35f, 0.45f }
-                    });
+                            {
+                                slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 0, 0, 0, 0, 0 }, AP = 0.07f, AD = 0,
+                                MaxHP = new[] { 0.25f, 0.35f, 0.45f }
+                            });
                     break;
 
-                    // LeeSin
-                    case Champion.LeeSin:
-                        Database.Add(new Data
-                        {
-                            slot = SpellSlot.Q,
-                            DamageType = DamageType.Physical,
-                            Floats = new float[] { 50, 80, 110, 140, 170 },
-                            AP = 0,
-                            AD = 0.9f,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
-                    Database.Add(new Data
-                    {
-                        slot = SpellSlot.E,
-                        DamageType = DamageType.Magical,
-                        Floats = new float[] { 60, 95, 130, 165, 200 },
-                        AP = 0,
-                        AD = 1f,
-                        MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                    });
-                    Database.Add(new Data
-                    {
-                        slot = SpellSlot.R,
-                        DamageType = DamageType.Physical,
-                        Floats = new float[] { 200, 400, 600 },
-                        AP = 0,
-                        AD = 2f,
-                        MaxHP = new float[] { 0, 0, 0 }
-                    });
+                // LeeSin
+                case Champion.LeeSin:
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.Q, DamageType = DamageType.Physical, Floats = new float[] { 50, 80, 110, 140, 170 }, AP = 0, AD = 0.9f,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 60, 95, 130, 165, 200 }, AP = 0, AD = 1f,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.R, DamageType = DamageType.Physical, Floats = new float[] { 175, 375, 575 }, AP = 0, AD = 2f,
+                                MaxHP = new float[] { 0, 0, 0 }
+                            });
                     break;
 
                 // Xerath
@@ -264,57 +185,45 @@
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.Q,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 80, 120, 160, 200, 240 },
-                            AP = 0.75f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
-                    Database.Add(
-                        new Data
-                        {
-                            slot = SpellSlot.W, DamageType = DamageType.Magical,
-                            Floats = new float[] { 60, 90, 120, 150, 180 },
-                            AP = 0.6f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.Q, DamageType = DamageType.Magical, Floats = new float[] { 80, 120, 160, 200, 240 }, AP = 0.75f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.E,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 80, 110, 140, 170, 200 },
-                            AP = 0.45f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                        });
+                                slot = SpellSlot.W, DamageType = DamageType.Magical, Floats = new float[] { 60, 90, 120, 150, 180 }, AP = 0.6f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.R,
-                            DamageType = DamageType.Magical,
-                            Floats = new float[] { 200, 230, 260 },
-                            AP = 0.43f,
-                            AD = 0,
-                            MaxHP = new float[] { 0, 0, 0 }
-                        });
+                                slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 80, 110, 140, 170, 200 }, AP = 0.45f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
+                            });
+                    Database.Add(
+                        new Data
+                            {
+                                slot = SpellSlot.R, DamageType = DamageType.Magical, Floats = new float[] { 200, 230, 260 }, AP = 0.43f, AD = 0,
+                                MaxHP = new float[] { 0, 0, 0 }
+                            });
                     break;
             }
         }
 
         public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target, int stage = 1)
         {
-            if (!Database.Exists(s => s.slot == Spell.Slot)) return 0;
+            if (!Database.Exists(s => s.slot == Spell.Slot))
+            {
+                return 0;
+            }
 
             var spell = Database.FirstOrDefault(s => s.slot == Spell.Slot);
             var dmg = 0f;
-            var AP = Player.Instance.TotalMagicalDamage;
-            var AD = Player.Instance.TotalAttackDamage;
+            var AP = Player.Instance.FlatMagicDamageMod;
+            var AD = Player.Instance.FlatPhysicalDamageMod;
             var sLevel = Spell.Level - 1;
             var ready = Spell.IsLearned && Spell.IsReady();
-            
+
             if (ready)
             {
                 dmg = spell.Floats[sLevel] + (target.MaxHealth * spell.MaxHP[sLevel]) + (spell.AD * AD) + (spell.AP * AP);
@@ -323,7 +232,7 @@
             if (Player.Instance.Hero == Champion.LeeSin && Spell.Slot == SpellSlot.Q && target.Buffs.Any(b => b.Name.ToLower().Contains("qone")))
             {
                 var missinghealth = target.MaxHealth - target.Health;
-                dmg += 0.8f * missinghealth;
+                dmg += 0.08f * missinghealth;
             }
 
             return ready ? Player.Instance.CalculateDamageOnUnit(target, spell.DamageType, dmg - 15) : 0;

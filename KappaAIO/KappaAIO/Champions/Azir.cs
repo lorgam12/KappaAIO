@@ -371,7 +371,7 @@
 
         public static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
-            if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(R.Range) || e.DangerLevel == Common.danger(AutoMenu)
+            if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(R.Range) || e.DangerLevel < Common.danger(AutoMenu)
                 || !AutoMenu.checkbox("int") || !R.IsReady())
             {
                 return;

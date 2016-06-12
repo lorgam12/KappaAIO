@@ -247,7 +247,8 @@
                             user.ServerPosition.Extend(predpos, R.Range).To3D(),
                             R.Width);
 
-                        if (aiHeroClients.Count(e => Rectangle.IsInside(Prediction.Position.PredictUnitPosition(e, R.CastDelay))) >= ComboMenu.slider("Raoe"))
+                        if (aiHeroClients.Count(e => Rectangle.IsInside(Prediction.Position.PredictUnitPosition(e, R.CastDelay)))
+                            >= ComboMenu.slider("Raoe"))
                         {
                             R.Cast(predpos.To3D());
                         }

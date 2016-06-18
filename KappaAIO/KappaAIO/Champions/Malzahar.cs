@@ -69,8 +69,8 @@
             ComboMenu.AddGroupLabel("Don't Use Ult On:");
             foreach (var enemy in EntityManager.Heroes.Enemies)
             {
-                CheckBox cb = new CheckBox(enemy.BaseSkinName) { CurrentValue = false };
-                ComboMenu.Add("DontUlt" + enemy.BaseSkinName, cb);
+                CheckBox cb = new CheckBox(enemy.BaseSkinName + " (" + enemy.Name + ")") { CurrentValue = false };
+                ComboMenu.Add("DontUlt" + enemy.ID(), cb);
             }
 
             DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));
@@ -96,8 +96,8 @@
             KillStealMenu.AddGroupLabel("Don't Use Ult On:");
             foreach (var enemy in EntityManager.Heroes.Enemies)
             {
-                CheckBox cb = new CheckBox(enemy.BaseSkinName) { CurrentValue = false };
-                KillStealMenu.Add("DontUlt" + enemy.BaseSkinName, cb);
+                CheckBox cb = new CheckBox(enemy.BaseSkinName + " (" + enemy.Name + ")") { CurrentValue = false };
+                KillStealMenu.Add("DontUlt" + enemy.ID(), cb);
             }
 
             MiscMenu.AddGroupLabel("Misc");
@@ -303,7 +303,7 @@
                 E.Cast(target);
             }
 
-            if (!ComboMenu.checkbox("DontUlt" + target.BaseSkinName))
+            if (!ComboMenu.checkbox("DontUlt" + target.ID()))
             {
                 if (MiscMenu.checkbox("blockR") && user.IsUnderEnemyturret())
                 {
@@ -489,7 +489,7 @@
             {
                 if (KillStealMenu.checkbox(spell.Slot + "ks") && spell.GetKStarget() != null)
                 {
-                    if (spell == R && !KillStealMenu.checkbox("DontUlt" + spell.GetKStarget().BaseSkinName))
+                    if (spell == R && !KillStealMenu.checkbox("DontUlt" + spell.GetKStarget().ID()))
                     {
                         spell.Cast(spell.GetKStarget());
                     }

@@ -139,6 +139,11 @@
             return spell.Handle.SData.Mana;
         }
 
+        public static string ID(this Obj_AI_Base target)
+        {
+            return target.BaseSkinName + target.NetworkId;
+        }
+
         public static bool IsKillable(this Obj_AI_Base target)
         {
             return !target.HasBuff("kindredrnodeathbuff") && !target.HasBuff("JudicatorIntervention") && !target.HasBuff("ChronoShift")

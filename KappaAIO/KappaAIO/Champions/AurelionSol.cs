@@ -386,7 +386,7 @@
 
             public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
             {
-                if (sender == null || !sender.IsEnemy || !sender.IsKillable() || !kCore.GapMenu.checkbox(e.SpellName))
+                if (sender == null || !sender.IsEnemy || !sender.IsKillable() || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()))
                 {
                     return;
                 }

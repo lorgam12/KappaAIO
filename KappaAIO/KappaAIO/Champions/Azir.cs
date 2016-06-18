@@ -361,7 +361,7 @@
         public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
             if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(300) || e.End == Vector3.Zero || !e.End.IsInRange(user, 300)
-                || !kCore.GapMenu.checkbox(e.SpellName) || !AutoMenu.checkbox("Gap") || !R.IsReady())
+                || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()) || !AutoMenu.checkbox("Gap") || !R.IsReady())
             {
                 return;
             }

@@ -165,14 +165,6 @@
             MiscMenu.Add("autoECC", new CheckBox("Auto E On CC enemy"));
             MiscMenu.Add("scrybebuy", new CheckBox("Auto Scrybing Orb Buy"));
             MiscMenu.Add("scrybebuylevel", new Slider("Buy Orb at level [{0}]", 9, 1, 18));
-            MiscMenu.AddGroupLabel("Anti-GapCloser Spells");
-            foreach (var spell in
-                from spell in Gapcloser.GapCloserList
-                from enemy in EntityManager.Heroes.Enemies.Where(enemy => spell.ChampName == enemy.ChampionName)
-                select spell)
-            {
-                MiscMenu.Add(spell.SpellName, new CheckBox(spell.ChampName + " - " + spell.SpellSlot));
-            }
 
             foreach (var spell in SpellList)
             {
@@ -224,8 +216,8 @@
 
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
-            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || !MiscMenu.checkbox(e.SpellName) || e.End == Vector3.Zero
-                || !MiscMenu.checkbox("gap"))
+            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || !kCore.GapMenu.checkbox(e.SpellName + sender.ID())
+                || e.End == Vector3.Zero || !MiscMenu.checkbox("gap"))
             {
                 return;
             }
@@ -698,7 +690,9 @@
             {
                 return;
             }
-            if (Scryb.IsOwned(user) && (target.IsDashing() || target.Distance(R.GetPrediction(target).CastPosition) > 150 || NavMesh.IsWallOfGrass(Prediction.Position.PredictUnitPosition(target, 150).To3D(), 50)))
+            if (Scryb.IsOwned(user)
+                && (target.IsDashing() || target.Distance(R.GetPrediction(target).CastPosition) > 150
+                    || NavMesh.IsWallOfGrass(Prediction.Position.PredictUnitPosition(target, 150).To3D(), 50)))
             {
                 Scryb.Cast(R.GetPrediction(target).CastPosition);
             }

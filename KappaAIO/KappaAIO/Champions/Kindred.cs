@@ -67,13 +67,6 @@
             AutoMenu.Add("R", new CheckBox("Use R"));
             AutoMenu.Add("Rhp", new Slider("Use R If MY HP under [{0}%]", 35));
             AutoMenu.Add("Rally", new Slider("Use R If ALLY HP under [{0}%]", 25));
-            AutoMenu.AddSeparator(0);
-            AutoMenu.AddGroupLabel("Anti GapCloser - Spells");
-            foreach (var gapspell in
-                EntityManager.Heroes.Enemies.SelectMany(enemy => Gapcloser.GapCloserList.Where(e => e.ChampName == enemy.ChampionName)))
-            {
-                AutoMenu.Add(gapspell.SpellName, new CheckBox(gapspell.SpellName + " - " + gapspell.SpellSlot));
-            }
 
             ComboMenu.Add("Qmode", new ComboBox("Q Mode", 0, "Auto", "Kite", "Chase", "To Mouse"));
             HarassMenu.Add("Qmode", new ComboBox("Q Mode", 0, "Auto", "Kite", "Chase", "To Mouse"));
@@ -318,7 +311,7 @@
             public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
             {
                 if (!sender.IsEnemy || !AutoMenu.checkbox("Gap") || !Q.IsReady() || sender == null || e == null || e.End == Vector3.Zero
-                    || !e.End.IsInRange(user, 500) || !AutoMenu.checkbox(e.SpellName))
+                    || !e.End.IsInRange(user, 500) || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()))
                 {
                     return;
                 }

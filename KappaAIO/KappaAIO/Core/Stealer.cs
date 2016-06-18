@@ -10,7 +10,7 @@
         public static Obj_AI_Base GetKStarget(this Spell.SpellBase spell)
         {
             return spell.IsReady()
-                       ? EntityManager.Heroes.Enemies.Where(e => e.IsKillable() && e.IsValidTarget(spell.Range) && kCore.ks.checkbox(e.ChampionName))
+                       ? EntityManager.Heroes.Enemies.Where(e => e.IsKillable() && e.IsValidTarget(spell.Range) && kCore.ks.checkbox(e.ID()))
                              .FirstOrDefault(enemy => spell.GetDamage(enemy) >= Prediction.Health.GetPrediction(enemy, spell.CastDelay))
                        : null;
         }

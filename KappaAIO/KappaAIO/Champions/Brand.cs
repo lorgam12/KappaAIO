@@ -1,8 +1,10 @@
 ﻿namespace KappaAIO.Champions
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
+
+    using Core;
+    using Core.Managers;
 
     using EloBuddy;
     using EloBuddy.SDK;
@@ -10,9 +12,6 @@
     using EloBuddy.SDK.Events;
     using EloBuddy.SDK.Menu;
     using EloBuddy.SDK.Menu.Values;
-
-    using Core;
-    using Core.Managers;
 
     using SharpDX;
 
@@ -69,8 +68,6 @@
                 AutoMenu.Add("AutoQ", new CheckBox("Auto Q Dotnate Passive"));
                 AutoMenu.Add("AutoW", new CheckBox("Auto W Dotnate Passive", false));
                 AutoMenu.Add("AutoE", new CheckBox("Auto E Dotnate Passive"));
-                AutoMenu.AddSeparator(0);
-                AutoMenu.AddGroupLabel("Anti GapCloser - Spells");
 
                 ComboMenu.AddGroupLabel("Combo Settings");
                 ComboMenu.Add("Q", new CheckBox("Use Q"));
@@ -650,7 +647,7 @@
                 return;
             }
 
-            if (kCore.GapMenu.checkbox(e.SpellName) && sender.IsValidTarget(Q.Range))
+            if (kCore.GapMenu.checkbox(e.SpellName + sender.ID()) && sender.IsValidTarget(Q.Range))
             {
                 if (sender.brandpassive())
                 {

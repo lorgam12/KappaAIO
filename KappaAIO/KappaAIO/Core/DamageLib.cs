@@ -63,12 +63,6 @@
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.W, DamageType = DamageType.Magical, AP = 50 + (10 * Player.Instance.Level) + 0.4f, AD = 0,
-                                MaxHP = new float[] { 0, 0, 0, 0, 0 }
-                            });
-                    Database.Add(
-                        new Data
-                            {
                                 slot = SpellSlot.E, DamageType = DamageType.Magical, Floats = new float[] { 60, 90, 120, 150, 180 }, AP = 0.4f, AD = 0,
                                 MaxHP = new float[] { 0, 0, 0, 0, 0 }
                             });
@@ -210,7 +204,7 @@
             }
         }
 
-        public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target, int stage = 1)
+        public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target)
         {
             if (!Database.Exists(s => s.slot == Spell.Slot))
             {

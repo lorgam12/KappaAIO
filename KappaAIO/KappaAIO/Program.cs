@@ -25,13 +25,13 @@
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
-            CheckVersion.Init();
             var info = "[" + DateTime.Now.ToString("H:mm:ss") + " - Info]";
             var warn = "[" + DateTime.Now.ToString("H:mm:ss") + " - Warn]";
             
             Chat.Print("<font color='#FFFFFF'><b>KappaAIO Loaded</b></font>");
             if (hero.Contains(Player.Instance.Hero))
             {
+                CheckVersion.Init();
                 var Instance = (Base)Activator.CreateInstance(null, "KappaAIO.Champions." + Player.Instance.Hero).Unwrap();
                 DamageLib.DamageDatabase();
                 kCore.Execute();

@@ -98,9 +98,9 @@
             ComboMenu.Add("Q2", new CheckBox("Use Q2"));
             ComboMenu.Add("E1", new CheckBox("Use E1"));
             ComboMenu.Add("E2", new CheckBox("Use E2"));
-            ComboMenu.Add("WQ1", new CheckBox("WardJump GapClose for Q 1"));
+            ComboMenu.Add("WQ1", new CheckBox("WardJump GapClose for Q 1", false));
             ComboMenu.Add("WQ2", new CheckBox("WardJump GapClose for Q 2 (Bridge Q)"));
-            ComboMenu.Add("Wmode", new ComboBox("W Mode", 0, "Auto", "Ward Jump", "Shield Self"));
+            ComboMenu.Add("Wmode", new ComboBox("W Mode", 0, "Auto", "Ward Jump", "Shield Self", "Disable"));
             ComboMenu.Add("Passive", new Slider("Passive Count", 1, 0, 2));
             ComboMenu.Add("Rkill", new CheckBox("Use R Kill"));
             ComboMenu.Add("Raoe", new Slider("R AoE Hit [{0}]", 3, 2, 6));
@@ -113,7 +113,10 @@
             foreach (var spell in SpellList.Where(s => s != W))
             {
                 KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
-                KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
+                if (spell != R)
+                {
+                    KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
+                }
             }
 
             MiscMenu.Add("Rint", new CheckBox("R Interrupter"));
@@ -476,9 +479,12 @@
                 {
                     spell.Cast(spell.GetKStarget());
                 }
-                if (KillStealMenu.checkbox(spell.Slot + "js") && spell.IsReady() && spell.GetJStarget() != null)
+                if (spell != R)
                 {
-                    spell.Cast(spell.GetJStarget());
+                    if (KillStealMenu.checkbox(spell.Slot + "js") && spell.IsReady() && spell.GetJStarget() != null)
+                    {
+                        spell.Cast(spell.GetJStarget());
+                    }
                 }
             }
         }

@@ -1,1 +1,1 @@
-LeeSin BETA Release
+Added Option to disable LeeSin W in combo

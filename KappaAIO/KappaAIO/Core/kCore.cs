@@ -1,7 +1,9 @@
 ﻿namespace KappaAIO.Core
 {
+    using System;
     using System.Linq;
 
+    using EloBuddy;
     using EloBuddy.SDK;
     using EloBuddy.SDK.Events;
     using EloBuddy.SDK.Menu;
@@ -21,6 +23,15 @@
 
         public static void Execute()
         {
+            foreach (var ward in
+                ObjectManager.Get<Obj_AI_Minion>()
+                    .Where(
+                        w =>
+                        w.Name.ToLower().Contains("ward") && w.IsAlly && w.IsValid && w.Health > 0 && !w.IsDead
+                        && !w.Name.ToLower().Contains("wardcorpse")))
+            {
+                Managers.ObjectsManager.Wards.Add(ward);
+            }
             CoreMenu = MainMenu.AddMenu("KappaCore", "KappaCore");
             GapMenu = CoreMenu.AddSubMenu("Anti-GapCloser Settings");
             ks = CoreMenu.AddSubMenu("Stealer");
@@ -46,6 +57,20 @@
             {
                 ks.Add(mob, new CheckBox(mob));
             }
+            GameObject.OnCreate += delegate(GameObject sender, EventArgs args)
+                {
+                    if (sender.Name.ToLower().Contains("ward") && sender.IsAlly && !sender.Name.ToLower().Contains("wardcorpse"))
+                    {
+                        Managers.ObjectsManager.Wards.Add((Obj_AI_Minion)sender);
+                    }
+                };
+            GameObject.OnDelete += delegate(GameObject sender, EventArgs args)
+                {
+                    if (sender.Name.ToLower().Contains("ward") && sender.IsAlly && !sender.Name.ToLower().Contains("wardcorpse"))
+                    {
+                        Managers.ObjectsManager.Wards.Remove((Obj_AI_Minion)sender);
+                    }
+                };
         }
     }
 }

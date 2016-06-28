@@ -192,9 +192,9 @@
             return Orbwalker.ActiveModesFlags.HasFlag(mode);
         }
 
-        public static void ShowNotification(string message, int duration = -1)
+        public static void ShowNotification(string message, int duration = -1, string message2 = "New Notification")
         {
-            Notifications.Show(new SimpleNotification(message, message), duration);
+            Notifications.Show(new SimpleNotification(message, message2), duration);
         }
 
         public static void Log(string message, [CallerFilePath] string file = null, [CallerLineNumber] int line = 0)

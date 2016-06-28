@@ -89,12 +89,12 @@
             }
         }
 
-        public static void drawLine(Vector3 pos1, Vector3 pos2, int bold, Color color)
+        public static void drawLine(Vector3 from, Vector3 to, int width, Color color)
         {
-            var wts1 = Drawing.WorldToScreen(pos1);
-            var wts2 = Drawing.WorldToScreen(pos2);
+            var wts1 = Drawing.WorldToScreen(from);
+            var wts2 = Drawing.WorldToScreen(to);
 
-            Drawing.DrawLine(wts1[0], wts1[1], wts2[0], wts2[1], bold, color);
+            Drawing.DrawLine(wts1[0], wts1[1], wts2[0], wts2[1], width, color);
         }
     }
 }

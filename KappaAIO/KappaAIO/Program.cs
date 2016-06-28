@@ -11,9 +11,11 @@
 
     internal class Program
     {
-        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.Malzahar, Champion.Xerath };
-
-        internal static bool loaded;
+        public static Champion[] hero =
+            {
+                Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar,
+                Champion.Xerath
+            };
 
         private static void Main(string[] args)
         {
@@ -23,14 +25,14 @@
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
+            CheckVersion.Init();
             var info = "[" + DateTime.Now.ToString("H:mm:ss") + " - Info]";
             var warn = "[" + DateTime.Now.ToString("H:mm:ss") + " - Warn]";
-
+            
             Chat.Print("<font color='#FFFFFF'><b>KappaAIO Loaded</b></font>");
             if (hero.Contains(Player.Instance.Hero))
             {
-                var Instance = Activator.CreateInstance(null, "KappaAIO.Champions." + Player.Instance.ChampionName);
-                var Model = (Base)Instance.Unwrap();
+                var Instance = (Base)Activator.CreateInstance(null, "KappaAIO.Champions." + Player.Instance.Hero).Unwrap();
                 DamageLib.DamageDatabase();
                 kCore.Execute();
                 Console.WriteLine(info + " KappaAIO: " + Player.Instance.Hero + " Loaded !");

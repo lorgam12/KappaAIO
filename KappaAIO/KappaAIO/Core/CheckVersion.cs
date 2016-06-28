@@ -39,7 +39,7 @@
                                         if (data.Contains(CurrentVersionPath.ToString()))
                                         {
                                             Console.ForegroundColor = ConsoleColor.Cyan;
-                                            Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "KappaAIO Info]" + " Your version is Updated !");
+                                            Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + " Info]" + " KappaAIO: Your version is Updated !");
                                             Console.ResetColor();
                                         }
                                         else
@@ -47,13 +47,13 @@
                                             Console.ForegroundColor = ConsoleColor.Magenta;
                                             Console.WriteLine(
                                                 DateTime.Now.ToString("[H:mm:ss - ")
-                                                + "KappaAIO Warn] There is a new Update Available for KappaAIO !");
+                                                + " Warn] KappaAIO: There is a new Update Available for KappaAIO !");
                                             Console.ResetColor();
                                             Console.ForegroundColor = ConsoleColor.Cyan;
                                             Chat.Print("<b>KappaAIO: There is a new Update Available for KappaAIO !</b>");
                                             if (UpdateMsg != string.Empty)
                                             {
-                                                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "KappaAIO Info] " + UpdateMsg);
+                                                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + " Info] KappaAIO: " + UpdateMsg);
                                                 Console.ResetColor();
                                                 Chat.Print("<b>KappaAIO: " + UpdateMsg + "</b>");
                                                 Common.ShowNotification("There is a new Update Available for KappaAIO !", 10000, UpdateMsg);
@@ -61,7 +61,7 @@
                                             else
                                             {
                                                 Console.WriteLine(
-                                                    DateTime.Now.ToString("[H:mm:ss - ") + "KappaAIO Info] Failed to retrive update msg");
+                                                    DateTime.Now.ToString("[H:mm:ss - ") + " Info] KappaAIO: Failed to retrive update msg");
                                                 Console.ResetColor();
                                                 Chat.Print("<b>KappaAIO: Failed to retrive update msg</b>");
                                                 Common.ShowNotification(
@@ -77,7 +77,7 @@
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "KappaAIO Warn] Failed To Check for Updates !");
+                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + " Warn] KappaAIO: Failed To Check for Updates !");
                 Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + ex);
                 Console.ResetColor();
             }

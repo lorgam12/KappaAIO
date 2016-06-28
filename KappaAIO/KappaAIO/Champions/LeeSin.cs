@@ -37,6 +37,14 @@
             }
         }
 
+        private static bool fpsboost
+        {
+            get
+            {
+                return Menuini.checkbox("fpsboost");
+            }
+        }
+
         private static Spell.Skillshot Q { get; }
 
         private static Spell.Active Q2 { get; }
@@ -75,6 +83,8 @@
             ColorMenu = Menuini.AddSubMenu("ColorPicker");
 
             Menuini.Add("debug", new CheckBox("Debug Functions", false));
+            Menuini.Add("fpsboost", new CheckBox("FPS Boost (FIX FPS Issues)", false));
+            Menuini.AddLabel("Fps Boost: Fixed FPS Issues But can reduce the Performance");
 
             RMenu.Add("list", new ComboBox("Mode", 0, "Auto", "Close > LowHP", "MaxHP > LowHP"));
             RMenu.Add("bubba", new KeyBind("Bubba Kush", false, KeyBind.BindTypes.HoldActive, 'Z'));
@@ -140,6 +150,24 @@
             Interrupter.OnInterruptableSpell += EventsHandler.Interrupter_OnInterruptableSpell;
             Dash.OnDash += EventsHandler.Dash_OnDash;
             Chat.OnMessage += Chat_OnMessage;
+            Chat.OnInput += Chat_OnInput;
+            Chat.OnClientSideMessage += Chat_OnClientSideMessage;
+        }
+
+        private static void Chat_OnClientSideMessage(ChatClientSideMessageEventArgs args)
+        {
+            if (args.Message.Contains("leesin debug:") && !Menuini.checkbox("debug"))
+            {
+                args.Process = false;
+            }
+        }
+
+        private static void Chat_OnInput(ChatInputEventArgs args)
+        {
+            if (args.Input.Contains("leesin debug:") && !Menuini.checkbox("debug"))
+            {
+                args.Process = false;
+            }
         }
 
         private static void Chat_OnMessage(AIHeroClient sender, ChatMessageEventArgs args)
@@ -152,12 +180,11 @@
 
         public override void Active()
         {
-            /*
-            if (Core.GameTickCount - lasttick < 100)
+            if (Core.GameTickCount - lasttick < 69 && fpsboost)
             {
                 return;
             }
-            */
+
             Q.Range = (uint)(SpellsManager.Q1 ? 1100 : 1300);
             E.Range = (uint)(SpellsManager.E1 ? 350 : 500);
 
@@ -491,6 +518,10 @@
 
         public override void Draw()
         {
+            if (fpsboost)
+            {
+                return;
+            }
             if (Insec.InsecTarget != null && Insec.InsecTarget.IsValidTarget())
             {
                 Circle.Draw(Color.Red, Insec.Range(), 5, Insec.InsecTarget);
@@ -1234,7 +1265,7 @@
         {
             public static void Dash_OnDash(Obj_AI_Base sender, Dash.DashEventArgs e)
             {
-                if (!sender.IsEnemy || !R.IsReady() || !sender.IsValidTarget(R.Range) || !MiscMenu.checkbox("Rgap"))
+                if (!sender.IsEnemy || !R.IsReady() || sender == null || !sender.IsValidTarget(R.Range) || !MiscMenu.checkbox("Rgap"))
                 {
                     return;
                 }
@@ -1282,7 +1313,7 @@
                     if (args.Slot == SpellSlot.Q)
                     {
                         SpellsManager.LastpQ = Core.GameTickCount;
-                        if (Insec.Step == Insec.Steps.UseQ && JumperMenu.keybind("normal"))
+                        if (Insec.Step == Insec.Steps.UseQ && Insec.Pos != null && JumperMenu.keybind("normal"))
                         {
                             Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 300);
                             Chat.Print("leesin debug: procces WardJump");
@@ -1294,12 +1325,12 @@
                         SpellsManager.LastpW = Core.GameTickCount;
                         if (JumperMenu.keybind("normal"))
                         {
-                            if (Insec.Step == Insec.Steps.UseW)
+                            if (Insec.InsecTarget != null && Insec.Step == Insec.Steps.UseW)
                             {
                                 Core.DelayAction(() => { R.Cast(Insec.InsecTarget); }, 100);
                                 Chat.Print("leesin debug: procces R");
                             }
-                            if (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF)
+                            if (Insec.Pos != null && (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF))
                             {
                                 Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 250);
                                 Chat.Print("leesin debug: procces Flash");
@@ -1319,7 +1350,7 @@
                         {
                             BubbaKush.CastFlash();
                         }
-                        if (!user.IsInRange(Insec.Pos, 200) && Flash.IsReady() && Flash.IsInRange(Insec.Pos) && JumperMenu.keybind("normal"))
+                        if (Insec.Pos != null && !user.IsInRange(Insec.Pos, 200) && Flash.IsReady() && Flash.IsInRange(Insec.Pos) && JumperMenu.keybind("normal"))
                         {
                             if (Insec.Step == Insec.Steps.UseR)
                             {
@@ -1337,21 +1368,21 @@
 
             public static void Messages_OnMessage(Messages.WindowMessage args)
             {
+                var target =
+                    EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(Game.CursorPos))
+                        .FirstOrDefault(e => e.IsKillable() && e.IsInRange(Game.CursorPos, 100));
+                var Ally =
+                    EntityManager.Heroes.Allies.OrderBy(e => e.Distance(Game.CursorPos))
+                        .FirstOrDefault(e => e.IsValidTarget() && !e.IsDead && e.IsInRange(Game.CursorPos, 200));
+                var allyminion =
+                    EntityManager.MinionsAndMonsters.AlliedMinions.OrderBy(e => e.Distance(Game.CursorPos))
+                        .FirstOrDefault(e => e.IsValidTarget() && !e.IsDead && e.IsInRange(Game.CursorPos, 200));
+                var allyturret =
+                    EntityManager.Turrets.Allies.OrderBy(e => e.Distance(Game.CursorPos))
+                        .FirstOrDefault(e => !e.IsDead && e.IsInRange(Game.CursorPos, 200));
+                var allym = allyturret != null && allyminion != null && Ally != null;
                 if (args.Message == WindowMessages.LeftButtonDown)
                 {
-                    var target =
-                        EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(Game.CursorPos))
-                            .FirstOrDefault(e => e.IsKillable() && e.IsInRange(Game.CursorPos, 100));
-                    var Ally =
-                        EntityManager.Heroes.Allies.OrderBy(e => e.Distance(Game.CursorPos))
-                            .FirstOrDefault(e => e.IsValidTarget() && !e.IsDead && e.IsInRange(Game.CursorPos, 200));
-                    var allyminion =
-                        EntityManager.MinionsAndMonsters.AlliedMinions.OrderBy(e => e.Distance(Game.CursorPos))
-                            .FirstOrDefault(e => e.IsValidTarget() && !e.IsDead && e.IsInRange(Game.CursorPos, 200));
-                    var allyturret =
-                        EntityManager.Turrets.Allies.OrderBy(e => e.Distance(Game.CursorPos))
-                            .FirstOrDefault(e => !e.IsDead && e.IsInRange(Game.CursorPos, 200));
-
                     if (target != null)
                     {
                         if (MyTarget != null && target.Equals(MyTarget))
@@ -1386,6 +1417,14 @@
                     if (MyAlly != null && MyAlly.IsDead)
                     {
                         MyAlly = null;
+                    }
+                }
+                if (args.Message == WindowMessages.LeftButtonDoubleClick)
+                {
+                    if (target == null && !allym)
+                    {
+                        MyAlly = null;
+                        MyTarget = null;
                     }
                 }
             }

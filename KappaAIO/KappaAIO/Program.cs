@@ -19,7 +19,7 @@
 
         private static void Main(string[] args)
         {
-            Console.WriteLine("Loading KappaAIO...");
+            Console.WriteLine("Loading KappaAIO");
             Loading.OnLoadingComplete += Loading_OnLoadingComplete;
         }
 

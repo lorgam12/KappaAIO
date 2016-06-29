@@ -71,6 +71,9 @@
             RMenu = Menuini.AddSubMenu("BubbaKush Settings");
             JumperMenu = Menuini.AddSubMenu("Insec Settings");
             ComboMenu = Menuini.AddSubMenu("Combo Settings");
+            HarassMenu = Menuini.AddSubMenu("Harass Settings");
+            LaneClearMenu = Menuini.AddSubMenu("LaneClear Settings");
+            JungleClearMenu = Menuini.AddSubMenu("JungleClear Settings");
             KillStealMenu = Menuini.AddSubMenu("Stealer Settings");
             MiscMenu = Menuini.AddSubMenu("Misc Settings");
             DrawMenu = Menuini.AddSubMenu("Drawings Settings");
@@ -113,6 +116,26 @@
             ComboMenu.Add("Wj", new CheckBox("Use WardJump"));
             ComboMenu.Add("ES", new CheckBox("Use E"));
 
+            HarassMenu.Add("Q1", new CheckBox("Use Q1"));
+            HarassMenu.Add("Q2", new CheckBox("Use Q2"));
+            HarassMenu.Add("E1", new CheckBox("Use E1"));
+            HarassMenu.Add("E2", new CheckBox("Use E2"));
+            HarassMenu.Add("Passive", new Slider("Passive Count", 1, 0, 2));
+
+            LaneClearMenu.Add("Q1", new CheckBox("Use Q1"));
+            LaneClearMenu.Add("Q2", new CheckBox("Use Q2"));
+            LaneClearMenu.Add("E1", new CheckBox("Use E1"));
+            LaneClearMenu.Add("E2", new CheckBox("Use E2"));
+            LaneClearMenu.Add("Passive", new Slider("Passive Count", 1, 0, 2));
+
+            JungleClearMenu.Add("Q1", new CheckBox("Use Q1"));
+            JungleClearMenu.Add("Q2", new CheckBox("Use Q2"));
+            JungleClearMenu.Add("W1", new CheckBox("Use W1"));
+            JungleClearMenu.Add("W2", new CheckBox("Use W2"));
+            JungleClearMenu.Add("E1", new CheckBox("Use E1"));
+            JungleClearMenu.Add("E2", new CheckBox("Use E2"));
+            JungleClearMenu.Add("Passive", new Slider("Passive Count", 2, 0, 2));
+
             foreach (var spell in SpellList.Where(s => s != W))
             {
                 KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
@@ -130,6 +153,7 @@
             MiscMenu.Add("Rgaphp", new Slider("R GapCloser [{0}%]"));
 
             DrawMenu.AddGroupLabel("Drawings");
+            DrawMenu.Add("insec", new CheckBox("Draw Insec Lines"));
             DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));
             DrawMenu.AddLabel("Draws = ComboDamage / Enemy Current Health");
             DrawMenu.AddSeparator(1);
@@ -280,7 +304,7 @@
                     }
                 }
 
-                if (Passive <= ComboMenu.slider("Passive") || SpellsManager.spelltimer > 2500)
+                if (Passive <= ComboMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
                 {
                     if (E.IsReady() && target.IsValidTarget(E.Range))
                     {
@@ -377,7 +401,7 @@
                         else
                         {
                             if (ComboMenu.checkbox("bubba") && user.CountEnemeis(1000) > 1
-                                && (Flash.IsReady() || WardJump.IsReady(target.ServerPosition, true)))
+                                && (Flash != null && Flash.IsReady() || WardJump.IsReady(target.ServerPosition, true)))
                             {
                                 Chat.Print("leesin debug: Bubba Star");
                                 BubbaKush.DoBubba(target);
@@ -415,7 +439,7 @@
                         }
                     }
 
-                    if (Passive <= ComboMenu.slider("Passive") || SpellsManager.spelltimer > 2500)
+                    if (Passive <= ComboMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
                     {
                         if (E.IsReady() && target.IsValidTarget(E.Range + 15))
                         {
@@ -484,14 +508,134 @@
 
         public override void Harass()
         {
+            var target = new AIHeroClient();
+            if (Qtarget() != null && Qtarget() is AIHeroClient && HarassMenu.checkbox("Q2"))
+            {
+                target = Qtarget() as AIHeroClient;
+            }
+            else if (Q.IsReady() && HarassMenu.checkbox("Q1") && SpellsManager.Q1)
+            {
+                target = TargetSelector.GetTarget(Q.Range, DamageType.Physical);
+            }
+            else if (E.IsReady() && (HarassMenu.checkbox("E1") || HarassMenu.checkbox("E2")))
+            {
+                target = TargetSelector.GetTarget(E.Range, DamageType.Magical);
+            }
+            else
+            {
+                target = TargetSelector.GetTarget(user.GetAutoAttackRange(), DamageType.Physical);
+            }
+
+            if (target == null)
+            {
+                return;
+            }
+
+            if (Passive <= HarassMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
+            {
+                if (Q.IsReady() && target.IsValidTarget(Q.Range) && ((HarassMenu.checkbox("Q1") && SpellsManager.Q1) || HarassMenu.checkbox("Q2")))
+                {
+                    SpellsManager.Q(target, HarassMenu.checkbox("Q1"), HarassMenu.checkbox("Q2"));
+                    return;
+                }
+                if (E.IsReady() && target.IsValidTarget(E.Range) && ((HarassMenu.checkbox("E1") && SpellsManager.E1) || HarassMenu.checkbox("E2")))
+                {
+                    SpellsManager.E(target, HarassMenu.checkbox("E1"), HarassMenu.checkbox("E2"));
+                }
+            }
         }
 
         public override void LaneClear()
         {
+            var eminion = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).FirstOrDefault(m => m.IsValidTarget(E.Range));
+            var Eminions = user.CountEnemyMinions(E.Range) > 1 && SpellsManager.E1;
+            var Qminion =
+                EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).FirstOrDefault(
+                    m => m.IsValidTarget(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low);
+            var Qlasthit =
+                EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.MaxHealth).FirstOrDefault(
+                    m => m.IsValidTarget(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low && (Q.GetDamage(m) >= m.Health && (SpellsManager.Q1 || (Qtarget() != null && Qtarget().ID().Equals(m.ID())))));
+
+            if (Passive <= LaneClearMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
+            {
+                if (Q.IsReady() && ((LaneClearMenu.checkbox("Q1") && SpellsManager.Q1) || LaneClearMenu.checkbox("Q2")))
+                {
+                    if (Qlasthit != null)
+                    {
+                        SpellsManager.Q(Qlasthit, LaneClearMenu.checkbox("Q1"), LaneClearMenu.checkbox("Q2"));
+                        return;
+                    }
+                    if (Qminion != null)
+                    {
+                        SpellsManager.Q(Qminion, LaneClearMenu.checkbox("Q1"), LaneClearMenu.checkbox("Q2"));
+                        return;
+                    }
+                }
+                if (E.IsReady() && ((LaneClearMenu.checkbox("E1") && SpellsManager.E1) || LaneClearMenu.checkbox("E2")))
+                {
+                    if (Eminions && eminion != null)
+                    {
+                        SpellsManager.E(eminion, LaneClearMenu.checkbox("E1"), LaneClearMenu.checkbox("E2"));
+                    }
+                }
+            }
         }
 
         public override void JungleClear()
         {
+            var mob = new Obj_AI_Minion();
+            if (Qtarget() != null && Qtarget() is Obj_AI_Minion && JungleClearMenu.checkbox("Q2"))
+            {
+                mob = Qtarget() as Obj_AI_Minion;
+            }
+            else if (Q.IsReady() && JungleClearMenu.checkbox("Q1") && SpellsManager.Q1)
+            {
+                mob =
+                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
+                        .OrderBy(m => m.Distance(user))
+                        .ThenByDescending(m => m.MaxHealth)
+                        .FirstOrDefault(m => m.IsValidTarget(Q.Range));
+            }
+            else if (E.IsReady() && (JungleClearMenu.checkbox("E1") || JungleClearMenu.checkbox("E2")))
+            {
+                mob =
+                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
+                        .OrderBy(m => m.Distance(user))
+                        .ThenByDescending(m => m.MaxHealth)
+                        .FirstOrDefault(m => m.IsValidTarget(E.Range));
+            }
+            else
+            {
+                mob =
+                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
+                        .OrderBy(m => m.Distance(user))
+                        .ThenByDescending(m => m.MaxHealth)
+                        .FirstOrDefault(m => m.IsValidTarget(user.GetAutoAttackRange() + 20));
+            }
+
+            if (mob == null)
+            {
+                return;
+            }
+
+            if (Passive <= JungleClearMenu.slider("Passive") || SpellsManager.lastspelltimer > 3000)
+            {
+                if (W.IsReady() && mob.IsValidTarget(E.Range) && ((JungleClearMenu.checkbox("W1") && SpellsManager.W1) || JungleClearMenu.checkbox("W2")))
+                {
+                    SpellsManager.W(user, JungleClearMenu.checkbox("W1"), JungleClearMenu.checkbox("W2"));
+                    return;
+                }
+                if (E.IsReady() && mob.IsValidTarget(E.Range) && ((JungleClearMenu.checkbox("E1") && SpellsManager.E1) || JungleClearMenu.checkbox("E2")))
+                {
+                    SpellsManager.E(mob, JungleClearMenu.checkbox("E1"), JungleClearMenu.checkbox("E2"));
+                    return;
+                }
+                if (Q.IsReady() && mob.IsValidTarget(Q.Range) && ((JungleClearMenu.checkbox("Q1") && SpellsManager.Q1) || JungleClearMenu.checkbox("Q2")))
+                {
+                    SpellsManager.Q(mob, JungleClearMenu.checkbox("Q1"), JungleClearMenu.checkbox("Q2"));
+                    return;
+                }
+            }
         }
 
         public override void KillSteal()
@@ -514,24 +658,23 @@
 
         public override void Draw()
         {
-            if (fpsboost)
+            if (DrawMenu.checkbox("insec"))
             {
-                return;
-            }
-            if (Insec.InsecTarget != null && Insec.InsecTarget.IsValidTarget())
-            {
-                Circle.Draw(Color.Red, Insec.Range(), 5, Insec.InsecTarget);
-                if (Insec.InsecTo(Insec.InsecTarget) != null)
+                if (Insec.InsecTarget != null && Insec.InsecTarget.IsValidTarget())
                 {
-                    Circle.Draw(Color.DarkBlue, 100, Insec.InsecTo(Insec.InsecTarget));
-                    Circle.Draw(Color.White, 100, 3, Insec.Pos);
-                    if (Insec.Pos.Distance(Insec.InsecTo(Insec.InsecTarget)) < 2500)
+                    Circle.Draw(Color.Red, Insec.Range(), 5, Insec.InsecTarget);
+                    if (Insec.InsecTo(Insec.InsecTarget) != null)
                     {
-                        DrawingsManager.drawLine(Insec.Pos, Insec.InsecTo(Insec.InsecTarget), 2, System.Drawing.Color.White);
-                    }
-                    if (Insec.Qtarget(Insec.Pos) != null)
-                    {
-                        Circle.Draw(Color.Red, Insec.Range(), Insec.Qtarget(Insec.Pos));
+                        Circle.Draw(Color.DarkBlue, 100, Insec.InsecTo(Insec.InsecTarget));
+                        Circle.Draw(Color.White, 100, 3, Insec.Pos);
+                        if (Insec.Pos.Distance(Insec.InsecTo(Insec.InsecTarget)) < 2500)
+                        {
+                            DrawingsManager.drawLine(Insec.Pos, Insec.InsecTo(Insec.InsecTarget), 2, System.Drawing.Color.White);
+                        }
+                        if (Insec.Qtarget(Insec.Pos) != null)
+                        {
+                            Circle.Draw(Color.Red, Insec.Range(), Insec.Qtarget(Insec.Pos));
+                        }
                     }
                 }
             }
@@ -643,7 +786,7 @@
 
                 if (target.IsValidTarget(R.Range) || user.IsInRange(Pos, 125))
                 {
-                    if (Flash.IsReady() && !WardJump.IsReady(Pos))
+                    if (Flash != null && Flash.IsReady() && !WardJump.IsReady(Pos))
                     {
                         Chat.Print("leesin debug: RFlash");
                         R.Cast(target);
@@ -685,7 +828,7 @@
                 }
 
                 if (Qtarget() != null && Qtarget().IsInRange(target, 300) && !target.IsValidTarget(R.Range) && !W.IsInRange(Pos)
-                    && (WardJump.IsReady(Pos) || Flash.IsReady()) && !user.IsInRange(Pos, 125))
+                    && (WardJump.IsReady(Pos) || Flash != null && Flash.IsReady()) && !user.IsInRange(Pos, 125))
                 {
                     Chat.Print("leesin debug: qcast");
                     Q2.Cast();
@@ -697,7 +840,7 @@
 
                 if (WardJump.IsReady(Pos) && target.IsValidTarget(600))
                 {
-                    if (!(target.IsValidTarget(R.Range) && Flash.IsReady()))
+                    if (!(target.IsValidTarget(R.Range) && Flash != null && Flash.IsReady()))
                     {
                         Chat.Print("leesin debug: WardJump");
                         WardJump.Jump(Pos, true);
@@ -711,7 +854,7 @@
                 var RF = user.ServerPosition.Extend(target.ServerPosition, 600).To3D();
                 if (WardJump.IsReady(target.ServerPosition) && target.IsInRange(RF, R.Range - 100))
                 {
-                    if (!target.IsValidTarget(R.Range) && Flash.IsReady())
+                    if (!target.IsValidTarget(R.Range) && Flash != null && Flash.IsReady())
                     {
                         Chat.Print("leesin debug: WardJump R Flash");
                         WardJump.Jump(RF, true);
@@ -730,7 +873,7 @@
 
             public static void CastFlash()
             {
-                if (Pos != null)
+                if (Pos != null && Flash != null)
                 {
                     if (Flash.IsReady() && !user.IsInRange(Pos, 150) && Core.GameTickCount - SpellsManager.LastpW > 1000)
                     {
@@ -810,7 +953,7 @@
             {
                 get
                 {
-                    return WardJump.IsReady(Pos, true) && Flash.IsReady()
+                    return WardJump.IsReady(Pos, true) && Flash != null && Flash.IsReady()
                            && (Pos.IsInRange(user, 400 + Flash.Range) || Pos.IsInRange(user, 200 + Q.Range + Flash.Range))
                            && !Pos.IsInRange(user, 600);
                 }
@@ -895,7 +1038,7 @@
                 {
                     Step = Steps.UseWF;
                 }
-                else if (Step == Steps.Nothing && user.Distance(Pos) < Flash.Range && !user.IsInRange(Pos, 200) && Flash.IsReady()
+                else if (Step == Steps.Nothing && user.Distance(Pos) < Flash.Range && !user.IsInRange(Pos, 200) && Flash != null && Flash.IsReady()
                          && SpellsManager.Wtimer > 1000)
                 {
                     Step = Steps.UseF;
@@ -921,7 +1064,7 @@
                         }
                         return;
                     case Steps.UseF:
-                        Flash.Cast(Pos);
+                        Flash?.Cast(Pos);
                         break;
                     case Steps.UseQ:
                         SpellsManager.Q(Qtarget(Pos), true, true, true);
@@ -1090,7 +1233,7 @@
         {
             public static float lastspell;
 
-            public static float spelltimer
+            public static float lastspelltimer
             {
                 get
                 {
@@ -1184,7 +1327,7 @@
                 {
                     if (Q1 && q1 && Qtimer > 1500)
                     {
-                        if (MiscMenu.checkbox("smiteq") && Smite.IsReady())
+                        if (MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady() && !(Common.orbmode(Orbwalker.ActiveModes.LaneClear) || Common.orbmode(Orbwalker.ActiveModes.JungleClear)))
                         {
                             if (
                                 LeeSin.Q.GetPrediction(target)
@@ -1205,6 +1348,7 @@
                         }
                         else
                         {
+                            LeeSin.Q.AllowedCollisionCount = 0;
                             if (LeeSin.Q.AllowedCollisionCount == 0)
                             {
                                 LeeSin.Q.Cast(target, HitChance.Low);
@@ -1351,7 +1495,7 @@
                                 Core.DelayAction(() => { R.Cast(Insec.InsecTarget); }, 100);
                                 Chat.Print("leesin debug: procces R");
                             }
-                            if (Insec.Pos != null && (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF))
+                            if (Insec.Pos != null && Flash != null && (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF))
                             {
                                 Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 250);
                                 Chat.Print("leesin debug: procces Flash");
@@ -1367,11 +1511,11 @@
                     if (args.Slot == SpellSlot.R)
                     {
                         SpellsManager.LastR = Core.GameTickCount;
-                        if (Core.GameTickCount - BubbaKush.Rflash < 500)
+                        if (Flash != null && Core.GameTickCount - BubbaKush.Rflash < 500)
                         {
                             BubbaKush.CastFlash();
                         }
-                        if (Insec.Pos != null && !user.IsInRange(Insec.Pos, 200) && Flash.IsReady() && Flash.IsInRange(Insec.Pos)
+                        if (Insec.Pos != null && !user.IsInRange(Insec.Pos, 200) && Flash != null && Flash.IsReady() && Flash.IsInRange(Insec.Pos)
                             && JumperMenu.keybind("normal"))
                         {
                             if (Insec.Step == Insec.Steps.UseR)
@@ -1381,7 +1525,7 @@
                             }
                         }
                     }
-                    if (args.Slot == Flash.Slot)
+                    if (Flash != null && args.Slot == Flash.Slot)
                     {
                         SpellsManager.LastFlash = Core.GameTickCount;
                     }

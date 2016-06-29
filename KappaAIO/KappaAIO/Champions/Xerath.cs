@@ -194,7 +194,7 @@
             if (sender.Name == "Rengar_LeapSound.troy" && sender != null)
             {
                 var rengar = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.Hero == Champion.Rengar);
-                if (rengar != null && MiscMenu.checkbox("gap") && rengar.IsValidTarget(E.Range))
+                if (rengar != null && MiscMenu.checkbox("gap") && rengar.IsKillable(E.Range))
                 {
                     E.Cast(rengar);
                 }
@@ -221,7 +221,7 @@
             {
                 return;
             }
-            if (e.End.IsInRange(user, 650) || sender.IsValidTarget(650))
+            if (e.End.IsInRange(user, 650) || sender.IsKillable(650))
             {
                 E.Cast(sender);
             }
@@ -256,7 +256,7 @@
         private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
             if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || e.DangerLevel < Common.danger(MiscMenu)
-                || !sender.IsValidTarget(500) || !MiscMenu.checkbox("int"))
+                || !sender.IsKillable(500) || !MiscMenu.checkbox("int"))
             {
                 return;
             }
@@ -300,7 +300,7 @@
 
             if (useQ && Q.IsReady() && Target != null)
             {
-                if (Q.IsCharging && Target.IsValidTarget(Q.Range - 100))
+                if (Q.IsCharging && Target.IsKillable(Q.Range - 100))
                 {
                     Q.Cast(Target, Q.hitchance(Menuini));
                 }
@@ -316,7 +316,7 @@
             AIHeroClient bestTarget = null;
             var bestRatio = 0f;
             var target = TargetSelector.SelectedTarget;
-            if (target.IsValidTarget() && target.IsKillable()
+            if (target.IsKillable() && target.IsKillable()
                 && (Game.CursorPos.Distance(target.ServerPosition) < distance && user.Distance(target) < R.Range))
             {
                 return TargetSelector.SelectedTarget;
@@ -324,7 +324,7 @@
 
             foreach (var hero in EntityManager.Heroes.Enemies)
             {
-                if (!hero.IsValidTarget(R.Range) || !hero.IsKillable() || Game.CursorPos.Distance(hero.ServerPosition) > distance)
+                if (!hero.IsKillable(R.Range) || !hero.IsKillable() || Game.CursorPos.Distance(hero.ServerPosition) > distance)
                 {
                     continue;
                 }
@@ -455,9 +455,9 @@
 
             var useE = LaneClearMenu.checkbox("E") && E.IsReady() && E.Mana(LaneClearMenu);
 
-            var allMinionsQ = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsValidTarget(Q.MaximumRange));
+            var allMinionsQ = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(Q.MaximumRange));
 
-            var allMinionsW = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsValidTarget(W.Range));
+            var allMinionsW = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(W.Range));
 
             var objAiMinionsQ = allMinionsQ as Obj_AI_Minion[] ?? allMinionsQ.ToArray();
 
@@ -529,7 +529,7 @@
             if (useE)
             {
                 var useEi = LaneClearMenu.combobox(E.Slot + "mode");
-                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsValidTarget(E.Range)))
+                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(E.Range)))
                 {
                     if (minion != null && (useEi == 0 || useEi == 2))
                     {
@@ -555,8 +555,8 @@
 
             var useE = JungleClearMenu.checkbox("E") && E.IsReady() && E.Mana(JungleClearMenu);
 
-            var allMinionsQ = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsValidTarget(Q.MaximumRange));
-            var allMinionsW = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsValidTarget(W.Range));
+            var allMinionsQ = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable(Q.MaximumRange));
+            var allMinionsW = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable(W.Range));
             var objAiMinionsQ = allMinionsQ as Obj_AI_Minion[] ?? allMinionsQ.ToArray();
             var objAiMinionsW = allMinionsW as Obj_AI_Minion[] ?? allMinionsW.ToArray();
 
@@ -612,7 +612,7 @@
 
             if (useE)
             {
-                foreach (var minion in EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsValidTarget(E.Range)))
+                foreach (var minion in EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable(E.Range)))
                 {
                     if (E.GetDamage(minion) >= Prediction.Health.GetPrediction(minion, E.CastDelay))
                     {
@@ -641,7 +641,7 @@
 
             if (MiscMenu.checkbox("autoECC"))
             {
-                var ecc = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.IsValidTarget(E.Range) && e.IsCC());
+                var ecc = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.IsKillable(E.Range) && e.IsCC());
                 if (ecc != null)
                 {
                     E.Cast(ecc);
@@ -670,7 +670,7 @@
             if (R.IsReady() && MiscMenu.checkbox("Notifications") && Environment.TickCount - Common.lastNotification > 5000)
             {
                 foreach (var enemy in
-                    EntityManager.Heroes.Enemies.Where(h => h.IsValidTarget() && R.GetDamage(h) * 3 > h.Health))
+                    EntityManager.Heroes.Enemies.Where(h => h.IsKillable() && R.GetDamage(h) * 3 > h.Health))
                 {
                     Common.ShowNotification(enemy.ChampionName + ": is killable R!!!", 4000);
                     Common.lastNotification = Environment.TickCount;
@@ -754,7 +754,7 @@
             {
                 var t = TargetSelector.GetTarget(R.Range, DamageType.Physical);
 
-                if (t.IsValidTarget())
+                if (t.IsKillable())
                 {
                     var rDamage = R.GetDamage(t);
                     if (rDamage * 5 > t.Health)

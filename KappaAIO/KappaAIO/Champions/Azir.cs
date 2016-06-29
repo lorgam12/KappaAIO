@@ -32,7 +32,7 @@
             Common.ally =
                 EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(R.Range))
                     .FirstOrDefault(a => a.IsKillable() && a.IsValidTarget(1250) && !a.IsMe);
-            Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(s => s.IsValidTarget(1250));
+            Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(s => s.IsKillable(1250));
             if (Common.tower != null)
             {
                 return user.ServerPosition.Extend(Common.tower.ServerPosition, R.Range).To3D();
@@ -211,7 +211,7 @@
                 var rpos = user.ServerPosition.Extend(insectpos(), R.Range).To3D();
 
                 var qtime = Game.Time - insecqtime;
-                if ((qtime > 0.1f && qtime < 0.1) || TargetSelector.SelectedTarget.IsValidTarget(R.Range - 75))
+                if ((qtime > 0.1f && qtime < 0.1) || TargetSelector.SelectedTarget.IsKillable(R.Range - 75))
                 {
                     R.Cast(rpos);
                 }
@@ -360,7 +360,7 @@
 
         public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
-            if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(300) || e.End == Vector3.Zero || !e.End.IsInRange(user, 300)
+            if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(300) || e.End == Vector3.Zero || !e.End.IsInRange(user, 300)
                 || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()) || !AutoMenu.checkbox("Gap") || !R.IsReady())
             {
                 return;
@@ -371,7 +371,7 @@
 
         public static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
-            if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(R.Range) || e.DangerLevel < Common.danger(AutoMenu)
+            if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.DangerLevel < Common.danger(AutoMenu)
                 || !AutoMenu.checkbox("int") || !R.IsReady())
             {
                 return;
@@ -385,7 +385,7 @@
             if (sender.Name == "Rengar_LeapSound.troy" && sender != null)
             {
                 var rengar = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.Hero == Champion.Rengar);
-                if (rengar != null && R.IsReady() && AutoMenu.checkbox("gap") && AutoMenu.checkbox("rengar") && rengar.IsValidTarget(R.Range))
+                if (rengar != null && R.IsReady() && AutoMenu.checkbox("gap") && AutoMenu.checkbox("rengar") && rengar.IsKillable(R.Range))
                 {
                     R.Cast(rengar);
                 }
@@ -417,13 +417,13 @@
                     return;
                 }
 
-                if (target.IsValidTarget(W.Range))
+                if (target.IsKillable(W.Range))
                 {
                     var pred = W.GetPrediction(target);
                     W.Cast(pred.CastPosition);
                 }
-                if (menu.checkbox("Q") && !target.IsValidTarget(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana()
-                    && target.IsValidTarget(Q.Range - 25) && menu.checkbox("WQ"))
+                if (menu.checkbox("Q") && !target.IsKillable(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana()
+                    && target.IsKillable(Q.Range - 25) && menu.checkbox("WQ"))
                 {
                     var p = user.Position.Extend(target.Position, W.Range);
                     W.Cast(p.To3D());
@@ -455,7 +455,7 @@
 
                 if (Qaoe)
                 {
-                    var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsValidTarget(Q.Range) && e.IsKillable());
+                    var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(Q.Range) && e.IsKillable());
                     var pred = Prediction.Position.PredictCircularMissileAoe(
                         enemies.Cast<Obj_AI_Base>().ToArray(),
                         Q.Range,
@@ -495,7 +495,7 @@
             {
                 var Raoe = user.CountEnemeis(R.Range) >= menu.slider("Raoe") || user.CountEnemeis(R.Width) >= menu.slider("Raoe");
 
-                if (target.IsValidTarget(R.Range - 25))
+                if (target.IsKillable(R.Range - 25))
                 {
                     if ((menu.checkbox("Rkill") && R.GetDamage(target) >= Prediction.Health.GetPrediction(target, R.CastDelay))
                         || (menu.checkbox("Rsave") && menu.slider("RHP") >= user.HealthPercent) || (Raoe))
@@ -505,7 +505,7 @@
                 }
             }
 
-            if (menu.checkbox("insec") && target.IsKillable() && !target.IsValidTarget(R.Range))
+            if (menu.checkbox("insec") && target.IsKillable() && !target.IsKillable(R.Range))
             {
                 if (target.CountEnemeis(750) >= menu.slider("Esafe") || menu.slider("EHP") >= user.HealthPercent)
                 {
@@ -542,13 +542,13 @@
 
             if (Wc && Wsave && Wlimit)
             {
-                if (target.IsValidTarget(W.Range))
+                if (target.IsKillable(W.Range))
                 {
                     var pred = W.GetPrediction(target);
                     W.Cast(pred.CastPosition);
                 }
-                if (menu.checkbox("Q") && !target.IsValidTarget(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana()
-                    && target.IsValidTarget(Q.Range - 25) && menu.checkbox("WQ"))
+                if (menu.checkbox("Q") && !target.IsKillable(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana()
+                    && target.IsKillable(Q.Range - 25) && menu.checkbox("WQ"))
                 {
                     var p = user.Position.Extend(target.Position, W.Range);
                     W.Cast(p.To3D());
@@ -598,12 +598,12 @@
             var insecpos = target.ServerPosition.Extend(insectpos(target), -200).To3D();
             var rpos = user.ServerPosition.Extend(insectpos(target), R.Range).To3D();
 
-            if (target.IsValidTarget(R.Range))
+            if (target.IsKillable(R.Range))
             {
                 if (JumperMenu.checkbox("flash") && Flash != null)
                 {
                     var flashrange = Flash.Range + 250;
-                    var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsValidTarget(flashrange) && e.IsKillable());
+                    var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(flashrange) && e.IsKillable());
                     var pred = Prediction.Position.PredictCircularMissileAoe(
                         enemies.Cast<Obj_AI_Base>().ToArray(),
                         flashrange,
@@ -635,7 +635,7 @@
         {
             Orbwalker.OrbwalkTo(Game.CursorPos);
             var target = TargetSelector.SelectedTarget;
-            if (target == null || insectpos(target) == null || !R.IsReady() || user.Mana < Common.Mana() || !target.IsValidTarget() || NormalInsec)
+            if (target == null || insectpos(target) == null || !R.IsReady() || user.Mana < Common.Mana() || !target.IsKillable() || NormalInsec)
             {
                 return;
             }
@@ -668,7 +668,7 @@
             Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(t => !t.IsDead && t.IsInRange(target, 1250));
             Common.ally =
                 EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(R.Range))
-                    .FirstOrDefault(a => !a.IsMe && a.IsKillable() && a.IsInRange(target, 1000));
+                    .FirstOrDefault(a => !a.IsMe && a.IsValidTarget() && a.IsInRange(target, 1000));
             if (Common.tower != null)
             {
                 return Common.tower.ServerPosition;
@@ -679,7 +679,7 @@
 
         public static Vector3 insectpos()
         {
-            Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(t => t.IsValidTarget(1250));
+            Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(t => t.IsKillable(1250));
             Common.ally =
                 EntityManager.Heroes.Allies.OrderByDescending(a => a.CountEnemeis(R.Range)).FirstOrDefault(a => !a.IsMe && a.IsValidTarget(1000));
             if (Common.tower != null)
@@ -742,8 +742,8 @@
                 if (mob != null)
                 {
                     var menu = JungleClearMenu;
-                    var Qc = mob.IsValidTarget(Q.Range) && Q.IsReady() && menu.checkbox("Q") && Q.Mana(menu);
-                    var Wc = mob.IsValidTarget(W.Range) && W.IsReady() && menu.checkbox("W") && W.Mana(menu);
+                    var Qc = mob.IsKillable(Q.Range) && Q.IsReady() && menu.checkbox("Q") && Q.Mana(menu);
+                    var Wc = mob.IsKillable(W.Range) && W.IsReady() && menu.checkbox("W") && W.Mana(menu);
                     var wsave = menu.checkbox("Wsave") && W.Handle.Ammo < 2;
 
                     if (Wc)

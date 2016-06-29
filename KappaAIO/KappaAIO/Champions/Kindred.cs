@@ -106,11 +106,11 @@
         {
             var Etarget =
                 EntityManager.Heroes.Enemies.FirstOrDefault(
-                    enemy => enemy.IsValidTarget(user.GetAutoAttackRange()) && enemy.Buffs.Any(buff => buff.Name == "KindredERefresher"));
+                    enemy => enemy.IsKillable(user.GetAutoAttackRange()) && enemy.Buffs.Any(buff => buff.Name == "KindredERefresher"));
 
             var Ptarget =
                 EntityManager.Heroes.Enemies.FirstOrDefault(
-                    enemy => enemy.IsValidTarget(user.GetAutoAttackRange()) && enemy.Buffs.Any(buff => buff.Name == "KindredHitTracker"));
+                    enemy => enemy.IsKillable(user.GetAutoAttackRange()) && enemy.Buffs.Any(buff => buff.Name == "KindredHitTracker"));
 
             if (Etarget != null && Menuini.checkbox("focusE"))
             {
@@ -138,11 +138,11 @@
             }
 
             var useQW = ComboMenu.checkbox(Q.Slot.ToString()) && ComboMenu.checkbox(W.Slot.ToString()) && ComboMenu.checkbox("QW")
-                        && target.IsValidTarget(Q.Range) && !target.IsValidTarget(user.AttackRange);
-            var useQ = ComboMenu.checkbox(Q.Slot.ToString()) && target.IsValidTarget(Q.Range) && !target.IsValidTarget(user.GetAutoAttackRange())
+                        && target.IsKillable(Q.Range) && !target.IsKillable(user.AttackRange);
+            var useQ = ComboMenu.checkbox(Q.Slot.ToString()) && target.IsKillable(Q.Range) && !target.IsKillable(user.GetAutoAttackRange())
                        && Q.IsReady();
-            var useW = ComboMenu.checkbox(W.Slot.ToString()) && target.IsValidTarget(W.Range) && W.IsReady();
-            var useE = ComboMenu.checkbox(E.Slot.ToString()) && target.IsValidTarget(E.Range) && E.IsReady();
+            var useW = ComboMenu.checkbox(W.Slot.ToString()) && target.IsKillable(W.Range) && W.IsReady();
+            var useE = ComboMenu.checkbox(E.Slot.ToString()) && target.IsKillable(E.Range) && E.IsReady();
 
             if (useE)
             {
@@ -182,10 +182,10 @@
                 return;
             }
 
-            var useQ = HarassMenu.checkbox(Q.Slot.ToString()) && target.IsValidTarget(Q.Range) && !target.IsValidTarget(user.GetAutoAttackRange())
+            var useQ = HarassMenu.checkbox(Q.Slot.ToString()) && target.IsKillable(Q.Range) && !target.IsKillable(user.GetAutoAttackRange())
                        && Q.IsReady() && Q.Mana(HarassMenu);
-            var useW = HarassMenu.checkbox(W.Slot.ToString()) && target.IsValidTarget(W.Range) && W.IsReady() && W.Mana(HarassMenu);
-            var useE = HarassMenu.checkbox(E.Slot.ToString()) && target.IsValidTarget(E.Range) && E.IsReady() && E.Mana(HarassMenu);
+            var useW = HarassMenu.checkbox(W.Slot.ToString()) && target.IsKillable(W.Range) && W.IsReady() && W.Mana(HarassMenu);
+            var useE = HarassMenu.checkbox(E.Slot.ToString()) && target.IsKillable(E.Range) && E.IsReady() && E.Mana(HarassMenu);
 
             if (useE)
             {
@@ -207,7 +207,7 @@
         {
             var Etarget =
                 EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(
-                    m => m.IsValidTarget(user.GetAutoAttackRange()) && m.Buffs.Any(buff => buff.Name == "KindredERefresher"));
+                    m => m.IsKillable(user.GetAutoAttackRange()) && m.Buffs.Any(buff => buff.Name == "KindredERefresher"));
 
             if (Etarget != null)
             {
@@ -247,7 +247,7 @@
         {
             var Etarget =
                 EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                    .FirstOrDefault(m => m.IsValidTarget(user.GetAutoAttackRange()) && m.Buffs.Any(buff => buff.Name == "KindredERefresher"));
+                    .FirstOrDefault(m => m.IsKillable(user.GetAutoAttackRange()) && m.Buffs.Any(buff => buff.Name == "KindredERefresher"));
 
             if (Etarget != null)
             {
@@ -275,7 +275,7 @@
                     E.Cast(minion);
                 }
 
-                if (useW && minion.IsValidTarget(W.Range) && W.Handle.ToggleState != 2)
+                if (useW && minion.IsKillable(W.Range) && W.Handle.ToggleState != 2)
                 {
                     W.Cast();
                 }
@@ -398,7 +398,7 @@
                 var aaprecent = (caster.GetAutoAttackDamage(target, true) / target.TotalShieldHealth()) * 100;
                 var death = caster.GetAutoAttackDamage(target, true) >= target.TotalShieldHealth() || aaprecent >= target.HealthPercent;
 
-                if (target.IsAlly && !target.IsMe && target.IsValidTarget(R.Range))
+                if (target.IsAlly && !target.IsMe && target.IsKillable(R.Range))
                 {
                     if (allyhp > target.HealthPercent || death)
                     {
@@ -481,17 +481,17 @@
                             {
                                 var ally =
                                     EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(750))
-                                        .FirstOrDefault(a => a.IsValidTarget(1000) && !a.IsMe);
+                                        .FirstOrDefault(a => a.IsKillable(1000) && !a.IsMe);
                                 if (ally != null)
                                 {
                                     pos = ally.ServerPosition;
                                 }
                             }
-                            if (target.IsValidTarget(user.GetAutoAttackRange() - 100))
+                            if (target.IsKillable(user.GetAutoAttackRange() - 100))
                             {
                                 pos = user.ServerPosition.Extend(target.ServerPosition, -400).To3D();
                             }
-                            if (!target.IsValidTarget(user.GetAutoAttackRange()))
+                            if (!target.IsKillable(user.GetAutoAttackRange()))
                             {
                                 pos = Q.GetPrediction(target).CastPosition;
                             }
@@ -499,7 +499,7 @@
                         break;
                     case 1:
                         {
-                            if (target.IsValidTarget(user.GetAutoAttackRange() - 100))
+                            if (target.IsKillable(user.GetAutoAttackRange() - 100))
                             {
                                 pos = user.ServerPosition.Extend(target.ServerPosition, -400).To3D();
                             }
@@ -507,7 +507,7 @@
                         break;
                     case 2:
                         {
-                            if (!target.IsValidTarget(user.GetAutoAttackRange()))
+                            if (!target.IsKillable(user.GetAutoAttackRange()))
                             {
                                 pos = Q.GetPrediction(target).CastPosition;
                             }

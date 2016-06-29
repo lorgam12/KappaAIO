@@ -291,7 +291,7 @@
                     SpellsManager.Q(qtarget, false, true);
                 }
 
-                if (ComboMenu.checkbox("WQ2") && qtarget.IsValidTarget(1500) && !qtarget.IsValidTarget(1300)
+                if (ComboMenu.checkbox("WQ2") && qtarget.IsKillable(1500) && !qtarget.IsKillable(1300)
                     && WardJump.IsReady(user.ServerPosition.Extend(qtarget, 600).To3D(), true))
                 {
                     Chat.Print("leesin debug: WQ2");
@@ -301,7 +301,7 @@
             }
             if (mode.Equals(0))
             {
-                if (!target.IsValidTarget(Q.Range - 100) && target.IsValidTarget(Q.Range + 300) && ComboMenu.checkbox("WQ1")
+                if (!target.IsKillable(Q.Range - 100) && target.IsKillable(Q.Range + 300) && ComboMenu.checkbox("WQ1")
                     && WardJump.IsReady(user.ServerPosition.Extend(target.ServerPosition, 600).To3D()) && Q.IsReady())
                 {
                     Chat.Print("leesin debug: W Q");
@@ -309,7 +309,7 @@
                     return;
                 }
 
-                if (!target.IsValidTarget(user.GetAutoAttackRange() + 35) && Qtarget() != null && Qtarget() is AIHeroClient
+                if (!target.IsKillable(user.GetAutoAttackRange() + 35) && Qtarget() != null && Qtarget() is AIHeroClient
                     && Qtarget().NetworkId.Equals(target.NetworkId))
                 {
                     Chat.Print("leesin debug: Q gap");
@@ -322,14 +322,14 @@
 
                 if (Passive <= ComboMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
                 {
-                    if (E.IsReady() && target.IsValidTarget(E.Range))
+                    if (E.IsReady() && target.IsKillable(E.Range))
                     {
                         Chat.Print("leesin debug: Ecombo");
                         SpellsManager.E(target, ComboMenu.checkbox("E1"), ComboMenu.checkbox("E2"));
                         return;
                     }
 
-                    if (Q.IsReady() && target.IsValidTarget(Q.Range))
+                    if (Q.IsReady() && target.IsKillable(Q.Range))
                     {
                         Chat.Print("leesin debug: Q combo");
                         if (Qtarget() != null && Qtarget() is AIHeroClient)
@@ -345,8 +345,8 @@
                     {
                         if (ComboMenu.combobox("Wmode").Equals(0) || ComboMenu.combobox("Wmode").Equals(1))
                         {
-                            if (target.IsValidTarget(W.Range) && WardJump.IsReady(target.PredPos(200).To3D())
-                                && !target.IsValidTarget(user.GetAutoAttackRange() + 35) && !target.IsValidTarget(E.Range)
+                            if (target.IsKillable(W.Range) && WardJump.IsReady(target.PredPos(200).To3D())
+                                && !target.IsKillable(user.GetAutoAttackRange() + 35) && !target.IsKillable(E.Range)
                                 && !target.PredPos(200).IsInRange(user, user.GetAutoAttackRange() + 15))
                             {
                                 Chat.Print("leesin debug: W WardJump");
@@ -356,7 +356,7 @@
                         }
                         if (ComboMenu.combobox("Wmode").Equals(2) || ComboMenu.combobox("Wmode").Equals(0))
                         {
-                            if (target.IsValidTarget(user.GetAutoAttackRange()))
+                            if (target.IsKillable(user.GetAutoAttackRange()))
                             {
                                 Chat.Print("leesin debug: W shield");
                                 SpellsManager.W(user, true, true);
@@ -399,9 +399,9 @@
 
                 if (R.IsReady() && (WardJump.IsReady(target.ServerPosition) || target.IsKillable(R.Range)))
                 {
-                    if (!target.IsValidTarget(R.Range) && (Q.IsReady() || Qtarget() == target))
+                    if (!target.IsKillable(R.Range) && (Q.IsReady() || Qtarget() == target))
                     {
-                        if (WardJump.IsReady(target.ServerPosition, true) && target.IsValidTarget(W.Range) && ComboMenu.checkbox("Wj"))
+                        if (WardJump.IsReady(target.ServerPosition, true) && target.IsKillable(W.Range) && ComboMenu.checkbox("Wj"))
                         {
                             Chat.Print("leesin debug: Wardjump Star");
                             WardJump.Jump(target.ServerPosition, false, true);
@@ -409,7 +409,7 @@
                     }
                     else
                     {
-                        if (Qtarget() == null && Q.IsReady() && SpellsManager.Q1 && target.IsValidTarget(Q.Range))
+                        if (Qtarget() == null && Q.IsReady() && SpellsManager.Q1 && target.IsKillable(Q.Range))
                         {
                             Chat.Print("leesin debug: Q1 Star");
                             SpellsManager.Q(target, true);
@@ -424,7 +424,7 @@
                             }
                             else
                             {
-                                if (target.IsValidTarget(R.Range) && Qtarget() != null && Qtarget().NetworkId.Equals(target.NetworkId))
+                                if (target.IsKillable(R.Range) && Qtarget() != null && Qtarget().NetworkId.Equals(target.NetworkId))
                                 {
                                     Chat.Print("leesin debug: R Star");
                                     R.Cast(target);
@@ -435,7 +435,7 @@
                 }
                 else
                 {
-                    if (!target.IsValidTarget(Q.Range - 50) && target.IsValidTarget(Q.Range + 300) && ComboMenu.checkbox("WQ1")
+                    if (!target.IsKillable(Q.Range - 50) && target.IsKillable(Q.Range + 300) && ComboMenu.checkbox("WQ1")
                         && WardJump.IsReady(user.ServerPosition.Extend(target.ServerPosition, 600).To3D(), true) && Q.IsReady()
                         && ComboMenu.checkbox("Wj"))
                     {
@@ -444,7 +444,7 @@
                         return;
                     }
 
-                    if (!target.IsValidTarget(user.GetAutoAttackRange() + 20) && Qtarget() != null && Qtarget() is AIHeroClient
+                    if (!target.IsKillable(user.GetAutoAttackRange() + 20) && Qtarget() != null && Qtarget() is AIHeroClient
                         && Qtarget().NetworkId.Equals(target.NetworkId))
                     {
                         if (Q.IsReady() && !SpellsManager.Q1)
@@ -457,7 +457,7 @@
 
                     if (Passive <= ComboMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
                     {
-                        if (E.IsReady() && target.IsValidTarget(E.Range + 15))
+                        if (E.IsReady() && target.IsKillable(E.Range + 15))
                         {
                             SpellsManager.E(target, true, true);
                             return;
@@ -477,7 +477,7 @@
                         {
                             if (ComboMenu.combobox("Wmode").Equals(0) || ComboMenu.combobox("Wmode").Equals(1))
                             {
-                                if (ComboMenu.checkbox("Wj") && !target.IsValidTarget(user.GetAutoAttackRange() + 35) && target.IsKillable(W.Range)
+                                if (ComboMenu.checkbox("Wj") && !target.IsKillable(user.GetAutoAttackRange() + 35) && target.IsKillable(W.Range)
                                     && !(Q.IsReady() && Q.GetPrediction(target).HitChance >= HitChance.Low))
                                 {
                                     Chat.Print("leesin debug: W WardJump");
@@ -487,7 +487,7 @@
                             }
                             if (ComboMenu.combobox("Wmode").Equals(2) || ComboMenu.combobox("Wmode").Equals(0))
                             {
-                                if (target.IsValidTarget(user.GetAutoAttackRange()))
+                                if (target.IsKillable(user.GetAutoAttackRange()))
                                 {
                                     Chat.Print("leesin debug: W shield");
                                     SpellsManager.W(user, true, true);
@@ -495,7 +495,7 @@
                                 }
                             }
                         }
-                        if (R.IsReady() && target.IsValidTarget(R.Range))
+                        if (R.IsReady() && target.IsKillable(R.Range))
                         {
                             if (R.GetDamage(target) >= target.TotalShieldHealth() && ComboMenu.checkbox("Rkill"))
                             {
@@ -549,12 +549,12 @@
 
             if (Passive <= HarassMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
             {
-                if (Q.IsReady() && target.IsValidTarget(Q.Range) && ((HarassMenu.checkbox("Q1") && SpellsManager.Q1) || HarassMenu.checkbox("Q2")))
+                if (Q.IsReady() && target.IsKillable(Q.Range) && ((HarassMenu.checkbox("Q1") && SpellsManager.Q1) || HarassMenu.checkbox("Q2")))
                 {
                     SpellsManager.Q(target, HarassMenu.checkbox("Q1"), HarassMenu.checkbox("Q2"));
                     return;
                 }
-                if (E.IsReady() && target.IsValidTarget(E.Range) && ((HarassMenu.checkbox("E1") && SpellsManager.E1) || HarassMenu.checkbox("E2")))
+                if (E.IsReady() && target.IsKillable(E.Range) && ((HarassMenu.checkbox("E1") && SpellsManager.E1) || HarassMenu.checkbox("E2")))
                 {
                     SpellsManager.E(target, HarassMenu.checkbox("E1"), HarassMenu.checkbox("E2"));
                 }
@@ -563,16 +563,16 @@
 
         public override void LaneClear()
         {
-            var eminion = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).FirstOrDefault(m => m.IsValidTarget(E.Range));
+            var eminion = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).FirstOrDefault(m => m.IsKillable(E.Range));
             var Eminions = user.CountEnemyMinions(E.Range) > 1 && SpellsManager.E1;
             var Qminion =
                 EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health)
-                    .FirstOrDefault(m => m.IsValidTarget(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low);
+                    .FirstOrDefault(m => m.IsKillable(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low);
             var Qlasthit =
                 EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.MaxHealth)
                     .FirstOrDefault(
                         m =>
-                        m.IsValidTarget(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low
+                        m.IsKillable(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low
                         && (Q.GetDamage(m) >= m.Health && (SpellsManager.Q1 || (Qtarget() != null && Qtarget().ID().Equals(m.ID())))));
 
             if (Passive <= LaneClearMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
@@ -613,7 +613,7 @@
                     EntityManager.MinionsAndMonsters.GetJungleMonsters()
                         .OrderBy(m => m.Distance(user))
                         .ThenByDescending(m => m.MaxHealth)
-                        .FirstOrDefault(m => m.IsValidTarget(Q.Range));
+                        .FirstOrDefault(m => m.IsKillable(Q.Range));
             }
             else if (E.IsReady() && (JungleClearMenu.checkbox("E1") || JungleClearMenu.checkbox("E2")))
             {
@@ -621,7 +621,7 @@
                     EntityManager.MinionsAndMonsters.GetJungleMonsters()
                         .OrderBy(m => m.Distance(user))
                         .ThenByDescending(m => m.MaxHealth)
-                        .FirstOrDefault(m => m.IsValidTarget(E.Range));
+                        .FirstOrDefault(m => m.IsKillable(E.Range));
             }
             else
             {
@@ -629,7 +629,7 @@
                     EntityManager.MinionsAndMonsters.GetJungleMonsters()
                         .OrderBy(m => m.Distance(user))
                         .ThenByDescending(m => m.MaxHealth)
-                        .FirstOrDefault(m => m.IsValidTarget(user.GetAutoAttackRange() + 20));
+                        .FirstOrDefault(m => m.IsKillable(user.GetAutoAttackRange() + 20));
             }
 
             if (mob == null)
@@ -639,19 +639,19 @@
 
             if (Passive <= JungleClearMenu.slider("Passive") || SpellsManager.lastspelltimer > 3000)
             {
-                if (W.IsReady() && mob.IsValidTarget(E.Range)
+                if (W.IsReady() && mob.IsKillable(E.Range)
                     && ((JungleClearMenu.checkbox("W1") && SpellsManager.W1) || JungleClearMenu.checkbox("W2")))
                 {
                     SpellsManager.W(user, JungleClearMenu.checkbox("W1"), JungleClearMenu.checkbox("W2"));
                     return;
                 }
-                if (E.IsReady() && mob.IsValidTarget(E.Range)
+                if (E.IsReady() && mob.IsKillable(E.Range)
                     && ((JungleClearMenu.checkbox("E1") && SpellsManager.E1) || JungleClearMenu.checkbox("E2")))
                 {
                     SpellsManager.E(mob, JungleClearMenu.checkbox("E1"), JungleClearMenu.checkbox("E2"));
                     return;
                 }
-                if (Q.IsReady() && mob.IsValidTarget(Q.Range)
+                if (Q.IsReady() && mob.IsKillable(Q.Range)
                     && ((JungleClearMenu.checkbox("Q1") && SpellsManager.Q1) || JungleClearMenu.checkbox("Q2")))
                 {
                     SpellsManager.Q(mob, JungleClearMenu.checkbox("Q1"), JungleClearMenu.checkbox("Q2"));
@@ -682,7 +682,7 @@
         {
             if (DrawMenu.checkbox("insec"))
             {
-                if (Insec.InsecTarget != null && Insec.InsecTarget.IsValidTarget())
+                if (Insec.InsecTarget != null && Insec.InsecTarget.IsKillable())
                 {
                     Circle.Draw(Color.Red, Insec.Range(), 5, Insec.InsecTarget);
                     if (Insec.InsecTo(Insec.InsecTarget) != null)
@@ -806,7 +806,7 @@
                     return;
                 }
 
-                if (target.IsValidTarget(R.Range) || user.IsInRange(Pos, 125))
+                if (target.IsKillable(R.Range) || user.IsInRange(Pos, 125))
                 {
                     if (Flash != null && Flash.IsReady() && !WardJump.IsReady(Pos))
                     {
@@ -849,7 +849,7 @@
                     Orbwalker.OrbwalkTo(Game.CursorPos);
                 }
 
-                if (Qtarget() != null && Qtarget().IsInRange(target, 300) && !target.IsValidTarget(R.Range) && !W.IsInRange(Pos)
+                if (Qtarget() != null && Qtarget().IsInRange(target, 300) && !target.IsKillable(R.Range) && !W.IsInRange(Pos)
                     && (WardJump.IsReady(Pos) || Flash != null && Flash.IsReady()) && !user.IsInRange(Pos, 125))
                 {
                     Chat.Print("leesin debug: qcast");
@@ -860,9 +860,9 @@
                     Orbwalker.OrbwalkTo(Game.CursorPos);
                 }
 
-                if (WardJump.IsReady(Pos) && target.IsValidTarget(600))
+                if (WardJump.IsReady(Pos) && target.IsKillable(600))
                 {
-                    if (!(target.IsValidTarget(R.Range) && Flash != null && Flash.IsReady()))
+                    if (!(target.IsKillable(R.Range) && Flash != null && Flash.IsReady()))
                     {
                         Chat.Print("leesin debug: WardJump");
                         WardJump.Jump(Pos, true);
@@ -876,7 +876,7 @@
                 var RF = user.ServerPosition.Extend(target.ServerPosition, 600).To3D();
                 if (WardJump.IsReady(target.ServerPosition) && target.IsInRange(RF, R.Range - 100))
                 {
-                    if (!target.IsValidTarget(R.Range) && Flash != null && Flash.IsReady())
+                    if (!target.IsKillable(R.Range) && Flash != null && Flash.IsReady())
                     {
                         Chat.Print("leesin debug: WardJump R Flash");
                         WardJump.Jump(RF, true);
@@ -993,7 +993,7 @@
                 {
                     var ally =
                         EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(1000))
-                            .FirstOrDefault(a => !a.IsMe && a.IsKillable() && a.IsInRange(target.PredPos(200), 1350));
+                            .FirstOrDefault(a => !a.IsMe && a.IsValidTarget() && a.IsInRange(target.PredPos(200), 1350));
                     var tower = EntityManager.Turrets.Allies.FirstOrDefault(a => !a.IsDead && a.IsInRange(target.PredPos(200), 1350));
 
                     if (ally != null)
@@ -1212,42 +1212,38 @@
 
             private static Obj_AI_Base Wtarget(Vector3 vector3, bool combo = false, int range = 150)
             {
-                switch (combo)
+                if (combo)
                 {
-                    case true:
-                        var wardinragec =
-                            ObjectsManager.Wards.OrderBy(e => e.Distance(vector3))
-                                .FirstOrDefault(ward => ward.IsInRange(vector3, 300) && ward.IsValid);
+                    var wardinragec =
+                        ObjectsManager.Wards.OrderBy(e => e.Distance(vector3))
+                            .FirstOrDefault(ward => ward.IsInRange(vector3, 300) && ward.IsValid);
 
-                        var allyc =
-                            EntityManager.Heroes.Allies.OrderBy(e => e.Distance(vector3))
-                                .FirstOrDefault(a => a.IsInRange(vector3, 300) && a.IsValidTarget() && !a.IsMe);
+                    var allyc =
+                        EntityManager.Heroes.Allies.OrderBy(e => e.Distance(vector3))
+                            .FirstOrDefault(a => a.IsInRange(vector3, 300) && a.IsValidTarget() && !a.IsMe);
 
-                        var minionc =
-                            EntityManager.MinionsAndMonsters.AlliedMinions.OrderBy(e => e.Distance(vector3))
-                                .FirstOrDefault(m => m.IsInRange(vector3, 300) && m.IsValidTarget());
-                        if (allyc != null)
-                        {
-                            return allyc;
-                        }
+                    var minionc =
+                        EntityManager.MinionsAndMonsters.AlliedMinions.OrderBy(e => e.Distance(vector3))
+                            .FirstOrDefault(m => m.IsInRange(vector3, 300) && m.IsValidTarget());
+                    if (allyc != null)
+                    {
+                        return allyc;
+                    }
 
-                        return minionc ?? wardinragec;
-                    case false:
-                        var wardinrage = ObjectsManager.Wards.FirstOrDefault(ward => ward.IsInRange(vector3, range));
-
-                        var ally = EntityManager.Heroes.Allies.FirstOrDefault(a => a.IsInRange(vector3, range) && a.IsValidTarget() && !a.IsMe);
-
-                        var minion =
-                            EntityManager.MinionsAndMonsters.AlliedMinions.FirstOrDefault(m => m.IsInRange(vector3, range) && m.IsValidTarget());
-                        if (ally != null)
-                        {
-                            return ally;
-                        }
-
-                        return minion ?? wardinrage;
-                    default:
-                        return null;
+                    return minionc ?? wardinragec;
                 }
+                var wardinrage = ObjectsManager.Wards.FirstOrDefault(ward => ward.IsInRange(vector3, range));
+
+                var ally = EntityManager.Heroes.Allies.FirstOrDefault(a => a.IsInRange(vector3, range) && a.IsValidTarget() && !a.IsMe);
+
+                var minion =
+                    EntityManager.MinionsAndMonsters.AlliedMinions.FirstOrDefault(m => m.IsInRange(vector3, range) && m.IsValidTarget());
+                if (ally != null)
+                {
+                    return ally;
+                }
+
+                return minion ?? wardinrage;
             }
         }
 
@@ -1345,7 +1341,7 @@
 
             public static void Q(Obj_AI_Base target, bool q1, bool Q2 = false, bool insec = false)
             {
-                if (LeeSin.Q.IsReady() && target.IsValidTarget(LeeSin.Q.Range))
+                if (LeeSin.Q.IsReady() && target.IsKillable(LeeSin.Q.Range))
                 {
                     if (Q1 && q1 && Qtimer > 1500)
                     {
@@ -1410,9 +1406,9 @@
 
             public static void W(Obj_AI_Base target, bool w1, bool W2 = false)
             {
-                if (LeeSin.W.IsReady() && target.IsValidTarget(LeeSin.W.Range))
+                if (LeeSin.W.IsReady() && target.IsKillable(LeeSin.W.Range))
                 {
-                    if (W1 && w1 && Core.GameTickCount - LastpW > 500)
+                    if (W1 && w1 && Wtimer > 500)
                     {
                         Chat.Print("leesin debug: W1");
                         LeeSin.W.Cast(target);
@@ -1450,7 +1446,7 @@
         {
             public static void Dash_OnDash(Obj_AI_Base sender, Dash.DashEventArgs e)
             {
-                if (!sender.IsEnemy || !R.IsReady() || sender == null || !sender.IsValidTarget(R.Range) || !MiscMenu.checkbox("Rgap"))
+                if (!sender.IsEnemy || !R.IsReady() || sender == null || !sender.IsKillable(R.Range) || !MiscMenu.checkbox("Rgap"))
                 {
                     return;
                 }
@@ -1460,7 +1456,7 @@
 
             public static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
             {
-                if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(R.Range) || e.DangerLevel < Common.danger(MiscMenu)
+                if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.DangerLevel < Common.danger(MiscMenu)
                     || !MiscMenu.checkbox("Rint") || !R.IsReady())
                 {
                     return;
@@ -1471,7 +1467,7 @@
 
             public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
             {
-                if (!sender.IsEnemy || sender == null || e == null || !sender.IsValidTarget(R.Range) || e.End == Vector3.Zero
+                if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.End == Vector3.Zero
                     || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()) || !MiscMenu.checkbox("Rgap") || !R.IsReady()
                     || user.HealthPercent > MiscMenu.slider("Rgaphp"))
                 {
@@ -1596,7 +1592,7 @@
                             return;
                         }
                     }
-                    if (MyTarget != null && !MyTarget.IsValidTarget())
+                    if (MyTarget != null && !MyTarget.IsKillable())
                     {
                         MyTarget = null;
                     }

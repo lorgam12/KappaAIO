@@ -10,7 +10,7 @@
         public static Obj_AI_Base GetKStarget(this Spell.SpellBase spell)
         {
             return spell.IsReady()
-                       ? EntityManager.Heroes.Enemies.Where(e => e.IsKillable() && e.IsValidTarget(spell.Range) && kCore.ks.checkbox(e.ID()))
+                       ? EntityManager.Heroes.Enemies.Where(e => e.IsKillable() && e.IsKillable(spell.Range) && kCore.ks.checkbox(e.ID()))
                              .FirstOrDefault(enemy => spell.GetDamage(enemy) >= Prediction.Health.GetPrediction(enemy, spell.CastDelay))
                        : null;
         }
@@ -21,7 +21,7 @@
                 EntityManager.MinionsAndMonsters.GetJungleMonsters()
                     .Where(
                         j =>
-                        j.IsKillable() && kCore.Junglemobs.Contains(j.BaseSkinName) && j.IsValidTarget(spell.Range)
+                        j.IsKillable() && kCore.Junglemobs.Contains(j.BaseSkinName) && j.IsKillable(spell.Range)
                         && kCore.ks.checkbox(j.BaseSkinName))
                     .FirstOrDefault(jmob => spell.GetDamage(jmob) >= Prediction.Health.GetPrediction(jmob, spell.CastDelay));
         }

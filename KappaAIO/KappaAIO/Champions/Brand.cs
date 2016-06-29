@@ -140,14 +140,14 @@
 
         public override void Active()
         {
-            var targets = EntityManager.Heroes.Enemies.Where(e => e.countpassive() >= 2 && e.IsValidTarget() && e.IsKillable());
+            var targets = EntityManager.Heroes.Enemies.Where(e => e.countpassive() >= 2 && e.IsKillable() && e.IsKillable());
 
             if (targets != null)
             {
                 var aiHeroClients = targets as AIHeroClient[] ?? targets.ToArray();
                 if (AutoMenu.checkbox("AutoQ"))
                 {
-                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(Q.Range));
+                    var target = aiHeroClients.FirstOrDefault(e => e.IsKillable(Q.Range));
                     if (target != null)
                     {
                         Q.Cast(target, Q.hitchance(Menuini));
@@ -155,7 +155,7 @@
                 }
                 if (AutoMenu.checkbox("AutoW"))
                 {
-                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(W.Range));
+                    var target = aiHeroClients.FirstOrDefault(e => e.IsKillable(W.Range));
                     if (target != null)
                     {
                         W.Cast(target, W.hitchance(Menuini));
@@ -163,7 +163,7 @@
                 }
                 if (AutoMenu.checkbox("AutoE"))
                 {
-                    var target = aiHeroClients.FirstOrDefault(e => e.IsValidTarget(E.Range));
+                    var target = aiHeroClients.FirstOrDefault(e => e.IsKillable(E.Range));
                     if (target != null)
                     {
                         E.Cast(target);
@@ -172,7 +172,7 @@
             }
 
             var hits = AutoMenu.slider("AutoR");
-            var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsValidTarget(R.Range) && e.IsKillable());
+            var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range) && e.IsKillable());
             var aoetarget = enemies.FirstOrDefault(e => user.CountEnemeis(400) >= hits);
 
             if (aoetarget != null)
@@ -189,15 +189,15 @@
                 return;
             }
 
-            var Qready = ComboMenu.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(ComboMenu);
+            var Qready = ComboMenu.checkbox("Q") && Q.IsReady() && target.IsKillable(Q.Range) && Q.Mana(ComboMenu);
 
-            var Wready = ComboMenu.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(ComboMenu);
+            var Wready = ComboMenu.checkbox("W") && W.IsReady() && target.IsKillable(W.Range) && W.Mana(ComboMenu);
 
-            var Eready = ComboMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(ComboMenu);
+            var Eready = ComboMenu.checkbox("E") && E.IsReady() && target.IsKillable(E.Range) && E.Mana(ComboMenu);
 
-            var RFinisher = ComboMenu.checkbox("RFinisher") && R.IsReady() && target.IsValidTarget(R.Range) && R.Mana(ComboMenu);
+            var RFinisher = ComboMenu.checkbox("RFinisher") && R.IsReady() && target.IsKillable(R.Range) && R.Mana(ComboMenu);
 
-            var RAoe = ComboMenu.checkbox("RAoe") && R.IsReady() && target.IsValidTarget(R.Range) && R.Mana(ComboMenu);
+            var RAoe = ComboMenu.checkbox("RAoe") && R.IsReady() && target.IsKillable(R.Range) && R.Mana(ComboMenu);
 
             if (Qready)
             {
@@ -229,11 +229,11 @@
                 return;
             }
 
-            var Qready = HarassMenu.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(HarassMenu);
+            var Qready = HarassMenu.checkbox("Q") && Q.IsReady() && target.IsKillable(Q.Range) && Q.Mana(HarassMenu);
 
-            var Wready = HarassMenu.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(HarassMenu);
+            var Wready = HarassMenu.checkbox("W") && W.IsReady() && target.IsKillable(W.Range) && W.Mana(HarassMenu);
 
-            var Eready = HarassMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(HarassMenu);
+            var Eready = HarassMenu.checkbox("E") && E.IsReady() && target.IsKillable(E.Range) && E.Mana(HarassMenu);
 
             if (Qready)
             {
@@ -251,18 +251,18 @@
 
         public override void LaneClear()
         {
-            var target = EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(m => m.IsValidTarget(Q.Range + 50));
+            var target = EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(m => m.IsKillable(Q.Range + 50));
 
             if (target == null)
             {
                 return;
             }
 
-            var Qready = LaneClearMenu["Q"].Cast<CheckBox>().CurrentValue && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(LaneClearMenu);
+            var Qready = LaneClearMenu["Q"].Cast<CheckBox>().CurrentValue && Q.IsReady() && target.IsKillable(Q.Range) && Q.Mana(LaneClearMenu);
 
-            var Wready = LaneClearMenu["W"].Cast<CheckBox>().CurrentValue && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(LaneClearMenu);
+            var Wready = LaneClearMenu["W"].Cast<CheckBox>().CurrentValue && W.IsReady() && target.IsKillable(W.Range) && W.Mana(LaneClearMenu);
 
-            var Eready = LaneClearMenu["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(LaneClearMenu);
+            var Eready = LaneClearMenu["E"].Cast<CheckBox>().CurrentValue && E.IsReady() && target.IsKillable(E.Range) && E.Mana(LaneClearMenu);
 
             if (Qready)
             {
@@ -280,16 +280,16 @@
 
         public override void JungleClear()
         {
-            var target = EntityManager.MinionsAndMonsters.GetJungleMonsters().FirstOrDefault(m => m.IsValidTarget(Q.Range + 50));
+            var target = EntityManager.MinionsAndMonsters.GetJungleMonsters().FirstOrDefault(m => m.IsKillable(Q.Range + 50));
 
             if (target == null)
             {
                 return;
             }
 
-            var Qready = JungleClearMenu.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range) && Q.Mana(JungleClearMenu);
-            var Wready = JungleClearMenu.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range) && W.Mana(JungleClearMenu);
-            var Eready = JungleClearMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(JungleClearMenu);
+            var Qready = JungleClearMenu.checkbox("Q") && Q.IsReady() && target.IsKillable(Q.Range) && Q.Mana(JungleClearMenu);
+            var Wready = JungleClearMenu.checkbox("W") && W.IsReady() && target.IsKillable(W.Range) && W.Mana(JungleClearMenu);
+            var Eready = JungleClearMenu.checkbox("E") && E.IsReady() && target.IsKillable(E.Range) && E.Mana(JungleClearMenu);
 
             if (Qready)
             {
@@ -332,7 +332,7 @@
                 return;
             }
 
-            var Eready = LaneClearMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range) && E.Mana(LaneClearMenu);
+            var Eready = LaneClearMenu.checkbox("E") && E.IsReady() && target.IsKillable(E.Range) && E.Mana(LaneClearMenu);
 
             if (Eready && E.GetDamage(target) >= Prediction.Health.GetPrediction(target, E.CastDelay))
             {
@@ -411,7 +411,7 @@
             var LaneClearmode = Common.orbmode(Orbwalker.ActiveModes.LaneClear);
             var JungleClearmode = Common.orbmode(Orbwalker.ActiveModes.JungleClear);
 
-            var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsValidTarget(W.Range) && e.IsKillable());
+            var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(W.Range) && e.IsKillable());
             var pred = Prediction.Position.PredictCircularMissileAoe(
                 enemies.Cast<Obj_AI_Base>().ToArray(),
                 W.Range,
@@ -450,7 +450,7 @@
 
             if (LaneClearmode)
             {
-                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(e => e.IsValidTarget(W.Range) && e.IsKillable());
+                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(e => e.IsKillable(W.Range) && e.IsKillable());
                 var loc = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
                     minions.ToArray(),
                     W.Width + 75,
@@ -471,7 +471,7 @@
                 var minions =
                     EntityManager.MinionsAndMonsters.GetJungleMonsters()
                         .OrderByDescending(m => m.MaxHealth)
-                        .Where(e => e.IsValidTarget(W.Range) && e.IsKillable());
+                        .Where(e => e.IsKillable(W.Range) && e.IsKillable());
                 var loc = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
                     minions.ToArray(),
                     W.Width + 75,
@@ -518,7 +518,7 @@
 
             if (LaneClearmode)
             {
-                var minionpassive = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.brandpassive() && m.IsValidTarget(E.Range));
+                var minionpassive = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.brandpassive() && m.IsKillable(E.Range));
                 if (minionpassive != null)
                 {
                     foreach (var minion in minionpassive)
@@ -534,12 +534,12 @@
 
             if (JungleClearmode)
             {
-                var minionpassive = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.brandpassive() && m.IsValidTarget(E.Range));
+                var minionpassive = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.brandpassive() && m.IsKillable(E.Range));
                 if (minionpassive != null)
                 {
                     foreach (var minion in minionpassive)
                     {
-                        var minions = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(e => e.IsValidTarget(E.Range) && e.IsKillable());
+                        var minions = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(e => e.IsKillable(E.Range) && e.IsKillable());
                         var count = minions.Count(m => m.IsInRange(minion, 300));
                         if (count >= 2)
                         {
@@ -567,7 +567,7 @@
                     var AoeHit = target.CountEnemeis(400) >= hits;
                     var bestaoe =
                         EntityManager.Heroes.Enemies.OrderByDescending(e => e.CountEnemeis(400))
-                            .FirstOrDefault(e => e.IsValidTarget(R.Range) && e.IsKillable() && e.CountEnemeis(400) >= hits);
+                            .FirstOrDefault(e => e.IsKillable(R.Range) && e.IsKillable() && e.CountEnemeis(400) >= hits);
                     if (AoeHit)
                     {
                         R.Cast(target);
@@ -614,7 +614,7 @@
                 return;
             }
 
-            if (e.DangerLevel >= Common.danger(AutoMenu) && sender.IsValidTarget(Q.Range))
+            if (e.DangerLevel >= Common.danger(AutoMenu) && sender.IsKillable(Q.Range))
             {
                 if (sender.brandpassive())
                 {
@@ -647,7 +647,7 @@
                 return;
             }
 
-            if (kCore.GapMenu.checkbox(e.SpellName + sender.ID()) && sender.IsValidTarget(Q.Range))
+            if (kCore.GapMenu.checkbox(e.SpellName + sender.ID()) && sender.IsKillable(Q.Range))
             {
                 if (sender.brandpassive())
                 {

@@ -142,7 +142,7 @@
                 return;
             }
 
-            if (MiscMenu.checkbox("Qgap") && (e.End.IsInRange(user, Q.Range) || sender.IsValidTarget(Q.Range)))
+            if (MiscMenu.checkbox("Qgap") && (e.End.IsInRange(user, Q.Range) || sender.IsKillable(Q.Range)))
             {
                 Q.Cast(sender, Q.hitchance(Menuini));
             }
@@ -152,7 +152,7 @@
                 return;
             }
 
-            if (MiscMenu.checkbox("Rgap") && (e.End.IsInRange(user, R.Range) || sender.IsValidTarget(R.Range)))
+            if (MiscMenu.checkbox("Rgap") && (e.End.IsInRange(user, R.Range) || sender.IsKillable(R.Range)))
             {
                 R.Cast(sender);
             }
@@ -163,7 +163,7 @@
             if (sender.Name == "Rengar_LeapSound.troy" && sender != null)
             {
                 var rengar = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.Hero == Champion.Rengar);
-                if (rengar != null && MiscMenu.checkbox("Rgap") && rengar.IsValidTarget(R.Range))
+                if (rengar != null && MiscMenu.checkbox("Rgap") && rengar.IsKillable(R.Range))
                 {
                     R.Cast(rengar);
                 }
@@ -179,7 +179,7 @@
 
             if (Common.danger(MiscMenu) >= e.DangerLevel)
             {
-                if (MiscMenu.checkbox("Qint") && sender.IsValidTarget(Q.Range))
+                if (MiscMenu.checkbox("Qint") && sender.IsKillable(Q.Range))
                 {
                     Q.Cast(sender, Q.hitchance(Menuini));
                 }
@@ -189,7 +189,7 @@
                     return;
                 }
 
-                if (MiscMenu.checkbox("Rint") && sender.IsValidTarget(R.Range))
+                if (MiscMenu.checkbox("Rint") && sender.IsKillable(R.Range))
                 {
                     R.Cast(sender);
                 }
@@ -250,7 +250,7 @@
 
                 var targets =
                     EntityManager.Heroes.Enemies.Where(
-                        e => e.IsUnderTurret() && !e.IsUnderHisturret() && !e.IsUnderEnemyturret() && e.IsValidTarget(R.Range));
+                        e => e.IsUnderTurret() && !e.IsUnderHisturret() && !e.IsUnderEnemyturret() && e.IsKillable(R.Range));
                 if (targets != null)
                 {
                     foreach (var target in targets.Where(target => target != null))
@@ -275,17 +275,17 @@
                 return;
             }
 
-            var Qready = ComboMenu.checkbox("Q") && Q.IsReady() && target.IsValidTarget(Q.Range);
+            var Qready = ComboMenu.checkbox("Q") && Q.IsReady() && target.IsKillable(Q.Range);
 
-            var Wready = ComboMenu.checkbox("W") && W.IsReady() && target.IsValidTarget(W.Range);
+            var Wready = ComboMenu.checkbox("W") && W.IsReady() && target.IsKillable(W.Range);
 
-            var Eready = ComboMenu.checkbox("E") && E.IsReady() && target.IsValidTarget(E.Range);
+            var Eready = ComboMenu.checkbox("E") && E.IsReady() && target.IsKillable(E.Range);
 
-            var Rfinready = ComboMenu.checkbox("RFinisher") && R.IsReady() && target.IsValidTarget(R.Range);
+            var Rfinready = ComboMenu.checkbox("RFinisher") && R.IsReady() && target.IsKillable(R.Range);
 
-            var Rcomready = ComboMenu.checkbox("RCombo") && R.IsReady() && target.IsValidTarget(R.Range);
+            var Rcomready = ComboMenu.checkbox("RCombo") && R.IsReady() && target.IsKillable(R.Range);
 
-            var RTurret = ComboMenu.checkbox("RTurret") && R.IsReady() && target.IsValidTarget(R.Range) && target.IsUnderTurret()
+            var RTurret = ComboMenu.checkbox("RTurret") && R.IsReady() && target.IsKillable(R.Range) && target.IsUnderTurret()
                           && !target.IsUnderHisturret() && !target.IsUnderEnemyturret();
 
             if (Wready)
@@ -341,11 +341,11 @@
                 return;
             }
 
-            var Qready = HarassMenu.checkbox("Q") && Q.Mana(HarassMenu) && Q.IsReady() && target.IsValidTarget(Q.Range);
+            var Qready = HarassMenu.checkbox("Q") && Q.Mana(HarassMenu) && Q.IsReady() && target.IsKillable(Q.Range);
 
             var Wready = HarassMenu.checkbox("W") && W.Mana(HarassMenu) && W.IsReady();
 
-            var Eready = HarassMenu.checkbox("E") && E.Mana(HarassMenu) && E.IsReady() && target.IsValidTarget(E.Range);
+            var Eready = HarassMenu.checkbox("E") && E.Mana(HarassMenu) && E.IsReady() && target.IsKillable(E.Range);
 
             if (Wready)
             {
@@ -376,7 +376,7 @@
 
             if (Wready)
             {
-                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable() && m.IsValidTarget(W.Range));
+                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable() && m.IsKillable(W.Range));
 
                 if (minions != null)
                 {
@@ -397,7 +397,7 @@
 
             if (Qready)
             {
-                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable() && m.IsValidTarget(Q.Range + 50));
+                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable() && m.IsKillable(Q.Range + 50));
 
                 if (minions != null)
                 {
@@ -418,7 +418,7 @@
 
             if (Eready)
             {
-                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable() && m.IsValidTarget(E.Range));
+                var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable() && m.IsKillable(E.Range));
 
                 if (minions != null)
                 {
@@ -446,7 +446,7 @@
                 var minion =
                     EntityManager.MinionsAndMonsters.GetJungleMonsters()
                         .OrderByDescending(e => e.MaxHealth)
-                        .FirstOrDefault(m => m.IsKillable() && m.IsValidTarget(W.Range));
+                        .FirstOrDefault(m => m.IsKillable() && m.IsKillable(W.Range));
                 if (minion != null)
                 {
                     W.Cast(minion);
@@ -458,7 +458,7 @@
                 var minion =
                     EntityManager.MinionsAndMonsters.GetJungleMonsters()
                         .OrderByDescending(e => e.MaxHealth)
-                        .FirstOrDefault(m => m.IsKillable() && m.IsValidTarget(Q.Range));
+                        .FirstOrDefault(m => m.IsKillable() && m.IsKillable(Q.Range));
                 if (minion != null)
                 {
                     Q.Cast(minion);
@@ -467,7 +467,7 @@
 
             if (Eready)
             {
-                var minions = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable() && m.IsValidTarget(E.Range));
+                var minions = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable() && m.IsKillable(E.Range));
 
                 if (minions != null)
                 {

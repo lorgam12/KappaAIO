@@ -147,12 +147,12 @@
                 var rengar = EntityManager.Heroes.Enemies.FirstOrDefault(e => e.Hero == Champion.Rengar);
                 if (rengar != null)
                 {
-                    if (Q.IsReady() && AutoMenu.checkbox("GapQ") && rengar.IsValidTarget(Q.Range))
+                    if (Q.IsReady() && AutoMenu.checkbox("GapQ") && rengar.IsKillable(Q.Range))
                     {
                         Q.Cast(rengar);
                         return;
                     }
-                    if (R.IsReady() && AutoMenu.checkbox("GapR") && rengar.IsValidTarget(500))
+                    if (R.IsReady() && AutoMenu.checkbox("GapR") && rengar.IsKillable(500))
                     {
                         R.Cast(rengar);
                     }
@@ -197,14 +197,14 @@
             var Wtarget = TargetSelector.GetTarget(W.Range, DamageType.Magical);
             var Rtarget = TargetSelector.GetTarget(R.Range, DamageType.Magical);
 
-            var useQ = ComboMenu.checkbox(Q.Slot.ToString()) && target.IsValidTarget(Q.Range) && Q.IsReady();
+            var useQ = ComboMenu.checkbox(Q.Slot.ToString()) && target.IsKillable(Q.Range) && Q.IsReady();
             var useW = ComboMenu.checkbox(W.Slot.ToString()) && W.IsReady();
             var useR = ComboMenu.checkbox(R.Slot.ToString()) && R.IsReady();
             var Rfinisher = ComboMenu.checkbox("Rfinisher");
 
             if (useQ && target != null)
             {
-                if (Q.Handle.ToggleState != 2 && !target.IsValidTarget(250))
+                if (Q.Handle.ToggleState != 2 && !target.IsKillable(250))
                 {
                     Q.Cast(target, Q.hitchance(Menuini));
                 }
@@ -218,11 +218,11 @@
             {
                 if (Wtarget != null)
                 {
-                    if (W.Handle.ToggleState != 2 && Wtarget.IsValidTarget(W.Range) && !Wtarget.IsValidTarget(W2.Range))
+                    if (W.Handle.ToggleState != 2 && Wtarget.IsKillable(W.Range) && !Wtarget.IsKillable(W2.Range))
                     {
                         W.Cast();
                     }
-                    if (W.Handle.ToggleState == 2 && Wtarget.IsValidTarget(W2.Range))
+                    if (W.Handle.ToggleState == 2 && Wtarget.IsKillable(W2.Range))
                     {
                         W.Cast();
                     }
@@ -275,12 +275,12 @@
             var target = TargetSelector.GetTarget(1000, DamageType.Magical);
             var Wtarget = TargetSelector.GetTarget(W.Range, DamageType.Magical);
 
-            var useQ = HarassMenu.checkbox(Q.Slot.ToString()) && target.IsValidTarget(Q.Range) && Q.IsReady() && Q.Mana(HarassMenu);
+            var useQ = HarassMenu.checkbox(Q.Slot.ToString()) && target.IsKillable(Q.Range) && Q.IsReady() && Q.Mana(HarassMenu);
             var useW = HarassMenu.checkbox(W.Slot.ToString()) && W.IsReady() && W.Mana(HarassMenu);
 
             if (useQ)
             {
-                if (Q.Handle.ToggleState != 2 && !target.IsValidTarget(250))
+                if (Q.Handle.ToggleState != 2 && !target.IsKillable(250))
                 {
                     if (Q.Handle.ToggleState != 2)
                     {
@@ -297,11 +297,11 @@
             {
                 if (Wtarget != null)
                 {
-                    if (W.Handle.ToggleState != 2 && Wtarget.IsValidTarget(W.Range))
+                    if (W.Handle.ToggleState != 2 && Wtarget.IsKillable(W.Range))
                     {
                         W.Cast();
                     }
-                    if (W.Handle.ToggleState == 2 && Wtarget.IsValidTarget(W2.Range))
+                    if (W.Handle.ToggleState == 2 && Wtarget.IsKillable(W2.Range))
                     {
                         W.Cast();
                     }
@@ -373,12 +373,12 @@
                 {
                     return;
                 }
-                if (AutoMenu.checkbox("IntQ") && Q.IsReady() && sender.IsValidTarget(Q.Range))
+                if (AutoMenu.checkbox("IntQ") && Q.IsReady() && sender.IsKillable(Q.Range))
                 {
                     Q.Cast(sender);
                     return;
                 }
-                if (AutoMenu.checkbox("IntR") && R.IsReady() && sender.IsValidTarget(500))
+                if (AutoMenu.checkbox("IntR") && R.IsReady() && sender.IsKillable(500))
                 {
                     R.Cast(sender);
                 }
@@ -390,12 +390,12 @@
                 {
                     return;
                 }
-                if (AutoMenu.checkbox("GapQ") && Q.IsReady() && sender.IsValidTarget(Q.Range))
+                if (AutoMenu.checkbox("GapQ") && Q.IsReady() && sender.IsKillable(Q.Range))
                 {
                     Q.Cast(sender);
                     return;
                 }
-                if (AutoMenu.checkbox("GapR") && R.IsReady() && sender.IsValidTarget(500))
+                if (AutoMenu.checkbox("GapR") && R.IsReady() && sender.IsKillable(500))
                 {
                     R.Cast(sender);
                 }

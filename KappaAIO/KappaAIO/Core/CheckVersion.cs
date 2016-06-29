@@ -64,7 +64,7 @@
                                                 Console.WriteLine(
                                                     DateTime.Now.ToString("[H:mm:ss - ") + " Info] KappaAIO: Failed to retrive update msg");
                                                 Console.ResetColor();
-                                                Chat.Print("<b>KappaAIO: Failed to retrive update msg</b>");
+                                                Chat.Print("<b>KappaAIO: Failed to Retrieve Update msg</b>");
                                                 Common.ShowNotification(
                                                     "There is a new Update Available for KappaAIO !",
                                                     10000,

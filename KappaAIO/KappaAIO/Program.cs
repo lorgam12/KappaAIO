@@ -27,7 +27,7 @@
         {
             var info = "[" + DateTime.Now.ToString("H:mm:ss") + " - Info]";
             var warn = "[" + DateTime.Now.ToString("H:mm:ss") + " - Warn]";
-            
+
             Chat.Print("<font color='#FFFFFF'><b>KappaAIO Loaded</b></font>");
             if (hero.Contains(Player.Instance.Hero))
             {

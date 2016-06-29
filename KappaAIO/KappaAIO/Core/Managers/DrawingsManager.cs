@@ -42,7 +42,7 @@
             }
         }
 
-        public static void DrawTotalDamage(List<Spell.SpellBase> list, DamageType damageType, bool draw = false)
+        public static void DrawTotalDamage(List<Spell.SpellBase> list, bool draw = false)
         {
             if (draw)
             {

@@ -1,6 +1,5 @@
 ﻿namespace KappaAIO.Champions
 {
-    using System;
     using System.Linq;
 
     using EloBuddy;
@@ -63,11 +62,6 @@
             E = new Spell.Active(SpellSlot.E, 350);
             R = new Spell.Targeted(SpellSlot.R, 375);
 
-            if (Player.Spells.FirstOrDefault(o => o.SData.Name.Contains("SummonerFlash")) != null)
-            {
-                Flash = new Spell.Skillshot(user.GetSpellSlotFromName("SummonerFlash"), 450, SkillShotType.Circular);
-            }
-
             SpellList.Add(Q);
             SpellList.Add(W);
             SpellList.Add(E);
@@ -90,7 +84,6 @@
             RMenu.Add("bubba", new KeyBind("Bubba Kush", false, KeyBind.BindTypes.HoldActive, 'Z'));
 
             JumperMenu.Add("normal", new KeyBind("normal Insec", false, KeyBind.BindTypes.HoldActive, 'S'));
-            JumperMenu.Add("wardjump", new KeyBind("Ward Jump", false, KeyBind.BindTypes.HoldActive, 'A'));
 
             ComboMenu.AddGroupLabel("Combo Mode");
             ComboMenu.Add("mode", new ComboBox("Combo Mode", 0, "Normal", "Star Combo"));
@@ -129,6 +122,8 @@
                 }
             }
 
+            MiscMenu.Add("wardjump", new KeyBind("Ward Jump", false, KeyBind.BindTypes.HoldActive, 'A'));
+            MiscMenu.Add("smiteq", new CheckBox("Smite Q"));
             MiscMenu.Add("Rint", new CheckBox("R Interrupter"));
             MiscMenu.Add("Danger", new ComboBox("Interrupter DangerLevel", 1, "High", "Medium", "Low"));
             MiscMenu.Add("Rgap", new CheckBox("R On GapCloser"));
@@ -186,7 +181,8 @@
             }
 
             Q.Range = (uint)(SpellsManager.Q1 ? 1100 : 1300);
-            E.Range = (uint)(SpellsManager.E1 ? 350 : 500);
+            E.Range = (uint)(SpellsManager.E1 ? 350 : 700);
+            Q.AllowedCollisionCount = MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady() && SpellsManager.Q1 ? 1 : 0;
 
             if (JumperMenu.keybind("normal"))
             {
@@ -198,7 +194,7 @@
                 BubbaKush.Execute();
             }
 
-            if (JumperMenu.keybind("wardjump"))
+            if (MiscMenu.keybind("wardjump"))
             {
                 WardJump.Jump(user.ServerPosition.Extend(Game.CursorPos, 600).To3D());
             }
@@ -1188,8 +1184,33 @@
                 {
                     if (Q1 && q1 && Qtimer > 1500)
                     {
-                        LeeSin.Q.Cast(target, HitChance.Low);
-                        LastQ = Core.GameTickCount;
+                        if (MiscMenu.checkbox("smiteq") && Smite.IsReady())
+                        {
+                            if (
+                                LeeSin.Q.GetPrediction(target)
+                                    .CollisionObjects.Count(
+                                        o =>
+                                        o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster || o.IsMinion()) && o.IsKillable(Smite.Range) && Smite.GetDamage(o) >= o.Health)
+                                == LeeSin.Q.AllowedCollisionCount && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.Low)
+                            {
+                                LeeSin.Q.Cast(target, HitChance.Low);
+                                Smite.Cast(
+                                    LeeSin.Q.GetPrediction(target)
+                                        .CollisionObjects.FirstOrDefault(
+                                            o =>
+                                            o.NetworkId != target.NetworkId && o.IsMinion && o.IsKillable(Smite.Range)
+                                            && Smite.GetDamage(o) >= o.Health));
+                                LastQ = Core.GameTickCount;
+                            }
+                        }
+                        else
+                        {
+                            if (LeeSin.Q.AllowedCollisionCount == 0)
+                            {
+                                LeeSin.Q.Cast(target, HitChance.Low);
+                                LastQ = Core.GameTickCount;
+                            }
+                        }
                         return;
                     }
 
@@ -1350,7 +1371,8 @@
                         {
                             BubbaKush.CastFlash();
                         }
-                        if (Insec.Pos != null && !user.IsInRange(Insec.Pos, 200) && Flash.IsReady() && Flash.IsInRange(Insec.Pos) && JumperMenu.keybind("normal"))
+                        if (Insec.Pos != null && !user.IsInRange(Insec.Pos, 200) && Flash.IsReady() && Flash.IsInRange(Insec.Pos)
+                            && JumperMenu.keybind("normal"))
                         {
                             if (Insec.Step == Insec.Steps.UseR)
                             {

@@ -2,10 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using EloBuddy;
     using EloBuddy.SDK;
     using EloBuddy.SDK.Menu;
+    using EloBuddy.SDK.Spells;
 
     using KappaAIO.Core;
     using KappaAIO.Core.Managers;
@@ -31,6 +33,8 @@
 
         public static Spell.Skillshot Flash;
 
+        public static Spell.Targeted Smite;
+
         public abstract void Active();
 
         public abstract void Combo();
@@ -52,6 +56,14 @@
 
         public void Initialize()
         {
+            if (Player.Spells.FirstOrDefault(o => o.SData.Name.Contains("SummonerFlash")) != null)
+            {
+                Flash = SummonerSpells.Flash;
+            }
+            if (Player.Spells.FirstOrDefault(o => o.SData.Name.ToLower().Contains("smite")) != null)
+            {
+                Smite = SummonerSpells.Smite;
+            }
             Game.OnTick += this.Game_OnTick;
             Drawing.OnDraw += this.Drawing_OnDraw;
         }
@@ -68,7 +80,7 @@
             }
 
             // Damage
-            DrawingsManager.DrawTotalDamage(SpellList, DamageType.Magical, DrawMenu.checkbox("damage"));
+            DrawingsManager.DrawTotalDamage(SpellList, DrawMenu.checkbox("damage"));
         }
 
         public virtual void Game_OnTick(EventArgs args)

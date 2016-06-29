@@ -25,6 +25,28 @@
             public float[] MaxHP;
         }
 
+        private static int SmiteDamage(Obj_AI_Base target)
+        {
+            var lvl = Player.Instance.Level;
+            if (target is AIHeroClient)
+            {
+                return 20 + (8 * lvl);
+            }
+            if (lvl <= 4)
+            {
+                return 370 + (20 * lvl);
+            }
+            if (lvl <= 9)
+            {
+                return 450 + (30 * (lvl - 4));
+            }
+            if (lvl <= 14)
+            {
+                return 600 + (40 * (lvl - 9));
+            }
+            return 600 + (50 * (lvl - 14));
+        }
+
         public static void DamageDatabase()
         {
             Database.Clear();
@@ -206,6 +228,10 @@
 
         public static float GetDamage(this Spell.SpellBase Spell, Obj_AI_Base target)
         {
+            if (Spell.Name.ToLower().Contains("smite"))
+            {
+                return Player.Instance.CalculateDamageOnUnit(target, DamageType.True, SmiteDamage(target));
+            }
             if (!Database.Exists(s => s.slot == Spell.Slot))
             {
                 return 0;

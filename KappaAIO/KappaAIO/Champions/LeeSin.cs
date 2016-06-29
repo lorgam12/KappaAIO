@@ -177,6 +177,7 @@
                 DrawMenu.Add(spell.Slot.ToString(), new CheckBox(spell.Slot + " Range"));
                 ColorMenu.Add(spell.Slot.ToString(), new ColorPicker(spell.Slot + " Color", System.Drawing.Color.Chartreuse));
             }
+
             Obj_AI_Base.OnProcessSpellCast += EventsHandler.OnProcessSpellCast;
             Messages.OnMessage += EventsHandler.Messages_OnMessage;
             Spellbook.OnCastSpell += EventsHandler.Spellbook_OnCastSpell;
@@ -565,11 +566,14 @@
             var eminion = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).FirstOrDefault(m => m.IsValidTarget(E.Range));
             var Eminions = user.CountEnemyMinions(E.Range) > 1 && SpellsManager.E1;
             var Qminion =
-                EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).FirstOrDefault(
-                    m => m.IsValidTarget(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low);
+                EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health)
+                    .FirstOrDefault(m => m.IsValidTarget(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low);
             var Qlasthit =
-                EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.MaxHealth).FirstOrDefault(
-                    m => m.IsValidTarget(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low && (Q.GetDamage(m) >= m.Health && (SpellsManager.Q1 || (Qtarget() != null && Qtarget().ID().Equals(m.ID())))));
+                EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.MaxHealth)
+                    .FirstOrDefault(
+                        m =>
+                        m.IsValidTarget(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low
+                        && (Q.GetDamage(m) >= m.Health && (SpellsManager.Q1 || (Qtarget() != null && Qtarget().ID().Equals(m.ID())))));
 
             if (Passive <= LaneClearMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
             {
@@ -635,17 +639,20 @@
 
             if (Passive <= JungleClearMenu.slider("Passive") || SpellsManager.lastspelltimer > 3000)
             {
-                if (W.IsReady() && mob.IsValidTarget(E.Range) && ((JungleClearMenu.checkbox("W1") && SpellsManager.W1) || JungleClearMenu.checkbox("W2")))
+                if (W.IsReady() && mob.IsValidTarget(E.Range)
+                    && ((JungleClearMenu.checkbox("W1") && SpellsManager.W1) || JungleClearMenu.checkbox("W2")))
                 {
                     SpellsManager.W(user, JungleClearMenu.checkbox("W1"), JungleClearMenu.checkbox("W2"));
                     return;
                 }
-                if (E.IsReady() && mob.IsValidTarget(E.Range) && ((JungleClearMenu.checkbox("E1") && SpellsManager.E1) || JungleClearMenu.checkbox("E2")))
+                if (E.IsReady() && mob.IsValidTarget(E.Range)
+                    && ((JungleClearMenu.checkbox("E1") && SpellsManager.E1) || JungleClearMenu.checkbox("E2")))
                 {
                     SpellsManager.E(mob, JungleClearMenu.checkbox("E1"), JungleClearMenu.checkbox("E2"));
                     return;
                 }
-                if (Q.IsReady() && mob.IsValidTarget(Q.Range) && ((JungleClearMenu.checkbox("Q1") && SpellsManager.Q1) || JungleClearMenu.checkbox("Q2")))
+                if (Q.IsReady() && mob.IsValidTarget(Q.Range)
+                    && ((JungleClearMenu.checkbox("Q1") && SpellsManager.Q1) || JungleClearMenu.checkbox("Q2")))
                 {
                     SpellsManager.Q(mob, JungleClearMenu.checkbox("Q1"), JungleClearMenu.checkbox("Q2"));
                     return;
@@ -1053,8 +1060,8 @@
                 {
                     Step = Steps.UseWF;
                 }
-                else if (Step == Steps.Nothing && user.Distance(Pos) < Flash.Range && !user.IsInRange(Pos, 200) && Flash != null && Flash.IsReady()
-                         && SpellsManager.Wtimer > 1000)
+                else if (Step == Steps.Nothing && user.Distance(Pos) < Flash.Range && !user.IsInRange(Pos, 200) && Flash != null
+                         && Flash.IsReady() && SpellsManager.Wtimer > 1000)
                 {
                     Step = Steps.UseF;
                 }
@@ -1342,14 +1349,16 @@
                 {
                     if (Q1 && q1 && Qtimer > 1500)
                     {
-                        if (MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady() && !(Common.orbmode(Orbwalker.ActiveModes.LaneClear) || Common.orbmode(Orbwalker.ActiveModes.JungleClear)))
+                        if (MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady()
+                            && !(Common.orbmode(Orbwalker.ActiveModes.LaneClear) || Common.orbmode(Orbwalker.ActiveModes.JungleClear)))
                         {
                             if (
                                 LeeSin.Q.GetPrediction(target)
                                     .CollisionObjects.Count(
                                         o =>
-                                        o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster || o.IsMinion()) && o.IsKillable(Smite.Range) && Smite.GetDamage(o) >= o.Health)
-                                == LeeSin.Q.AllowedCollisionCount && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.Low)
+                                        o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster || o.IsMinion()) && o.IsKillable(Smite.Range)
+                                        && Smite.GetDamage(o) >= o.Health) == LeeSin.Q.AllowedCollisionCount
+                                && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.Low)
                             {
                                 LeeSin.Q.Cast(target, HitChance.Low);
                                 Smite.Cast(

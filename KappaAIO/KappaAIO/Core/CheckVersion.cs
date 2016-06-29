@@ -39,8 +39,7 @@
                                         if (data.Contains(CurrentVersionPath.ToString()))
                                         {
                                             Console.ForegroundColor = ConsoleColor.Cyan;
-                                            Console.WriteLine(
-                                                DateTime.Now.ToString("[H:mm:ss - ") + "Info]" + " KappaAIO: Your version is Updated !");
+                                            Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "Info]" + " KappaAIO: Your version is Updated !");
                                             Console.ResetColor();
                                         }
                                         else

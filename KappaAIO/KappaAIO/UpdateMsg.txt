@@ -1,1 +1,1 @@
-Added LaneClear /JungleClear /Harass For Lee Sin !
+Fixed Smite Q For Lee Sin !

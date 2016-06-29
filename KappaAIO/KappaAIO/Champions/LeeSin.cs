@@ -1350,25 +1350,21 @@
                     if (Q1 && q1 && Qtimer > 1500)
                     {
                         if (MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady()
+                            && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.High
+                            && LeeSin.Q.GetPrediction(target)
+                                   .CollisionObjects.Count(
+                                       o =>
+                                       o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster || o.IsMinion()) && o.IsKillable(Smite.Range)
+                                       && Smite.GetDamage(o) >= o.Health) == LeeSin.Q.AllowedCollisionCount
                             && !(Common.orbmode(Orbwalker.ActiveModes.LaneClear) || Common.orbmode(Orbwalker.ActiveModes.JungleClear)))
                         {
-                            if (
+                            LeeSin.Q.Cast(target, HitChance.Low);
+                            Smite.Cast(
                                 LeeSin.Q.GetPrediction(target)
-                                    .CollisionObjects.Count(
+                                    .CollisionObjects.FirstOrDefault(
                                         o =>
-                                        o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster || o.IsMinion()) && o.IsKillable(Smite.Range)
-                                        && Smite.GetDamage(o) >= o.Health) == LeeSin.Q.AllowedCollisionCount
-                                && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.Low)
-                            {
-                                LeeSin.Q.Cast(target, HitChance.Low);
-                                Smite.Cast(
-                                    LeeSin.Q.GetPrediction(target)
-                                        .CollisionObjects.FirstOrDefault(
-                                            o =>
-                                            o.NetworkId != target.NetworkId && o.IsMinion && o.IsKillable(Smite.Range)
-                                            && Smite.GetDamage(o) >= o.Health));
-                                LastQ = Core.GameTickCount;
-                            }
+                                        o.NetworkId != target.NetworkId && o.IsMinion && o.IsKillable(Smite.Range) && Smite.GetDamage(o) >= o.Health));
+                            LastQ = Core.GameTickCount;
                         }
                         else
                         {

@@ -83,10 +83,20 @@
             Menuini.Add("fpsboost", new CheckBox("FPS Boost (FIX FPS Issues)", false));
             Menuini.AddLabel("Fps Boost: Fixed FPS Issues But can reduce the Performance");
 
+            RMenu.AddGroupLabel("BubbaKush Mode");
             RMenu.Add("list", new ComboBox("Mode", 0, "Auto", "Close > LowHP", "MaxHP > LowHP"));
             RMenu.Add("bubba", new KeyBind("Bubba Kush", false, KeyBind.BindTypes.HoldActive, 'Z'));
+            RMenu.AddGroupLabel("HOW IT WORKS");
+            RMenu.AddLabel("It will Jump > ult the target from the mode towards other target");
 
+            JumperMenu.AddGroupLabel("Insec Mode");
             JumperMenu.Add("normal", new KeyBind("normal Insec", false, KeyBind.BindTypes.HoldActive, 'S'));
+            JumperMenu.AddGroupLabel("HOW IT WORKS");
+            JumperMenu.AddLabel("Enable Insec Drawings from Draw Menu To Know your target");
+            JumperMenu.AddLabel("The target with red circle is the INSEC target");
+            JumperMenu.AddLabel("The ally with blue circle is the INSEC TO target");
+            JumperMenu.AddLabel("You can select them by Left clicking on them");
+            JumperMenu.AddLabel("On double click you Unselect both of the ally and the target");
 
             ComboMenu.AddGroupLabel("Combo Mode");
             ComboMenu.Add("mode", new ComboBox("Combo Mode", 0, "Normal", "Star Combo"));
@@ -116,18 +126,21 @@
             ComboMenu.Add("Wj", new CheckBox("Use WardJump"));
             ComboMenu.Add("ES", new CheckBox("Use E"));
 
+            HarassMenu.AddGroupLabel("Harass Mode");
             HarassMenu.Add("Q1", new CheckBox("Use Q1"));
             HarassMenu.Add("Q2", new CheckBox("Use Q2"));
             HarassMenu.Add("E1", new CheckBox("Use E1"));
             HarassMenu.Add("E2", new CheckBox("Use E2"));
             HarassMenu.Add("Passive", new Slider("Passive Count", 1, 0, 2));
 
+            LaneClearMenu.AddGroupLabel("LaneClear Mode");
             LaneClearMenu.Add("Q1", new CheckBox("Use Q1"));
             LaneClearMenu.Add("Q2", new CheckBox("Use Q2"));
             LaneClearMenu.Add("E1", new CheckBox("Use E1"));
             LaneClearMenu.Add("E2", new CheckBox("Use E2"));
             LaneClearMenu.Add("Passive", new Slider("Passive Count", 1, 0, 2));
 
+            JungleClearMenu.AddGroupLabel("JungleClear Mode");
             JungleClearMenu.Add("Q1", new CheckBox("Use Q1"));
             JungleClearMenu.Add("Q2", new CheckBox("Use Q2"));
             JungleClearMenu.Add("W1", new CheckBox("Use W1"));
@@ -136,6 +149,7 @@
             JungleClearMenu.Add("E2", new CheckBox("Use E2"));
             JungleClearMenu.Add("Passive", new Slider("Passive Count", 2, 0, 2));
 
+            KillStealMenu.AddGroupLabel("Killsteal Settings");
             foreach (var spell in SpellList.Where(s => s != W))
             {
                 KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
@@ -145,6 +159,7 @@
                 }
             }
 
+            MiscMenu.AddGroupLabel("Misc Settings");
             MiscMenu.Add("wardjump", new KeyBind("Ward Jump", false, KeyBind.BindTypes.HoldActive, 'A'));
             MiscMenu.Add("smiteq", new CheckBox("Smite Q"));
             MiscMenu.Add("Rint", new CheckBox("R Interrupter"));

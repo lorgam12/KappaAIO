@@ -27,7 +27,7 @@
                 ObjectManager.Get<Obj_AI_Minion>()
                     .Where(
                         w =>
-                        w.Name.ToLower().Contains("ward") && w.IsAlly && w.IsValid && w.Health > 0 && !w.IsDead
+                        w.Name.ToLower().Contains("ward") && w != null && w.IsAlly && w.IsValid && w.Health > 0 && !w.IsDead
                         && !w.Name.ToLower().Contains("wardcorpse")))
             {
                 Managers.ObjectsManager.Wards.Add(ward);

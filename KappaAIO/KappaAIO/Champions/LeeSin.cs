@@ -169,6 +169,7 @@
 
             DrawMenu.AddGroupLabel("Drawings");
             DrawMenu.Add("insec", new CheckBox("Draw Insec Lines"));
+            DrawMenu.Add("mode", new CheckBox("Draw Combo Mode"));
             DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));
             DrawMenu.AddLabel("Draws = ComboDamage / Enemy Current Health");
             DrawMenu.AddSeparator(1);
@@ -178,6 +179,7 @@
                 ColorMenu.Add(spell.Slot.ToString(), new ColorPicker(spell.Slot + " Color", System.Drawing.Color.Chartreuse));
             }
 
+            GameObject.OnCreate += EventsHandler.GameObject_OnCreate;
             Obj_AI_Base.OnProcessSpellCast += EventsHandler.OnProcessSpellCast;
             Messages.OnMessage += EventsHandler.Messages_OnMessage;
             Spellbook.OnCastSpell += EventsHandler.Spellbook_OnCastSpell;
@@ -680,6 +682,13 @@
 
         public override void Draw()
         {
+            var X = user.ServerPosition.WorldToScreen().X;
+            var Y = user.ServerPosition.WorldToScreen().Y;
+            if (DrawMenu.checkbox("mode"))
+            {
+                Drawing.DrawText(X, Y - 20, System.Drawing.Color.White, "Combo Mode: " + (ComboMenu.combobox("mode") == 0 ? "Normal Combo" : "Star Combo"), 10);
+            }
+
             if (DrawMenu.checkbox("insec"))
             {
                 if (Insec.InsecTarget != null && Insec.InsecTarget.IsKillable())
@@ -705,8 +714,6 @@
                 return;
             }
             BubbaKush.DoBubba(null, (1 + 1).Equals(2));
-            var X = user.ServerPosition.WorldToScreen().X;
-            var Y = user.ServerPosition.WorldToScreen().Y;
 
             Drawing.DrawText(X, Y, System.Drawing.Color.White, (Core.GameTickCount - SpellsManager.LastpW).ToString(), 5);
         }
@@ -1406,7 +1413,7 @@
 
             public static void W(Obj_AI_Base target, bool w1, bool W2 = false)
             {
-                if (LeeSin.W.IsReady() && target.IsKillable(LeeSin.W.Range))
+                if (LeeSin.W.IsReady() && target.IsValidTarget(LeeSin.W.Range))
                 {
                     if (W1 && w1 && Wtimer > 500)
                     {
@@ -1444,6 +1451,14 @@
 
         private static class EventsHandler
         {
+            public static void GameObject_OnCreate(GameObject sender, System.EventArgs args)
+            {
+                if (sender != null && SpellsManager.W1 && W.IsReady() && sender.Distance(user) <= W.Range && SpellsManager.Wtimer > 1000 && !sender.IsDead && sender.IsAlly && SpellsManager.W1 && sender.isWard() && W.IsInRange((Obj_AI_Minion)sender) && (RMenu.keybind("bubba") || JumperMenu.keybind("normal") || MiscMenu.keybind("wardjump")))
+                {
+                    W.Cast((Obj_AI_Base)sender);
+                }
+            }
+
             public static void Dash_OnDash(Obj_AI_Base sender, Dash.DashEventArgs e)
             {
                 if (!sender.IsEnemy || !R.IsReady() || sender == null || !sender.IsKillable(R.Range) || !MiscMenu.checkbox("Rgap"))

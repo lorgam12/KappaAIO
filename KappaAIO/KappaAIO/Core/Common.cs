@@ -152,6 +152,11 @@
                    && !target.HasBuffOfType(BuffType.PhysicalImmunity) && target.IsValidTarget();
         }
 
+        public static bool isWard(this GameObject obj)
+        {
+            return obj.Name.ToLower().Contains("ward") && !obj.Name.ToLower().Contains("wardcorpse");
+        }
+
         public static bool IsKillable(this Obj_AI_Base target, float range)
         {
             return !target.HasBuff("kindredrnodeathbuff") && !target.Buffs.Any(b => b.Name.ToLower().Contains("fioraw")) && !target.HasBuff("JudicatorIntervention") && !target.HasBuff("ChronoShift")

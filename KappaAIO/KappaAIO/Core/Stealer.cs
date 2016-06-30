@@ -21,8 +21,7 @@
                 EntityManager.MinionsAndMonsters.GetJungleMonsters()
                     .Where(
                         j =>
-                        j.IsKillable() && kCore.Junglemobs.Contains(j.BaseSkinName) && j.IsKillable(spell.Range)
-                        && kCore.ks.checkbox(j.BaseSkinName))
+                        j.IsKillable() && kCore.Junglemobs.Contains(j.BaseSkinName) && j.IsKillable(spell.Range) && kCore.ks.checkbox(j.BaseSkinName))
                     .FirstOrDefault(jmob => spell.GetDamage(jmob) >= Prediction.Health.GetPrediction(jmob, spell.CastDelay));
         }
     }

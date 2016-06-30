@@ -255,8 +255,8 @@
 
         private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
-            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || e.DangerLevel < Common.danger(MiscMenu)
-                || !sender.IsKillable(500) || !MiscMenu.checkbox("int"))
+            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || e.DangerLevel < Common.danger(MiscMenu) || !sender.IsKillable(500)
+                || !MiscMenu.checkbox("int"))
             {
                 return;
             }

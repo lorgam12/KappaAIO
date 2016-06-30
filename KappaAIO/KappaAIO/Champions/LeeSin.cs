@@ -224,7 +224,6 @@
 
             Q.Range = (uint)(SpellsManager.Q1 ? 1100 : 1300);
             E.Range = (uint)(SpellsManager.E1 ? 350 : 700);
-            Q.AllowedCollisionCount = MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady() && SpellsManager.Q1 ? 1 : 0;
 
             if (JumperMenu.keybind("normal"))
             {
@@ -641,20 +640,17 @@
 
             if (Passive <= JungleClearMenu.slider("Passive") || SpellsManager.lastspelltimer > 3000)
             {
-                if (W.IsReady() && mob.IsKillable(E.Range)
-                    && ((JungleClearMenu.checkbox("W1") && SpellsManager.W1) || JungleClearMenu.checkbox("W2")))
+                if (W.IsReady() && mob.IsKillable(E.Range) && ((JungleClearMenu.checkbox("W1") && SpellsManager.W1) || JungleClearMenu.checkbox("W2")))
                 {
                     SpellsManager.W(user, JungleClearMenu.checkbox("W1"), JungleClearMenu.checkbox("W2"));
                     return;
                 }
-                if (E.IsReady() && mob.IsKillable(E.Range)
-                    && ((JungleClearMenu.checkbox("E1") && SpellsManager.E1) || JungleClearMenu.checkbox("E2")))
+                if (E.IsReady() && mob.IsKillable(E.Range) && ((JungleClearMenu.checkbox("E1") && SpellsManager.E1) || JungleClearMenu.checkbox("E2")))
                 {
                     SpellsManager.E(mob, JungleClearMenu.checkbox("E1"), JungleClearMenu.checkbox("E2"));
                     return;
                 }
-                if (Q.IsReady() && mob.IsKillable(Q.Range)
-                    && ((JungleClearMenu.checkbox("Q1") && SpellsManager.Q1) || JungleClearMenu.checkbox("Q2")))
+                if (Q.IsReady() && mob.IsKillable(Q.Range) && ((JungleClearMenu.checkbox("Q1") && SpellsManager.Q1) || JungleClearMenu.checkbox("Q2")))
                 {
                     SpellsManager.Q(mob, JungleClearMenu.checkbox("Q1"), JungleClearMenu.checkbox("Q2"));
                     return;
@@ -686,7 +682,12 @@
             var Y = user.ServerPosition.WorldToScreen().Y;
             if (DrawMenu.checkbox("mode"))
             {
-                Drawing.DrawText(X, Y - 20, System.Drawing.Color.White, "Combo Mode: " + (ComboMenu.combobox("mode") == 0 ? "Normal Combo" : "Star Combo"), 10);
+                Drawing.DrawText(
+                    X,
+                    Y - 20,
+                    System.Drawing.Color.White,
+                    "Combo Mode: " + (ComboMenu.combobox("mode") == 0 ? "Normal Combo" : "Star Combo"),
+                    10);
             }
 
             if (DrawMenu.checkbox("insec"))
@@ -995,7 +996,7 @@
 
             public static Vector3 InsecTo(Obj_AI_Base target)
             {
-                var oldpos = user.ServerPosition;
+                var oldpos = user.ServerPosition.Extend(ObjectManager.Get<Obj_HQ>().FirstOrDefault(i => i.IsAlly).Position, 200).To3D();
                 if (MyAlly == null)
                 {
                     var ally =
@@ -1077,7 +1078,7 @@
                     Step = Steps.Nothing;
                 }
 
-                Chat.Print(Step);
+                Chat.Print("leesin debug:" + Step);
                 switch (Step)
                 {
                     case Steps.UseR:
@@ -1133,7 +1134,7 @@
 
             private static readonly Item[] VisionWards = { new Item(ItemId.Vision_Ward, 600f) };
 
-            private static float lastward;
+            public static float lastward;
 
             private static Item UseWard
             {
@@ -1187,7 +1188,7 @@
             {
                 if (W.IsReady() && SpellsManager.W1 && SpellsManager.Wtimer > 1000)
                 {
-                    if ((Wtarget(vector3, combo) != null || Core.GameTickCount - lastward < 2000))
+                    if ((Wtarget(vector3, combo) != null || Core.GameTickCount - lastward < 3000))
                     {
                         SpellsManager.W(bubba ? Wtarget(vector3, false, 100) : Wtarget(vector3, combo), true);
                     }
@@ -1222,8 +1223,7 @@
                 if (combo)
                 {
                     var wardinragec =
-                        ObjectsManager.Wards.OrderBy(e => e.Distance(vector3))
-                            .FirstOrDefault(ward => ward.IsInRange(vector3, 300) && ward.IsValid);
+                        ObjectsManager.Wards.OrderBy(e => e.Distance(vector3)).FirstOrDefault(ward => ward.IsInRange(vector3, 300) && ward.IsValid);
 
                     var allyc =
                         EntityManager.Heroes.Allies.OrderBy(e => e.Distance(vector3))
@@ -1243,8 +1243,7 @@
 
                 var ally = EntityManager.Heroes.Allies.FirstOrDefault(a => a.IsInRange(vector3, range) && a.IsValidTarget() && !a.IsMe);
 
-                var minion =
-                    EntityManager.MinionsAndMonsters.AlliedMinions.FirstOrDefault(m => m.IsInRange(vector3, range) && m.IsValidTarget());
+                var minion = EntityManager.MinionsAndMonsters.AlliedMinions.FirstOrDefault(m => m.IsInRange(vector3, range) && m.IsValidTarget());
                 if (ally != null)
                 {
                     return ally;
@@ -1350,6 +1349,10 @@
             {
                 if (LeeSin.Q.IsReady() && target.IsKillable(LeeSin.Q.Range))
                 {
+                    LeeSin.Q.AllowedCollisionCount = MiscMenu.checkbox("smiteq") && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.High
+                                                     && Smite != null && Smite.IsReady() && Q1
+                                                         ? 1
+                                                         : 0;
                     if (Q1 && q1 && Qtimer > 1500)
                     {
                         if (MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady()
@@ -1368,15 +1371,14 @@
                                         o =>
                                         o.NetworkId != target.NetworkId && o.IsMinion && o.IsKillable(Smite.Range) && Smite.GetDamage(o) >= o.Health));
                             LastQ = Core.GameTickCount;
+                            return;
                         }
-                        else
+                        LeeSin.Q.AllowedCollisionCount = 0;
+                        if (LeeSin.Q.AllowedCollisionCount == 0)
                         {
-                            LeeSin.Q.AllowedCollisionCount = 0;
-                            if (LeeSin.Q.AllowedCollisionCount == 0)
-                            {
-                                LeeSin.Q.Cast(target, HitChance.Low);
-                                LastQ = Core.GameTickCount;
-                            }
+                            LeeSin.Q.Cast(target, HitChance.Low);
+                            LastQ = Core.GameTickCount;
+                            return;
                         }
                         return;
                     }
@@ -1415,7 +1417,7 @@
             {
                 if (LeeSin.W.IsReady() && target.IsValidTarget(LeeSin.W.Range))
                 {
-                    if (W1 && w1 && Wtimer > 500)
+                    if (W1 && w1 && Wtimer > Game.Ping)
                     {
                         Chat.Print("leesin debug: W1");
                         LeeSin.W.Cast(target);
@@ -1453,9 +1455,12 @@
         {
             public static void GameObject_OnCreate(GameObject sender, System.EventArgs args)
             {
-                if (sender != null && SpellsManager.W1 && W.IsReady() && sender.Distance(user) <= W.Range && SpellsManager.Wtimer > 1000 && !sender.IsDead && sender.IsAlly && SpellsManager.W1 && sender.isWard() && W.IsInRange((Obj_AI_Minion)sender) && (RMenu.keybind("bubba") || JumperMenu.keybind("normal") || MiscMenu.keybind("wardjump")))
+                if (sender != null && SpellsManager.W1 && W.IsReady() && sender.Distance(user) <= W.Range && SpellsManager.Wtimer > 1000
+                    && !sender.IsDead && sender.IsAlly && SpellsManager.W1 && sender.isWard() && W.IsInRange((Obj_AI_Minion)sender)
+                    && (RMenu.keybind("bubba") || JumperMenu.keybind("normal") || MiscMenu.keybind("wardjump")))
                 {
-                    W.Cast((Obj_AI_Base)sender);
+                    SpellsManager.W((Obj_AI_Base)sender, true);
+                    WardJump.lastward = Core.GameTickCount;
                 }
             }
 
@@ -1496,6 +1501,10 @@
             {
                 if (sender.Owner.IsMe && args.Slot == SpellSlot.W && Core.GameTickCount - SpellsManager.LastW < Game.Ping)
                 {
+                    if ((JumperMenu.keybind("normal") || RMenu.keybind("bubba") || MiscMenu.keybind("wardjump")) && !SpellsManager.W1)
+                    {
+                        args.Process = false;
+                    }
                     args.Process = false;
                     Chat.Print("leesin debug: wblocked");
                 }
@@ -1511,7 +1520,7 @@
                         SpellsManager.LastpQ = Core.GameTickCount;
                         if (Insec.Step == Insec.Steps.UseQ && Insec.Pos != null && JumperMenu.keybind("normal"))
                         {
-                            Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 300);
+                            Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 250);
                             Chat.Print("leesin debug: procces WardJump");
                         }
                     }
@@ -1551,7 +1560,7 @@
                         {
                             if (Insec.Step == Insec.Steps.UseR)
                             {
-                                Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 300);
+                                Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 200);
                                 Chat.Print("leesin debug: procces Flash");
                             }
                         }

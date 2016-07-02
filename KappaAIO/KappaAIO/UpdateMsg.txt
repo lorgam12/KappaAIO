@@ -1,1 +1,1 @@
-Improved WardJump and SmiteQ For LeeSin !
+Bug fixes and improvements for LeeSin !

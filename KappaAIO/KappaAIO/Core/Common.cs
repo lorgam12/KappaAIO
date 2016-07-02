@@ -153,6 +153,11 @@
                    && target.IsValidTarget();
         }
 
+        public static bool IsAirborne(this Obj_AI_Base target)
+        {
+            return target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Knockup);
+        }
+
         public static bool isWard(this GameObject obj)
         {
             return obj.Name.ToLower().Contains("ward") && !obj.Name.ToLower().Contains("wardcorpse");

@@ -1518,11 +1518,13 @@
                     if (args.Slot == SpellSlot.Q)
                     {
                         SpellsManager.LastpQ = Core.GameTickCount;
-                        if (Insec.Step == Insec.Steps.UseQ && Insec.Pos != null && JumperMenu.keybind("normal"))
-                        {
-                            Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 250);
-                            Chat.Print("leesin debug: procces WardJump");
-                        }
+                        /*
+                    if (Insec.Pos != null && (Insec.Step == Insec.Steps.UseQ && JumperMenu.keybind("normal")))
+                    {
+                        Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 250);
+                        Chat.Print("leesin debug: procces WardJump");
+                    }
+                            */
                     }
 
                     if (args.Slot == SpellSlot.W)
@@ -1530,16 +1532,18 @@
                         SpellsManager.LastpW = Core.GameTickCount;
                         if (JumperMenu.keybind("normal"))
                         {
+                            /*
                             if (Insec.InsecTarget != null && Insec.Step == Insec.Steps.UseW)
                             {
                                 Core.DelayAction(() => { R.Cast(Insec.InsecTarget); }, 100);
                                 Chat.Print("leesin debug: procces R");
                             }
-                            if (Insec.Pos != null && Flash != null && (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF))
+                            if (Insec.Pos != null && (Flash != null && Flash.IsReady() && (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF)))
                             {
                                 Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 250);
                                 Chat.Print("leesin debug: procces Flash");
                             }
+                            */
                         }
                     }
 
@@ -1555,8 +1559,9 @@
                         {
                             BubbaKush.CastFlash();
                         }
-                        if (Insec.Pos != null && !user.IsInRange(Insec.Pos, 200) && Flash != null && Flash.IsReady() && Flash.IsInRange(Insec.Pos)
-                            && JumperMenu.keybind("normal"))
+                        /*
+                        if (Insec.Pos != null && (!user.IsInRange(Insec.Pos, 200) && Flash != null && Flash.IsReady() && Flash.IsInRange(Insec.Pos)
+                            && JumperMenu.keybind("normal")))
                         {
                             if (Insec.Step == Insec.Steps.UseR)
                             {
@@ -1564,6 +1569,7 @@
                                 Chat.Print("leesin debug: procces Flash");
                             }
                         }
+                        */
                     }
                     if (Flash != null && args.Slot == Flash.Slot)
                     {

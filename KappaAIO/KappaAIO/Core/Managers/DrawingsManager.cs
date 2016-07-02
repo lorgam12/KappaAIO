@@ -68,7 +68,7 @@
                             c = Color.Red;
                         }
 
-                        Drawing.DrawText(hpx + 145, hpy, c, damage + totaldmg + " / " + (int)enemy.TotalShieldHealth(), 3);
+                        Drawing.DrawText(hpx + 160, hpy, c, damage + totaldmg + " / " + (int)enemy.TotalShieldHealth(), 3);
                     }
                 }
             }

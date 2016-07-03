@@ -15,9 +15,8 @@
 
         public static readonly string[] Junglemobs =
             {
-                "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water", "SRU_Dragon_Elder",
-                "SRU_Baron", "SRU_Gromp", "SRU_Krug", "SRU_Razorbeak", "Sru_Crab", "SRU_Murkwolf", "SRU_Blue",
-                "SRU_Red", "SRU_RiftHerald", "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss",
+                "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water", "SRU_Dragon_Elder", "SRU_Baron", "SRU_Gromp", "SRU_Krug", 
+                "SRU_Razorbeak", "Sru_Crab", "SRU_Murkwolf", "SRU_Blue", "SRU_Red", "SRU_RiftHerald", "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss", 
                 "AscXerath"
             };
 
@@ -25,13 +24,11 @@
         {
             foreach (var ward in
                 ObjectManager.Get<Obj_AI_Minion>()
-                    .Where(
-                        w =>
-                        w.Name.ToLower().Contains("ward") && w != null && w.IsAlly && w.IsValid && w.Health > 0 && !w.IsDead
-                        && !w.Name.ToLower().Contains("wardcorpse")))
+                    .Where(w => w.Name.ToLower().Contains("ward") && w != null && w.IsAlly && w.IsValid && w.Health > 0 && !w.IsDead && !w.Name.ToLower().Contains("wardcorpse")))
             {
                 Managers.ObjectsManager.Wards.Add(ward);
             }
+
             CoreMenu = MainMenu.AddMenu("KappaCore", "KappaCore");
             GapMenu = CoreMenu.AddSubMenu("Anti-GapCloser Settings");
             ks = CoreMenu.AddSubMenu("Stealer");
@@ -57,6 +54,7 @@
             {
                 ks.Add(mob, new CheckBox(mob));
             }
+
             GameObject.OnCreate += delegate(GameObject sender, EventArgs args)
                 {
                     if (sender.Name.ToLower().Contains("ward") && sender.IsAlly && !sender.Name.ToLower().Contains("wardcorpse"))

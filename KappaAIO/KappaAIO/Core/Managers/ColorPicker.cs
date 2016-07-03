@@ -12,6 +12,7 @@
 
     using Color = System.Drawing.Color;
     using Line = EloBuddy.SDK.Rendering.Line;
+    using RectangleF = SharpDX.RectangleF;
 
     /// <summary>
     /// A Color Picker for EloBuddy.net using 4 sliders adjusting the red, green, blue and alpha values respectively.
@@ -60,6 +61,7 @@
             {
                 return this.CurrentValue.R;
             }
+
             set
             {
                 this.CurrentValue = Color.FromArgb(this.Alpha, value, this.Green, this.Blue);
@@ -72,6 +74,7 @@
             {
                 return this.CurrentValue.G;
             }
+
             set
             {
                 this.CurrentValue = Color.FromArgb(this.Alpha, this.Red, value, this.Blue);
@@ -84,6 +87,7 @@
             {
                 return this.CurrentValue.B;
             }
+
             set
             {
                 this.CurrentValue = Color.FromArgb(this.Alpha, this.Red, this.Green, value);
@@ -96,6 +100,7 @@
             {
                 return this.CurrentValue.A;
             }
+
             set
             {
                 this.CurrentValue = Color.FromArgb(value, this.Red, this.Green, this.Blue);
@@ -107,7 +112,7 @@
         /// </summary>
         public bool DrawPointerLine { get; set; }
 
-        //Mouse Event Data
+        // Mouse Event Data
         internal bool IsMouseDown { get; set; }
 
         internal RectangleF MouseClickedBox { get; set; }
@@ -220,7 +225,7 @@
         #region Constructors 
 
         public ColorPicker(string displayName, Color defaultColor)
-            : this("", defaultColor, displayName, 100)
+            : this(string.Empty, defaultColor, displayName, 100)
         {
         }
 
@@ -230,16 +235,17 @@
             this.MouseClickedBox = RectangleF.Empty;
             this.DisplayNameTextFont = new FontDescription()
                                            {
-                                               Height = 20, Width = 8, CharacterSet = FontCharacterSet.Default, Weight = DefaultFont.Weight,
-                                               OutputPrecision = FontPrecision.Default, Quality = FontQuality.Default, FaceName = DefaultFont.FaceName,
-                                               Italic = false, MipLevels = DefaultFont.MipLevels, PitchAndFamily = FontPitchAndFamily.Default
+                                               Height = 20, Width = 8, CharacterSet = FontCharacterSet.Default, Weight = DefaultFont.Weight, OutputPrecision = FontPrecision.Default, 
+                                               Quality = FontQuality.Default, FaceName = DefaultFont.FaceName, Italic = false, MipLevels = DefaultFont.MipLevels, 
+                                               PitchAndFamily = FontPitchAndFamily.Default
                                            };
 
             this.OnThemeChange();
             this.CurrentValue = defaultColor;
             Messages.OnMessage += this.Messages_OnMessage;
-            //OnLeftMouseDown += ColorPicker_OnLeftMouseDown;
-            //OnLeftMouseUp += ColorPicker_OnLeftMouseUp;
+
+            // OnLeftMouseDown += ColorPicker_OnLeftMouseDown;
+            // OnLeftMouseUp += ColorPicker_OnLeftMouseUp;
             this.OnMouseMove += this.ColorPicker_OnMouseMove;
         }
 
@@ -257,12 +263,13 @@
             {
                 return;
             }
-            //Because events are not being called i have to call them my self
 
+            // Because events are not being called i have to call them my self
             if (args.Message == WindowMessages.LeftButtonDown)
             {
                 this.ColorPicker_OnLeftMouseDown(this, new EventArgs());
             }
+
             if (args.Message == WindowMessages.LeftButtonUp)
             {
                 this.ColorPicker_OnLeftMouseUp(this, new EventArgs());
@@ -275,6 +282,7 @@
             {
                 return;
             }
+
             if (this.MouseClickedBox == this.RedBarNative)
             {
                 this.Red = Math.Min(Math.Max(0, this.GetPosValue(this.MouseClickedBox, Game.CursorPos2D)), 255);
@@ -299,6 +307,7 @@
             {
                 return;
             }
+
             if (this.IsInsideRectangle(this.RedBarNative, Game.CursorPos2D))
             {
                 this.MouseClickedBox = this.RedBarNative;
@@ -319,14 +328,16 @@
             {
                 return;
             }
+
             this.IsMouseDown = true;
         }
 
         private bool IsInsideRectangle(RectangleF rectangle, Vector2 checkPos)
         {
             return rectangle.Contains(checkPos);
-            //return checkPos.X >= rectangle.Left && checkPos.Y >= rectangle.Top &&
-            //                checkPos.X <= rectangle.Right && checkPos.Y <= rectangle.Bottom;
+
+            // return checkPos.X >= rectangle.Left && checkPos.Y >= rectangle.Top &&
+            // checkPos.X <= rectangle.Right && checkPos.Y <= rectangle.Bottom;
         }
 
         private void ColorPicker_OnLeftMouseUp(EloBuddy.SDK.Menu.Control sender, EventArgs args)
@@ -340,21 +351,9 @@
             this.BarWidth = (DefaultWidth - (this._barPadding[1] * 2 + this._barPadding[2] * 3)) / 4;
             this.LineWidth = this.BarWidth / 255f;
             this.RedBar = new RectangleF(this._barPadding[1], this._barPadding[0], this.BarWidth, DefaultHeight - this._barPadding[3]);
-            this.GreenBar = new RectangleF(
-                this.BarWidth + this._barPadding[1] * 2,
-                this._barPadding[0],
-                this.BarWidth,
-                DefaultHeight - this._barPadding[3]);
-            this.BlueBar = new RectangleF(
-                this.BarWidth * 2 + this._barPadding[1] * 3,
-                this._barPadding[0],
-                this.BarWidth,
-                DefaultHeight - this._barPadding[3]);
-            this.AlphaBar = new RectangleF(
-                this.BarWidth * 3 + this._barPadding[1] * 4,
-                this._barPadding[0],
-                this.BarWidth,
-                DefaultHeight - this._barPadding[3]);
+            this.GreenBar = new RectangleF(this.BarWidth + this._barPadding[1] * 2, this._barPadding[0], this.BarWidth, DefaultHeight - this._barPadding[3]);
+            this.BlueBar = new RectangleF(this.BarWidth * 2 + this._barPadding[1] * 3, this._barPadding[0], this.BarWidth, DefaultHeight - this._barPadding[3]);
+            this.AlphaBar = new RectangleF(this.BarWidth * 3 + this._barPadding[1] * 4, this._barPadding[0], this.BarWidth, DefaultHeight - this._barPadding[3]);
 
             this.ColorBar = new RectangleF(this._barPadding[1], 25, this.Width - this._barPadding[1] - this._barPadding[2], 10);
 
@@ -373,7 +372,7 @@
 
         private int GetPosValue(RectangleF box, Vector2 position)
         {
-            //Make position within the box's bounds
+            // Make position within the box's bounds
             position = new Vector2(Math.Max(Math.Min(position.X, box.Right), box.Left) - box.X, 0);
             return (int)(position.X / this.LineWidth);
         }
@@ -399,15 +398,15 @@
             this.DisplayNameText.Position = this.OffsetVector(this.ColorBarNative.TopLeft, 0, -22);
             this.DisplayNameText.Draw();
 
-            //Color Display Bar
+            // Color Display Bar
             this.DrawRectangle(this.ColorBarNative, DefaultColorGold, 2, false);
             Line.DrawLine(
-                this.CurrentValue,
-                this.ColorBarNative.Height - 2,
-                this.SetVector(this.ColorBarNative.TopLeft, this.ColorBarNative.TopLeft.X + 1, this.ColorBarNative.Center.Y),
+                this.CurrentValue, 
+                this.ColorBarNative.Height - 2, 
+                this.SetVector(this.ColorBarNative.TopLeft, this.ColorBarNative.TopLeft.X + 1, this.ColorBarNative.Center.Y), 
                 this.SetVector(this.ColorBarNative.TopRight, this.ColorBarNative.Right, this.ColorBarNative.Center.Y));
 
-            //Red
+            // Red
             this.DrawColorBar(this.RedBarNative, color => Color.FromArgb(color, this.Green, this.Blue));
             this.DrawRectangle(this.RedBarNative, DefaultColorGold, 2f);
             this.DrawColorPointer(this.RedBarNative, this.Red);
@@ -415,7 +414,7 @@
             this.RedText.Position = this.OffsetVector(this.RedBarNative.BottomRight, -50, this._barPadding[3]);
             this.RedText.Draw();
 
-            //Green
+            // Green
             this.DrawColorBar(this.GreenBarNative, color => Color.FromArgb(this.Red, color, this.Blue));
             this.DrawRectangle(this.GreenBarNative, DefaultColorGold, 2);
             this.DrawColorPointer(this.GreenBarNative, this.Green);
@@ -423,7 +422,7 @@
             this.GreenText.Position = this.OffsetVector(this.GreenBarNative.BottomRight, -60, this._barPadding[3]);
             this.GreenText.Draw();
 
-            //Blue
+            // Blue
             this.DrawColorBar(this.BlueBarNative, color => Color.FromArgb(this.Red, this.Green, color));
             this.DrawRectangle(this.BlueBarNative, DefaultColorGold, 2);
             this.DrawColorPointer(this.BlueBarNative, this.Blue);
@@ -431,7 +430,7 @@
             this.BlueText.Position = this.OffsetVector(this.BlueBarNative.BottomRight, -50, this._barPadding[3]);
             this.BlueText.Draw();
 
-            //Alpha
+            // Alpha
             this.DrawColorBar(this.AlphaBarNative, color => Color.FromArgb(color, color, color));
             this.DrawRectangle(this.AlphaBarNative, DefaultColorGold, 2);
             this.DrawColorPointer(this.AlphaBarNative, this.Alpha);
@@ -462,6 +461,7 @@
             {
                 rectangle.Inflate(1, 0);
             }
+
             Line.DrawLine(color, width, rectangle.TopLeft, rectangle.TopRight, rectangle.BottomRight, rectangle.BottomLeft, rectangle.TopLeft);
         }
 
@@ -484,7 +484,8 @@
             {
                 throw new ArgumentException("Color Modifier Argument Invalid!");
             }
-            for (int color = 0; color < 255; color++)
+
+            for (var color = 0; color < 255; color++)
             {
                 var linePos = this.GetLineStartPos(box, color);
                 Line.DrawLine(colorModifier.Invoke(color), this.LineWidth + 1, linePos, this.SetVector(linePos, float.MaxValue, box.Bottom));

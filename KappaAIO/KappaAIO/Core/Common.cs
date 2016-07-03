@@ -1,7 +1,6 @@
 ﻿namespace KappaAIO.Core
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
@@ -13,7 +12,7 @@
     using EloBuddy.SDK.Menu.Values;
     using EloBuddy.SDK.Notifications;
 
-    using Managers;
+    using KappaAIO.Core.Managers;
 
     using SharpDX;
 
@@ -33,15 +32,18 @@
                     {
                         return DangerLevel.High;
                     }
+
                 case 1:
                     {
                         return DangerLevel.Medium;
                     }
+
                 case 2:
                     {
                         return DangerLevel.Low;
                     }
             }
+
             return DangerLevel.Low;
         }
 
@@ -146,11 +148,9 @@
 
         public static bool IsKillable(this Obj_AI_Base target)
         {
-            return !target.HasBuff("kindredrnodeathbuff") && !target.Buffs.Any(b => b.Name.ToLower().Contains("fioraw"))
-                   && !target.HasBuff("JudicatorIntervention") && !target.HasBuff("ChronoShift") && !target.HasBuff("UndyingRage")
-                   && !target.IsInvulnerable && !target.IsZombie && !target.HasBuff("bansheesveil") && !target.IsDead && !target.IsPhysicalImmune
-                   && target.Health > 0 && !target.HasBuffOfType(BuffType.Invulnerability) && !target.HasBuffOfType(BuffType.PhysicalImmunity)
-                   && target.IsValidTarget();
+            return !target.HasBuff("kindredrnodeathbuff") && !target.Buffs.Any(b => b.Name.ToLower().Contains("fioraw")) && !target.HasBuff("JudicatorIntervention") && !target.HasBuff("ChronoShift")
+                   && !target.HasBuff("UndyingRage") && !target.IsInvulnerable && !target.IsZombie && !target.HasBuff("bansheesveil") && !target.IsDead && !target.IsPhysicalImmune && target.Health > 0
+                   && !target.HasBuffOfType(BuffType.Invulnerability) && !target.HasBuffOfType(BuffType.PhysicalImmunity) && target.IsValidTarget();
         }
 
         public static bool IsAirborne(this Obj_AI_Base target)
@@ -165,18 +165,15 @@
 
         public static bool IsKillable(this Obj_AI_Base target, float range)
         {
-            return !target.HasBuff("kindredrnodeathbuff") && !target.Buffs.Any(b => b.Name.ToLower().Contains("fioraw"))
-                   && !target.HasBuff("JudicatorIntervention") && !target.HasBuff("ChronoShift") && !target.HasBuff("UndyingRage")
-                   && !target.IsInvulnerable && !target.IsZombie && !target.HasBuff("bansheesveil") && !target.IsDead && !target.IsPhysicalImmune
-                   && target.Health > 0 && !target.HasBuffOfType(BuffType.Invulnerability) && !target.HasBuffOfType(BuffType.PhysicalImmunity)
-                   && target.IsValidTarget(range);
+            return !target.HasBuff("kindredrnodeathbuff") && !target.Buffs.Any(b => b.Name.ToLower().Contains("fioraw")) && !target.HasBuff("JudicatorIntervention") && !target.HasBuff("ChronoShift")
+                   && !target.HasBuff("UndyingRage") && !target.IsInvulnerable && !target.IsZombie && !target.HasBuff("bansheesveil") && !target.IsDead && !target.IsPhysicalImmune && target.Health > 0
+                   && !target.HasBuffOfType(BuffType.Invulnerability) && !target.HasBuffOfType(BuffType.PhysicalImmunity) && target.IsValidTarget(range);
         }
 
         public static bool IsCC(this Obj_AI_Base target)
         {
-            return target.Spellbook.IsChanneling || !target.CanMove || target.HasBuffOfType(BuffType.Charm)
-                   || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Snare)
-                   || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Suppression) || target.HasBuffOfType(BuffType.Taunt);
+            return target.Spellbook.IsChanneling || !target.CanMove || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Knockup)
+                   || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Suppression) || target.HasBuffOfType(BuffType.Taunt);
         }
 
         public static Vector2 PredPos(this Obj_AI_Base target, int time)

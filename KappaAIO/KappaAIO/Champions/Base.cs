@@ -18,18 +18,7 @@
 
         public static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
 
-        public static Menu Menuini,
-                           RMenu,
-                           AutoMenu,
-                           JumperMenu,
-                           ComboMenu,
-                           HarassMenu,
-                           LaneClearMenu,
-                           JungleClearMenu,
-                           KillStealMenu,
-                           MiscMenu,
-                           DrawMenu,
-                           ColorMenu;
+        public static Menu Menuini, RMenu, AutoMenu, JumperMenu, ComboMenu, HarassMenu, LaneClearMenu, JungleClearMenu, KillStealMenu, MiscMenu, DrawMenu, ColorMenu;
 
         public static Spell.Skillshot Flash;
 
@@ -60,10 +49,12 @@
             {
                 Flash = SummonerSpells.Flash;
             }
+
             if (Player.Spells.FirstOrDefault(o => o.SData.Name.ToLower().Contains("smite")) != null)
             {
                 Smite = SummonerSpells.Smite;
             }
+
             Game.OnTick += this.Game_OnTick;
             Drawing.OnDraw += this.Drawing_OnDraw;
         }
@@ -96,14 +87,17 @@
             {
                 this.Combo();
             }
+
             if (Common.orbmode(Orbwalker.ActiveModes.Harass))
             {
                 this.Harass();
             }
+
             if (Common.orbmode(Orbwalker.ActiveModes.LaneClear))
             {
                 this.LaneClear();
             }
+
             if (Common.orbmode(Orbwalker.ActiveModes.JungleClear))
             {
                 this.JungleClear();

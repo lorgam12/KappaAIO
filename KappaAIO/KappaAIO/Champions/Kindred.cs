@@ -82,6 +82,7 @@
                     JungleClearMenu.Add(spell.Slot.ToString(), new CheckBox("Use " + spell.Slot));
                     JungleClearMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
                 }
+
                 DrawMenu.Add(spell.Slot.ToString(), new CheckBox(spell.Slot + " Range"));
                 ColorMenu.Add(spell.Slot.ToString(), new ColorPicker(spell.Slot + " Color", Color.Chartreuse));
             }
@@ -104,22 +105,20 @@
 
         private static AIHeroClient Target()
         {
-            var Etarget =
-                EntityManager.Heroes.Enemies.FirstOrDefault(
-                    enemy => enemy.IsKillable(user.GetAutoAttackRange()) && enemy.Buffs.Any(buff => buff.Name == "KindredERefresher"));
+            var Etarget = EntityManager.Heroes.Enemies.FirstOrDefault(enemy => enemy.IsKillable(user.GetAutoAttackRange()) && enemy.Buffs.Any(buff => buff.Name == "KindredERefresher"));
 
-            var Ptarget =
-                EntityManager.Heroes.Enemies.FirstOrDefault(
-                    enemy => enemy.IsKillable(user.GetAutoAttackRange()) && enemy.Buffs.Any(buff => buff.Name == "KindredHitTracker"));
+            var Ptarget = EntityManager.Heroes.Enemies.FirstOrDefault(enemy => enemy.IsKillable(user.GetAutoAttackRange()) && enemy.Buffs.Any(buff => buff.Name == "KindredHitTracker"));
 
             if (Etarget != null && Menuini.checkbox("focusE"))
             {
                 return Etarget;
             }
+
             if (Ptarget != null && Etarget == null && Menuini.checkbox("focusP"))
             {
                 return Ptarget;
             }
+
             return TargetSelector.GetTarget(Q.Range, DamageType.Physical);
         }
 
@@ -137,10 +136,8 @@
                 return;
             }
 
-            var useQW = ComboMenu.checkbox(Q.Slot.ToString()) && ComboMenu.checkbox(W.Slot.ToString()) && ComboMenu.checkbox("QW")
-                        && target.IsKillable(Q.Range) && !target.IsKillable(user.AttackRange);
-            var useQ = ComboMenu.checkbox(Q.Slot.ToString()) && target.IsKillable(Q.Range) && !target.IsKillable(user.GetAutoAttackRange())
-                       && Q.IsReady();
+            var useQW = ComboMenu.checkbox(Q.Slot.ToString()) && ComboMenu.checkbox(W.Slot.ToString()) && ComboMenu.checkbox("QW") && target.IsKillable(Q.Range) && !target.IsKillable(user.AttackRange);
+            var useQ = ComboMenu.checkbox(Q.Slot.ToString()) && target.IsKillable(Q.Range) && !target.IsKillable(user.GetAutoAttackRange()) && Q.IsReady();
             var useW = ComboMenu.checkbox(W.Slot.ToString()) && target.IsKillable(W.Range) && W.IsReady();
             var useE = ComboMenu.checkbox(E.Slot.ToString()) && target.IsKillable(E.Range) && E.IsReady();
 
@@ -148,6 +145,7 @@
             {
                 E.Cast(target);
             }
+
             if (useQW)
             {
                 if (W.Handle.ToggleState != 2 && W.IsReady())
@@ -182,8 +180,7 @@
                 return;
             }
 
-            var useQ = HarassMenu.checkbox(Q.Slot.ToString()) && target.IsKillable(Q.Range) && !target.IsKillable(user.GetAutoAttackRange())
-                       && Q.IsReady() && Q.Mana(HarassMenu);
+            var useQ = HarassMenu.checkbox(Q.Slot.ToString()) && target.IsKillable(Q.Range) && !target.IsKillable(user.GetAutoAttackRange()) && Q.IsReady() && Q.Mana(HarassMenu);
             var useW = HarassMenu.checkbox(W.Slot.ToString()) && target.IsKillable(W.Range) && W.IsReady() && W.Mana(HarassMenu);
             var useE = HarassMenu.checkbox(E.Slot.ToString()) && target.IsKillable(E.Range) && E.IsReady() && E.Mana(HarassMenu);
 
@@ -205,18 +202,18 @@
 
         public override void LaneClear()
         {
-            var Etarget =
-                EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(
-                    m => m.IsKillable(user.GetAutoAttackRange()) && m.Buffs.Any(buff => buff.Name == "KindredERefresher"));
+            var Etarget = EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(m => m.IsKillable(user.GetAutoAttackRange()) && m.Buffs.Any(buff => buff.Name == "KindredERefresher"));
 
             if (Etarget != null)
             {
                 Orbwalker.ForcedTarget = Etarget;
             }
+
             if (Orbwalker.IsAutoAttacking)
             {
                 return;
             }
+
             var useQ = LaneClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && Q.Mana(LaneClearMenu);
             var useW = LaneClearMenu.checkbox(W.Slot.ToString()) && W.IsReady() && W.Mana(LaneClearMenu);
             var useE = LaneClearMenu.checkbox(E.Slot.ToString()) && E.IsReady() && E.Mana(LaneClearMenu);
@@ -236,6 +233,7 @@
                 {
                     E.Cast(minion);
                 }
+
                 if (useW && user.CountEnemyMinions(W.Range) > 2 && W.Handle.ToggleState != 2)
                 {
                     W.Cast();
@@ -245,18 +243,18 @@
 
         public override void JungleClear()
         {
-            var Etarget =
-                EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                    .FirstOrDefault(m => m.IsKillable(user.GetAutoAttackRange()) && m.Buffs.Any(buff => buff.Name == "KindredERefresher"));
+            var Etarget = EntityManager.MinionsAndMonsters.GetJungleMonsters().FirstOrDefault(m => m.IsKillable(user.GetAutoAttackRange()) && m.Buffs.Any(buff => buff.Name == "KindredERefresher"));
 
             if (Etarget != null)
             {
                 Orbwalker.ForcedTarget = Etarget;
             }
+
             if (Orbwalker.IsAutoAttacking)
             {
                 return;
             }
+
             var useQ = JungleClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && Q.Mana(JungleClearMenu);
             var useW = JungleClearMenu.checkbox(W.Slot.ToString()) && W.IsReady() && W.Mana(JungleClearMenu);
             var useE = JungleClearMenu.checkbox(E.Slot.ToString()) && E.IsReady() && E.Mana(JungleClearMenu);
@@ -310,8 +308,8 @@
         {
             public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
             {
-                if (!sender.IsEnemy || !AutoMenu.checkbox("Gap") || !Q.IsReady() || sender == null || e == null || e.End == Vector3.Zero
-                    || !e.End.IsInRange(user, 500) || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()))
+                if (!sender.IsEnemy || !AutoMenu.checkbox("Gap") || !Q.IsReady() || sender == null || e == null || e.End == Vector3.Zero || !e.End.IsInRange(user, 500)
+                    || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()))
                 {
                     return;
                 }
@@ -366,8 +364,7 @@
                 {
                     var spelldamageme = enemy.GetSpellDamage(user, args.Slot);
                     var damagepercentme = (spelldamageme / user.TotalShieldHealth()) * 100;
-                    var deathme = damagepercentme >= user.HealthPercent || spelldamageme >= user.TotalShieldHealth()
-                                  || caster.GetAutoAttackDamage(user, true) >= user.TotalShieldHealth()
+                    var deathme = damagepercentme >= user.HealthPercent || spelldamageme >= user.TotalShieldHealth() || caster.GetAutoAttackDamage(user, true) >= user.TotalShieldHealth()
                                   || enemy.GetAutoAttackDamage(user, true) >= user.TotalShieldHealth();
 
                     if (mehp > user.HealthPercent || deathme)
@@ -389,8 +386,7 @@
                 var allyhp = AutoMenu.slider("Rally");
                 var mehp = AutoMenu.slider("Rhp");
 
-                if (!(caster is AIHeroClient || caster is Obj_AI_Turret) || !caster.IsEnemy || target == null || caster == null || !target.IsAlly
-                    || !target.IsKillable())
+                if (!(caster is AIHeroClient || caster is Obj_AI_Turret) || !caster.IsEnemy || target == null || caster == null || !target.IsAlly || !target.IsKillable())
                 {
                     return;
                 }
@@ -433,6 +429,7 @@
                     {
                         return;
                     }
+
                     Logics.Qlogic(ComboMenu, orbtarget);
                 }
 
@@ -443,6 +440,7 @@
                     {
                         return;
                     }
+
                     Logics.Qlogic(HarassMenu, orbtarget);
                 }
             }
@@ -457,8 +455,7 @@
                     return;
                 }
 
-                var useQ = LaneClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && target.IsKillable(Q.Range)
-                           && Q.GetDamage(target) > Prediction.Health.GetPrediction(target, Q.CastDelay);
+                var useQ = LaneClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && target.IsKillable(Q.Range) && Q.GetDamage(target) > Prediction.Health.GetPrediction(target, Q.CastDelay);
                 if (useQ)
                 {
                     Q.Cast(target);
@@ -479,23 +476,24 @@
                         {
                             if (danger)
                             {
-                                var ally =
-                                    EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(750))
-                                        .FirstOrDefault(a => a.IsKillable(1000) && !a.IsMe);
+                                var ally = EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(750)).FirstOrDefault(a => a.IsKillable(1000) && !a.IsMe);
                                 if (ally != null)
                                 {
                                     pos = ally.ServerPosition;
                                 }
                             }
+
                             if (target.IsKillable(user.GetAutoAttackRange() - 100))
                             {
                                 pos = user.ServerPosition.Extend(target.ServerPosition, -400).To3D();
                             }
+
                             if (!target.IsKillable(user.GetAutoAttackRange()))
                             {
                                 pos = Q.GetPrediction(target).CastPosition;
                             }
                         }
+
                         break;
                     case 1:
                         {
@@ -504,6 +502,7 @@
                                 pos = user.ServerPosition.Extend(target.ServerPosition, -400).To3D();
                             }
                         }
+
                         break;
                     case 2:
                         {
@@ -512,17 +511,21 @@
                                 pos = Q.GetPrediction(target).CastPosition;
                             }
                         }
+
                         break;
                     case 3:
                         {
                             pos = Game.CursorPos;
                         }
+
                         break;
                 }
+
                 if (!Draw)
                 {
                     Q.Cast(pos);
                 }
+
                 if (Draw)
                 {
                     Circle.Draw(SharpDX.Color.White, 100, pos);

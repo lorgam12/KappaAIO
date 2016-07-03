@@ -15,8 +15,7 @@
 
         private const string UpdateMsgPath = "https://raw.githubusercontent.com/plsfixrito/KappaAIO/master/KappaAIO/KappaAIO/UpdateMsg.txt";
 
-        private const string WebVersionPath =
-            "https://raw.githubusercontent.com/plsfixrito/KappaAIO/master/KappaAIO/KappaAIO/Properties/AssemblyInfo.cs";
+        private const string WebVersionPath = "https://raw.githubusercontent.com/plsfixrito/KappaAIO/master/KappaAIO/KappaAIO/Properties/AssemblyInfo.cs";
 
         private static readonly Version CurrentVersionPath = typeof(CheckVersion).Assembly.GetName().Version;
 
@@ -24,15 +23,13 @@
         {
             try
             {
-                GetResponse(
-                    WebRequest.Create(UpdateMsgPath),
-                    response => { UpdateMsg = new StreamReader(response.GetResponseStream()).ReadToEnd().ToString(); });
+                GetResponse(WebRequest.Create(UpdateMsgPath), response => { UpdateMsg = new StreamReader(response.GetResponseStream()).ReadToEnd().ToString(); });
 
                 Core.DelayAction(
                     () =>
                         {
                             GetResponse(
-                                WebRequest.Create(WebVersionPath),
+                                WebRequest.Create(WebVersionPath), 
                                 response =>
                                     {
                                         var data = new StreamReader(response.GetResponseStream()).ReadToEnd().ToString();
@@ -45,9 +42,7 @@
                                         else
                                         {
                                             Console.ForegroundColor = ConsoleColor.Magenta;
-                                            Console.WriteLine(
-                                                DateTime.Now.ToString("[H:mm:ss - ")
-                                                + "Warn] KappaAIO: There is a new Update Available for KappaAIO !");
+                                            Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "Warn] KappaAIO: There is a new Update Available for KappaAIO !");
                                             Console.ResetColor();
                                             Console.ForegroundColor = ConsoleColor.Cyan;
                                             Chat.Print("<b>KappaAIO: There is a new Update Available for KappaAIO !</b>");
@@ -60,18 +55,14 @@
                                             }
                                             else
                                             {
-                                                Console.WriteLine(
-                                                    DateTime.Now.ToString("[H:mm:ss - ") + "Info] KappaAIO: Failed to retrive update msg");
+                                                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "Info] KappaAIO: Failed to retrive update msg");
                                                 Console.ResetColor();
                                                 Chat.Print("<b>KappaAIO: Failed to Retrieve Update msg</b>");
-                                                Common.ShowNotification(
-                                                    "There is a new Update Available for KappaAIO !",
-                                                    10000,
-                                                    "Failed to retrive update msg");
+                                                Common.ShowNotification("There is a new Update Available for KappaAIO !", 10000, "Failed to retrive update msg");
                                             }
                                         }
                                     });
-                        },
+                        }, 
                     500);
             }
             catch (Exception ex)
@@ -95,7 +86,7 @@
                                 {
                                     var Response = (HttpWebResponse)((HttpWebRequest)iar.AsyncState).EndGetResponse(iar);
                                     ResponseAction(Response);
-                                },
+                                }, 
                             Request);
                     };
                 wrapperAction.BeginInvoke(
@@ -103,7 +94,7 @@
                         {
                             var Action = (Action)iar.AsyncState;
                             Action.EndInvoke(iar);
-                        },
+                        }, 
                     wrapperAction);
             }
             catch (Exception ex)

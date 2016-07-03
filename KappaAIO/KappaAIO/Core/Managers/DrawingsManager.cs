@@ -17,10 +17,7 @@
         {
             if (draw)
             {
-                Circle.Draw(
-                    spell.IsReady() ? new ColorBGRA(Colors.R, Colors.G, Colors.B, Colors.A) : (ColorBGRA)SharpDX.Color.Red,
-                    spell.Range,
-                    Player.Instance);
+                Circle.Draw(spell.IsReady() ? new ColorBGRA(Colors.R, Colors.G, Colors.B, Colors.A) : (ColorBGRA)SharpDX.Color.Red, spell.Range, Player.Instance);
             }
         }
 

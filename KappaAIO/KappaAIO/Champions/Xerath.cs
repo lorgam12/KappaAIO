@@ -3,9 +3,6 @@
     using System;
     using System.Linq;
 
-    using Core;
-    using Core.Managers;
-
     using EloBuddy;
     using EloBuddy.SDK;
     using EloBuddy.SDK.Enumerations;
@@ -13,6 +10,9 @@
     using EloBuddy.SDK.Menu;
     using EloBuddy.SDK.Menu.Values;
     using EloBuddy.SDK.Rendering;
+
+    using KappaAIO.Core;
+    using KappaAIO.Core.Managers;
 
     using SharpDX;
 
@@ -67,8 +67,7 @@
         {
             get
             {
-                return Player.HasBuff("XerathLocusOfPower2")
-                       || (Common.LastCastedSpell.Name == "XerathLocusOfPower2" && Core.GameTickCount - Common.LastCastedSpell.Time < 500);
+                return Player.HasBuff("XerathLocusOfPower2") || (Common.LastCastedSpell.Name == "XerathLocusOfPower2" && Core.GameTickCount - Common.LastCastedSpell.Time < 500);
             }
         }
 
@@ -124,10 +123,11 @@
             RMenu.Add("Rmode", new ComboBox("R Mode", 0, "Auto", "Custom Delays", "On Tap"));
             RMenu.Add("Rtap", new KeyBind("R Tap Key", false, KeyBind.BindTypes.HoldActive, 'S'));
             RMenu.AddGroupLabel("R Custom Delays");
-            for (int i = 1; i <= 5; i++)
+            for (var i = 1; i <= 5; i++)
             {
                 RMenu.Add("delay" + i, new Slider("Delay " + i, 0, 0, 1500));
             }
+
             RMenu.Add("Rblock", new CheckBox("Block Commands While Casting R"));
             RMenu.Add("Rnear", new CheckBox("Focus Targets Near Mouse Only"));
             RMenu.Add("Mradius", new Slider("Mouse Radius", 750, 300, 1500));
@@ -216,11 +216,11 @@
 
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
-            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || !kCore.GapMenu.checkbox(e.SpellName + sender.ID())
-                || e.End == Vector3.Zero || !MiscMenu.checkbox("gap"))
+            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()) || e.End == Vector3.Zero || !MiscMenu.checkbox("gap"))
             {
                 return;
             }
+
             if (e.End.IsInRange(user, 650) || sender.IsKillable(650))
             {
                 E.Cast(sender);
@@ -255,8 +255,7 @@
 
         private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
-            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || e.DangerLevel < Common.danger(MiscMenu) || !sender.IsKillable(500)
-                || !MiscMenu.checkbox("int"))
+            if (sender == null || !sender.IsEnemy || e == null || !E.IsReady() || e.DangerLevel < Common.danger(MiscMenu) || !sender.IsKillable(500) || !MiscMenu.checkbox("int"))
             {
                 return;
             }
@@ -271,10 +270,7 @@
 
         public override void Harass()
         {
-            UseSpells(
-                HarassMenu.checkbox("Q") && Q.Mana(HarassMenu),
-                HarassMenu.checkbox("W") && W.Mana(HarassMenu),
-                HarassMenu.checkbox("E") && E.Mana(HarassMenu));
+            UseSpells(HarassMenu.checkbox("Q") && Q.Mana(HarassMenu), HarassMenu.checkbox("W") && W.Mana(HarassMenu), HarassMenu.checkbox("E") && E.Mana(HarassMenu));
         }
 
         private static void UseSpells(bool useQ, bool useW, bool useE)
@@ -316,8 +312,7 @@
             AIHeroClient bestTarget = null;
             var bestRatio = 0f;
             var target = TargetSelector.SelectedTarget;
-            if (target.IsKillable() && target.IsKillable()
-                && (Game.CursorPos.Distance(target.ServerPosition) < distance && user.Distance(target) < R.Range))
+            if (target.IsKillable() && target.IsKillable() && (Game.CursorPos.Distance(target.ServerPosition) < distance && user.Distance(target) < R.Range))
             {
                 return TargetSelector.SelectedTarget;
             }
@@ -348,11 +343,10 @@
             {
                 return;
             }
+
             var rMode = RMenu.combobox("Rmode");
 
-            var rTarget = RMenu.checkbox("Rnear")
-                              ? GetTargetNearMouse(RMenu.slider("Mradius"))
-                              : TargetSelector.GetTarget(R.Range, DamageType.Magical);
+            var rTarget = RMenu.checkbox("Rnear") ? GetTargetNearMouse(RMenu.slider("Mradius")) : TargetSelector.GetTarget(R.Range, DamageType.Magical);
 
             if (rTarget != null)
             {
@@ -371,6 +365,7 @@
                         return;
                     }
                 }
+
                 scrybeorbuse();
                 switch (rMode)
                 {
@@ -384,6 +379,7 @@
                         {
                             R.Cast(rTarget, R.hitchance(Menuini));
                         }
+
                         break;
 
                     case 2:
@@ -391,6 +387,7 @@
                         {
                             R.Cast(rTarget);
                         }
+
                         break;
                 }
             }
@@ -411,6 +408,7 @@
                                 Q.StartCharging();
                                 return;
                             }
+
                             if (Q.IsCharging)
                             {
                                 Q.Cast(Q.GetKStarget(), Q.hitchance(Menuini));
@@ -422,6 +420,7 @@
                         }
                     }
                 }
+
                 if (KillStealMenu.checkbox(spell.Slot + "js"))
                 {
                     if (spell.IsReady() && spell.GetJStarget() != null)
@@ -433,6 +432,7 @@
                                 Q.StartCharging();
                                 return;
                             }
+
                             if (Q.IsCharging)
                             {
                                 Q.Cast(Q.GetJStarget(), Q.hitchance(Menuini));
@@ -482,6 +482,7 @@
                         Q.StartCharging();
                     }
                 }
+
                 if (useQi == 1 || useQi == 2)
                 {
                     var minion = objAiMinionsQ.FirstOrDefault(m => Q.GetDamage(m) >= Prediction.Health.GetPrediction(m, Q.CastDelay));
@@ -499,12 +500,7 @@
             if (useW && allMinionsW != null)
             {
                 var objAiMinions = allMinionsW as Obj_AI_Minion[] ?? allMinionsW.ToArray();
-                var Wpos = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
-                    objAiMinions.ToArray(),
-                    W.Width,
-                    (int)W.Range,
-                    W.CastDelay,
-                    W.Speed);
+                var Wpos = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(objAiMinions.ToArray(), W.Width, (int)W.Range, W.CastDelay, W.Speed);
                 var useWi = LaneClearMenu.combobox(W.Slot + "mode");
 
                 if (useWi == 0 || useWi == 2)
@@ -590,12 +586,7 @@
 
             if (useW && allMinionsW != null)
             {
-                var Wpos = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
-                    objAiMinionsW.ToArray(),
-                    W.Width,
-                    (int)W.Range,
-                    W.CastDelay,
-                    W.Speed);
+                var Wpos = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(objAiMinionsW.ToArray(), W.Width, (int)W.Range, W.CastDelay, W.Speed);
 
                 var locW = Wpos.CastPosition;
                 if (Wpos.HitNumber >= 1)
@@ -618,6 +609,7 @@
                     {
                         E.Cast(minion);
                     }
+
                     E.Cast(minion);
                 }
             }
@@ -629,6 +621,7 @@
             {
                 return;
             }
+
             if (MiscMenu.keybind("flee"))
             {
                 var target = TargetSelector.GetTarget(E.Range, DamageType.Magical);
@@ -636,6 +629,7 @@
                 {
                     E.Cast(target);
                 }
+
                 Orbwalker.OrbwalkTo(Game.CursorPos);
             }
 
@@ -690,9 +684,9 @@
             {
                 return;
             }
+
             if (Scryb.IsOwned(user)
-                && (target.IsDashing() || target.Distance(R.GetPrediction(target).CastPosition) > 150
-                    || NavMesh.IsWallOfGrass(Prediction.Position.PredictUnitPosition(target, 150).To3D(), 50)))
+                && (target.IsDashing() || target.Distance(R.GetPrediction(target).CastPosition) > 150 || NavMesh.IsWallOfGrass(Prediction.Position.PredictUnitPosition(target, 150).To3D(), 50)))
             {
                 Scryb.Cast(R.GetPrediction(target).CastPosition);
             }
@@ -726,6 +720,7 @@
             {
                 return;
             }
+
             /*
             var Rcirclemap = DrawMenu.checkbox("Rmini");
 
@@ -750,6 +745,7 @@
                     Circle.Draw(SharpDX.Color.Red, RMenu.slider("Mradius"), Game.CursorPos);
                 }
             }
+
             if (MiscMenu.checkbox("Notifications") && R.IsReady())
             {
                 var t = TargetSelector.GetTarget(R.Range, DamageType.Physical);
@@ -759,11 +755,7 @@
                     var rDamage = R.GetDamage(t);
                     if (rDamage * 5 > t.Health)
                     {
-                        Drawing.DrawText(
-                            Drawing.Width * 0.1f,
-                            Drawing.Height * 0.5f,
-                            Color.Red,
-                            (int)(t.Health / rDamage) + " x Ult can kill: " + t.ChampionName + " have: " + t.Health + "hp");
+                        Drawing.DrawText(Drawing.Width * 0.1f, Drawing.Height * 0.5f, Color.Red, (int)(t.Health / rDamage) + " x Ult can kill: " + t.ChampionName + " have: " + t.Health + "hp");
                         DrawingsManager.drawLine(t.Position, user.Position, 10, Color.Yellow);
                     }
                 }

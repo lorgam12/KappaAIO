@@ -149,15 +149,16 @@
             JungleClearMenu.Add("E2", new CheckBox("Use E2"));
             JungleClearMenu.Add("Passive", new Slider("Passive Count", 2, 0, 2));
 
-            KillStealMenu.AddGroupLabel("Killsteal Settings");
-            foreach (var spell in SpellList.Where(s => s != W))
-            {
-                KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
-                if (spell != R)
-                {
-                    KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
-                }
-            }
+            KillStealMenu.AddGroupLabel("Killsteal Settings (Champions)");
+            KillStealMenu.Add("Q1", new CheckBox("Use Q1"));
+            KillStealMenu.Add("Q2", new CheckBox("Use Q2"));
+            KillStealMenu.Add("E1", new CheckBox("Use E1"));
+            KillStealMenu.Add("R", new CheckBox("Use R"));
+            KillStealMenu.AddGroupLabel("Killsteal Settings (Jungle)");
+            KillStealMenu.Add("Q1j", new CheckBox("Use Q1"));
+            KillStealMenu.Add("Q2j", new CheckBox("Use Q2"));
+            KillStealMenu.Add("E1j", new CheckBox("Use E1"));
+            KillStealMenu.Add("E2j", new CheckBox("Use E2"));
 
             MiscMenu.AddGroupLabel("Misc Settings");
             MiscMenu.Add("wardjump", new KeyBind("Ward Jump", false, KeyBind.BindTypes.HoldActive, 'A'));
@@ -239,6 +240,7 @@
             {
                 WardJump.Jump(user.ServerPosition.Extend(Game.CursorPos, 600).To3D());
             }
+
             lasttick = Core.GameTickCount;
         }
 
@@ -251,8 +253,7 @@
             {
                 target = Qtarget() as AIHeroClient;
             }
-            else if (Q.IsReady() && W.IsReady() && (ComboMenu.checkbox("WQ1") || ComboMenu.checkbox("WQ2"))
-                     && (ComboMenu.combobox("Wmode").Equals(0) || ComboMenu.combobox("Wmode").Equals(1)))
+            else if (Q.IsReady() && W.IsReady() && (ComboMenu.checkbox("WQ1") || ComboMenu.checkbox("WQ2")) && (ComboMenu.combobox("Wmode").Equals(0) || ComboMenu.combobox("Wmode").Equals(1)))
             {
                 target = TargetSelector.GetTarget(Q.Range + 200, DamageType.Physical);
             }
@@ -260,9 +261,7 @@
             {
                 target = TargetSelector.GetTarget(Q.Range, DamageType.Physical);
             }
-            else if (W.IsReady()
-                     && (TargetSelector.GetTarget(W.Range, DamageType.Physical) != null
-                         && WardJump.IsReady(TargetSelector.GetTarget(W.Range, DamageType.Physical).ServerPosition, true))
+            else if (W.IsReady() && (TargetSelector.GetTarget(W.Range, DamageType.Physical) != null && WardJump.IsReady(TargetSelector.GetTarget(W.Range, DamageType.Physical).ServerPosition, true))
                      && ComboMenu.combobox("Wmode") == 0 || ComboMenu.combobox("Wmode") == 1)
             {
                 target = TargetSelector.GetTarget(W.Range, DamageType.Physical);
@@ -284,6 +283,7 @@
             {
                 return;
             }
+
             if (Qtarget() != null && Qtarget() is AIHeroClient)
             {
                 var qtarget = Qtarget() as AIHeroClient;
@@ -292,14 +292,27 @@
                     SpellsManager.Q(qtarget, false, true);
                 }
 
-                if (ComboMenu.checkbox("WQ2") && qtarget.IsKillable(1500) && !qtarget.IsKillable(1300)
-                    && WardJump.IsReady(user.ServerPosition.Extend(qtarget, 600).To3D(), true))
+                if (ComboMenu.checkbox("WQ2") && qtarget.IsKillable(1500) && !qtarget.IsKillable(1300) && WardJump.IsReady(user.ServerPosition.Extend(qtarget, 600).To3D(), true))
                 {
                     Chat.Print("leesin debug: WQ2");
                     WardJump.Jump(user.ServerPosition.Extend(qtarget, 600).To3D(), false, true);
                     Q2.Cast();
                 }
             }
+
+            if (R.IsReady())
+            {
+                foreach (var enemy in EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range)))
+                {
+                    var rec = new Geometry.Polygon.Rectangle(user.ServerPosition, user.ServerPosition.Extend(enemy.ServerPosition, 700).To3D(), target.BoundingRadius * 2);
+                    if (EntityManager.Heroes.Enemies.Count(e => e.IsKillable() && rec.IsInside(e.PredPos(100))) >= ComboMenu.slider("Raoe"))
+                    {
+                        Chat.Print("leesin debug: Raoe");
+                        R.Cast(enemy);
+                    }
+                }
+            }
+
             if (mode.Equals(0))
             {
                 if (!target.IsKillable(Q.Range - 100) && target.IsKillable(Q.Range + 300) && ComboMenu.checkbox("WQ1")
@@ -310,8 +323,7 @@
                     return;
                 }
 
-                if (!target.IsKillable(user.GetAutoAttackRange() + 35) && Qtarget() != null && Qtarget() is AIHeroClient
-                    && Qtarget().NetworkId.Equals(target.NetworkId))
+                if (!target.IsKillable(user.GetAutoAttackRange() + 35) && Qtarget() != null && Qtarget() is AIHeroClient && Qtarget().NetworkId.Equals(target.NetworkId))
                 {
                     Chat.Print("leesin debug: Q gap");
                     if (ComboMenu.checkbox("Q2") && Q.IsReady())
@@ -338,6 +350,7 @@
                             SpellsManager.Q(target, false, ComboMenu.checkbox("Q2"));
                             return;
                         }
+
                         SpellsManager.Q(target, ComboMenu.checkbox("Q1"));
                         return;
                     }
@@ -346,8 +359,7 @@
                     {
                         if (ComboMenu.combobox("Wmode").Equals(0) || ComboMenu.combobox("Wmode").Equals(1))
                         {
-                            if (target.IsKillable(W.Range) && WardJump.IsReady(target.PredPos(200).To3D())
-                                && !target.IsKillable(user.GetAutoAttackRange() + 35) && !target.IsKillable(E.Range)
+                            if (target.IsKillable(W.Range) && WardJump.IsReady(target.PredPos(200).To3D()) && !target.IsKillable(user.GetAutoAttackRange() + 35) && !target.IsKillable(E.Range)
                                 && !target.PredPos(200).IsInRange(user, user.GetAutoAttackRange() + 15))
                             {
                                 Chat.Print("leesin debug: W WardJump");
@@ -355,6 +367,7 @@
                                 return;
                             }
                         }
+
                         if (ComboMenu.combobox("Wmode").Equals(2) || ComboMenu.combobox("Wmode").Equals(0))
                         {
                             if (target.IsKillable(user.GetAutoAttackRange()))
@@ -375,20 +388,9 @@
                         R.Cast(target);
                         return;
                     }
-                    foreach (var enemy in EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range)))
-                    {
-                        var rec = new Geometry.Polygon.Rectangle(
-                            user.ServerPosition,
-                            user.ServerPosition.Extend(enemy.ServerPosition, 700).To3D(),
-                            target.BoundingRadius * 2);
-                        if (EntityManager.Heroes.Enemies.Count(e => e.IsKillable() && rec.IsInside(e)) >= ComboMenu.slider("Raoe"))
-                        {
-                            Chat.Print("leesin debug: Raoe");
-                            R.Cast(enemy);
-                        }
-                    }
                 }
             }
+
             if (mode.Equals(1))
             {
                 if (Core.GameTickCount - SpellsManager.LastR < 1500 && Core.GameTickCount - SpellsManager.LastR > 350)
@@ -417,8 +419,7 @@
                         }
                         else
                         {
-                            if (ComboMenu.checkbox("bubba") && user.CountEnemeis(1000) > 1
-                                && (Flash != null && Flash.IsReady() || WardJump.IsReady(target.ServerPosition, true)))
+                            if (ComboMenu.checkbox("bubba") && user.CountEnemeis(1000) > 1 && (Flash != null && Flash.IsReady() || WardJump.IsReady(target.ServerPosition, true)))
                             {
                                 Chat.Print("leesin debug: Bubba Star");
                                 BubbaKush.DoBubba(target);
@@ -437,16 +438,14 @@
                 else
                 {
                     if (!target.IsKillable(Q.Range - 50) && target.IsKillable(Q.Range + 300) && ComboMenu.checkbox("WQ1")
-                        && WardJump.IsReady(user.ServerPosition.Extend(target.ServerPosition, 600).To3D(), true) && Q.IsReady()
-                        && ComboMenu.checkbox("Wj"))
+                        && WardJump.IsReady(user.ServerPosition.Extend(target.ServerPosition, 600).To3D(), true) && Q.IsReady() && ComboMenu.checkbox("Wj"))
                     {
                         Chat.Print("leesin debug: W Q");
                         WardJump.Jump(user.ServerPosition.Extend(target.ServerPosition, 600).To3D(), false, true);
                         return;
                     }
 
-                    if (!target.IsKillable(user.GetAutoAttackRange() + 20) && Qtarget() != null && Qtarget() is AIHeroClient
-                        && Qtarget().NetworkId.Equals(target.NetworkId))
+                    if (!target.IsKillable(user.GetAutoAttackRange() + 20) && Qtarget() != null && Qtarget() is AIHeroClient && Qtarget().NetworkId.Equals(target.NetworkId))
                     {
                         if (Q.IsReady() && !SpellsManager.Q1)
                         {
@@ -471,9 +470,11 @@
                                 SpellsManager.Q(target, false, true);
                                 return;
                             }
+
                             SpellsManager.Q(target, true);
                             return;
                         }
+
                         if (W.IsReady())
                         {
                             if (ComboMenu.combobox("Wmode").Equals(0) || ComboMenu.combobox("Wmode").Equals(1))
@@ -486,6 +487,7 @@
                                     return;
                                 }
                             }
+
                             if (ComboMenu.combobox("Wmode").Equals(2) || ComboMenu.combobox("Wmode").Equals(0))
                             {
                                 if (target.IsKillable(user.GetAutoAttackRange()))
@@ -496,26 +498,13 @@
                                 }
                             }
                         }
+
                         if (R.IsReady() && target.IsKillable(R.Range))
                         {
                             if (R.GetDamage(target) >= target.TotalShieldHealth() && ComboMenu.checkbox("Rkill"))
                             {
                                 Chat.Print("leesin debug: Rkill");
                                 R.Cast(target);
-                                return;
-                            }
-                            foreach (var enemy in EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range)))
-                            {
-                                var rec = new Geometry.Polygon.Rectangle(
-                                    user.ServerPosition,
-                                    user.ServerPosition.Extend(enemy.ServerPosition, 900).To3D(),
-                                    target.BoundingRadius * 2);
-                                if (EntityManager.Heroes.Enemies.Count(e => e.IsKillable() && rec.IsInside(e)) >= ComboMenu.slider("Raoe"))
-                                {
-                                    Chat.Print("leesin debug: Raoe");
-                                    R.Cast(enemy);
-                                    return;
-                                }
                             }
                         }
                     }
@@ -525,7 +514,7 @@
 
         public override void Harass()
         {
-            var target = new AIHeroClient();
+            AIHeroClient target;
             if (Qtarget() != null && Qtarget() is AIHeroClient && HarassMenu.checkbox("Q2"))
             {
                 target = Qtarget() as AIHeroClient;
@@ -555,6 +544,7 @@
                     SpellsManager.Q(target, HarassMenu.checkbox("Q1"), HarassMenu.checkbox("Q2"));
                     return;
                 }
+
                 if (E.IsReady() && target.IsKillable(E.Range) && ((HarassMenu.checkbox("E1") && SpellsManager.E1) || HarassMenu.checkbox("E2")))
                 {
                     SpellsManager.E(target, HarassMenu.checkbox("E1"), HarassMenu.checkbox("E2"));
@@ -566,9 +556,7 @@
         {
             var eminion = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).FirstOrDefault(m => m.IsKillable(E.Range));
             var Eminions = user.CountEnemyMinions(E.Range) > 1 && SpellsManager.E1;
-            var Qminion =
-                EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health)
-                    .FirstOrDefault(m => m.IsKillable(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low);
+            var Qminion = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).FirstOrDefault(m => m.IsKillable(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low);
             var Qlasthit =
                 EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.MaxHealth)
                     .FirstOrDefault(
@@ -582,15 +570,17 @@
                 {
                     if (Qlasthit != null)
                     {
-                        SpellsManager.Q(Qlasthit, LaneClearMenu.checkbox("Q1"), LaneClearMenu.checkbox("Q2"));
+                        SpellsManager.Q(Qlasthit, LaneClearMenu.checkbox("Q1"), LaneClearMenu.checkbox("Q2") && Qtarget() != null && Qlasthit.ID().Equals(Qtarget().ID()));
                         return;
                     }
+
                     if (Qminion != null)
                     {
-                        SpellsManager.Q(Qminion, LaneClearMenu.checkbox("Q1"), LaneClearMenu.checkbox("Q2"));
+                        SpellsManager.Q(Qminion, LaneClearMenu.checkbox("Q1"), LaneClearMenu.checkbox("Q2") && Qtarget() != null && Qtarget().ID().Equals(Qminion.ID()));
                         return;
                     }
                 }
+
                 if (E.IsReady() && ((LaneClearMenu.checkbox("E1") && SpellsManager.E1) || LaneClearMenu.checkbox("E2")))
                 {
                     if (Eminions && eminion != null)
@@ -610,19 +600,11 @@
             }
             else if (Q.IsReady() && JungleClearMenu.checkbox("Q1") && SpellsManager.Q1)
             {
-                mob =
-                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                        .OrderBy(m => m.Distance(user))
-                        .ThenByDescending(m => m.MaxHealth)
-                        .FirstOrDefault(m => m.IsKillable(Q.Range));
+                mob = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderBy(m => m.Distance(user)).ThenByDescending(m => m.MaxHealth).FirstOrDefault(m => m.IsKillable(Q.Range));
             }
             else if (E.IsReady() && (JungleClearMenu.checkbox("E1") || JungleClearMenu.checkbox("E2")))
             {
-                mob =
-                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                        .OrderBy(m => m.Distance(user))
-                        .ThenByDescending(m => m.MaxHealth)
-                        .FirstOrDefault(m => m.IsKillable(E.Range));
+                mob = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderBy(m => m.Distance(user)).ThenByDescending(m => m.MaxHealth).FirstOrDefault(m => m.IsKillable(E.Range));
             }
             else
             {
@@ -645,11 +627,13 @@
                     SpellsManager.W(user, JungleClearMenu.checkbox("W1"), JungleClearMenu.checkbox("W2"));
                     return;
                 }
+
                 if (E.IsReady() && mob.IsKillable(E.Range) && ((JungleClearMenu.checkbox("E1") && SpellsManager.E1) || JungleClearMenu.checkbox("E2")))
                 {
                     SpellsManager.E(mob, JungleClearMenu.checkbox("E1"), JungleClearMenu.checkbox("E2"));
                     return;
                 }
+
                 if (Q.IsReady() && mob.IsKillable(Q.Range) && ((JungleClearMenu.checkbox("Q1") && SpellsManager.Q1) || JungleClearMenu.checkbox("Q2")))
                 {
                     SpellsManager.Q(mob, JungleClearMenu.checkbox("Q1"), JungleClearMenu.checkbox("Q2"));
@@ -660,19 +644,31 @@
 
         public override void KillSteal()
         {
-            foreach (var spell in SpellList.Where(s => s != W))
+            if (Q.GetKStarget() != null
+                && ((KillStealMenu.checkbox("Q1") && SpellsManager.Q1) || (KillStealMenu.checkbox("Q2") && !SpellsManager.Q1 && Qtarget() != null && Qtarget().ID().Equals(Q.GetKStarget().ID()))))
             {
-                if (KillStealMenu.checkbox(spell.Slot + "ks") && spell.IsReady() && spell.GetKStarget() != null)
-                {
-                    spell.Cast(spell.GetKStarget());
-                }
-                if (spell != R)
-                {
-                    if (KillStealMenu.checkbox(spell.Slot + "js") && spell.IsReady() && spell.GetJStarget() != null)
-                    {
-                        spell.Cast(spell.GetJStarget());
-                    }
-                }
+                SpellsManager.Q(Q.GetKStarget(), KillStealMenu.checkbox("Q1"), KillStealMenu.checkbox("Q2") && Qtarget() != null && Qtarget().ID().Equals(Q.GetKStarget().ID()));
+            }
+
+            if (Q.GetJStarget() != null
+                && ((KillStealMenu.checkbox("Q1j") && SpellsManager.Q1) || (KillStealMenu.checkbox("Q2j") && !SpellsManager.Q1 && Qtarget() != null && Qtarget().ID().Equals(Q.GetJStarget().ID()))))
+            {
+                SpellsManager.Q(Q.GetJStarget(), KillStealMenu.checkbox("Q1j"), KillStealMenu.checkbox("Q2j") && Qtarget() != null && Qtarget().ID().Equals(Q.GetJStarget().ID()));
+            }
+
+            if (E.GetKStarget() != null && KillStealMenu.checkbox("E1") && SpellsManager.E1)
+            {
+                SpellsManager.E(E.GetKStarget(), KillStealMenu.checkbox("E1"));
+            }
+
+            if (E.GetJStarget() != null && KillStealMenu.checkbox("E1j") && SpellsManager.E1)
+            {
+                SpellsManager.E(E.GetJStarget(), KillStealMenu.checkbox("E1j"));
+            }
+
+            if (R.GetKStarget() != null && R.IsReady() && KillStealMenu.checkbox("R"))
+            {
+                R.Cast(R.GetKStarget());
             }
         }
 
@@ -682,12 +678,7 @@
             var Y = user.ServerPosition.WorldToScreen().Y;
             if (DrawMenu.checkbox("mode"))
             {
-                Drawing.DrawText(
-                    X,
-                    Y - 20,
-                    System.Drawing.Color.White,
-                    "Combo Mode: " + (ComboMenu.combobox("mode") == 0 ? "Normal Combo" : "Star Combo"),
-                    10);
+                Drawing.DrawText(X, Y - 20, System.Drawing.Color.White, "Combo Mode: " + (ComboMenu.combobox("mode") == 0 ? "Normal Combo" : "Star Combo"), 10);
             }
 
             if (DrawMenu.checkbox("insec"))
@@ -703,6 +694,7 @@
                         {
                             DrawingsManager.drawLine(Insec.Pos, Insec.InsecTo(Insec.InsecTarget), 2, System.Drawing.Color.White);
                         }
+
                         if (Insec.Qtarget(Insec.Pos) != null)
                         {
                             Circle.Draw(Color.Red, Insec.Range(), Insec.Qtarget(Insec.Pos));
@@ -710,10 +702,12 @@
                     }
                 }
             }
+
             if (!Menuini.checkbox("debug"))
             {
                 return;
             }
+
             BubbaKush.DoBubba(null, (1 + 1).Equals(2));
 
             Drawing.DrawText(X, Y, System.Drawing.Color.White, (Core.GameTickCount - SpellsManager.LastpW).ToString(), 5);
@@ -739,36 +733,21 @@
                     {
                         case 0:
                             target = Qtarget() != null
-                                         ? EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(user))
-                                               .FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && Qtarget().IsInRange(e.PredPos(250), 450))
+                                         ? EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(user)).FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && Qtarget().IsInRange(e.PredPos(250), 450))
                                          : EntityManager.Heroes.Enemies.OrderBy(e => e.PredPos(250).Distance(user))
-                                               .FirstOrDefault(
-                                                   e =>
-                                                   e.PredHP(250) > R.GetDamage(e) && WardJump.IsReady(e.ServerPosition)
-                                                       ? e.IsKillable(W.Range)
-                                                       : e.IsKillable(R.Range));
+                                               .FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && WardJump.IsReady(e.ServerPosition) ? e.IsKillable(W.Range) : e.IsKillable(R.Range));
                             break;
                         case 1:
                             target = Qtarget() != null
-                                         ? EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(user))
-                                               .FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && Qtarget().IsInRange(e.PredPos(250), 450))
+                                         ? EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(user)).FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && Qtarget().IsInRange(e.PredPos(250), 450))
                                          : EntityManager.Heroes.Enemies.OrderBy(e => e.PredPos(250).Distance(user))
-                                               .FirstOrDefault(
-                                                   e =>
-                                                   e.PredHP(250) > R.GetDamage(e) && WardJump.IsReady(e.ServerPosition)
-                                                       ? e.IsKillable(W.Range)
-                                                       : e.IsKillable(R.Range));
+                                               .FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && WardJump.IsReady(e.ServerPosition) ? e.IsKillable(W.Range) : e.IsKillable(R.Range));
                             break;
                         case 2:
                             target = Qtarget() != null
-                                         ? EntityManager.Heroes.Enemies.OrderBy(e => e.MaxHealth)
-                                               .FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && Qtarget().IsInRange(e.PredPos(250), 450))
+                                         ? EntityManager.Heroes.Enemies.OrderBy(e => e.MaxHealth).FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && Qtarget().IsInRange(e.PredPos(250), 450))
                                          : EntityManager.Heroes.Enemies.OrderBy(e => e.MaxHealth)
-                                               .FirstOrDefault(
-                                                   e =>
-                                                   e.PredHP(250) > R.GetDamage(e) && WardJump.IsReady(e.ServerPosition)
-                                                       ? e.IsKillable(W.Range)
-                                                       : e.IsKillable(R.Range));
+                                               .FirstOrDefault(e => e.PredHP(250) > R.GetDamage(e) && WardJump.IsReady(e.ServerPosition) ? e.IsKillable(W.Range) : e.IsKillable(R.Range));
                             break;
                     }
                 }
@@ -779,12 +758,11 @@
                     {
                         Orbwalker.OrbwalkTo(Game.CursorPos);
                     }
+
                     return;
                 }
 
-                var enemy =
-                    EntityManager.Heroes.Enemies.OrderBy(e => e.Health)
-                        .FirstOrDefault(e => e.IsKillable() && !e.NetworkId.Equals(target.NetworkId) && e.IsInRange(target, 750));
+                var enemy = EntityManager.Heroes.Enemies.OrderBy(e => e.Health).FirstOrDefault(e => e.IsKillable() && !e.NetworkId.Equals(target.NetworkId) && e.IsInRange(target, 750));
 
                 if (enemy == null)
                 {
@@ -792,14 +770,12 @@
                     {
                         Orbwalker.OrbwalkTo(Game.CursorPos);
                     }
+
                     return;
                 }
 
                 Pos = target.PredPos(250).Extend(enemy.PredPos(300), -275).To3D();
-                var rec = new Geometry.Polygon.Rectangle(
-                    target.PredPos(200),
-                    target.PredPos(200).Extend(enemy.PredPos(250), 750),
-                    target.BoundingRadius * 2);
+                var rec = new Geometry.Polygon.Rectangle(target.PredPos(200), target.PredPos(200).Extend(enemy.PredPos(250), 750), target.BoundingRadius * 2);
 
                 if (draw)
                 {
@@ -833,10 +809,7 @@
                     {
                         if (ene != null)
                         {
-                            var rect = new Geometry.Polygon.Rectangle(
-                                user.ServerPosition,
-                                user.ServerPosition.Extend(ene.PredPos(200), ene.BoundingRadius * 2).To3D(),
-                                200);
+                            var rect = new Geometry.Polygon.Rectangle(user.ServerPosition, user.ServerPosition.Extend(ene.PredPos(200), ene.BoundingRadius * 2).To3D(), 200);
 
                             if (EntityManager.Heroes.Enemies.Count(e => rect.IsInside(e)) > 1)
                             {
@@ -857,8 +830,8 @@
                     Orbwalker.OrbwalkTo(Game.CursorPos);
                 }
 
-                if (Qtarget() != null && Qtarget().IsInRange(target, 300) && !target.IsKillable(R.Range) && !W.IsInRange(Pos)
-                    && (WardJump.IsReady(Pos) || Flash != null && Flash.IsReady()) && !user.IsInRange(Pos, 125))
+                if (Qtarget() != null && Qtarget().IsInRange(target, 300) && !target.IsKillable(R.Range) && !W.IsInRange(Pos) && (WardJump.IsReady(Pos) || Flash != null && Flash.IsReady())
+                    && !user.IsInRange(Pos, 125))
                 {
                     Chat.Print("leesin debug: qcast");
                     Q2.Cast();
@@ -931,16 +904,14 @@
                         .FirstOrDefault(
                             e =>
                             e.IsKillable() && e.Distance(vector3) < Range()
-                            && (Q.GetPrediction(e).HitChance >= HitChance.Collision
-                                || (e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe))) && e.Health > Q.GetDamage(e));
+                            && (Q.GetPrediction(e).HitChance >= HitChance.Collision || e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe)) && e.Health > Q.GetDamage(e));
 
                 var minion =
                     EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(e => e.Distance(vector3))
                         .FirstOrDefault(
                             e =>
                             e.IsKillable() && e.Distance(vector3) < Range()
-                            && (Q.GetPrediction(e).HitChance >= HitChance.Collision
-                                || (e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe))) && e.Health > Q.GetDamage(e));
+                            && (Q.GetPrediction(e).HitChance >= HitChance.Collision || e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe)) && e.Health > Q.GetDamage(e));
 
                 var mob =
                     EntityManager.MinionsAndMonsters.GetJungleMonsters()
@@ -948,13 +919,13 @@
                         .FirstOrDefault(
                             e =>
                             e.IsKillable() && e.Distance(vector3) < Range()
-                            && (Q.GetPrediction(e).HitChance > HitChance.Collision
-                                || (e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe))) && e.Health > Q.GetDamage(e));
+                            && (Q.GetPrediction(e).HitChance > HitChance.Collision || e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe)) && e.Health > Q.GetDamage(e));
 
                 if (LeeSin.Qtarget() != null && LeeSin.Qtarget().IsInRange(vector3, Range()))
                 {
                     return LeeSin.Qtarget();
                 }
+
                 if (Hero != null)
                 {
                     return Hero;
@@ -983,8 +954,7 @@
             {
                 get
                 {
-                    return WardJump.IsReady(Pos, true) && Flash != null && Flash.IsReady()
-                           && (Pos.IsInRange(user, 400 + Flash.Range) || Pos.IsInRange(user, 200 + Q.Range + Flash.Range))
+                    return WardJump.IsReady(Pos, true) && Flash != null && Flash.IsReady() && (Pos.IsInRange(user, 400 + Flash.Range) || Pos.IsInRange(user, 200 + Q.Range + Flash.Range))
                            && !Pos.IsInRange(user, 600);
                 }
             }
@@ -999,15 +969,14 @@
                 var oldpos = user.ServerPosition.Extend(ObjectManager.Get<Obj_HQ>().FirstOrDefault(i => i.IsAlly).Position, 200).To3D();
                 if (MyAlly == null)
                 {
-                    var ally =
-                        EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(1000))
-                            .FirstOrDefault(a => !a.IsMe && a.IsValidTarget() && a.IsInRange(target.PredPos(200), 1350));
+                    var ally = EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(1000)).FirstOrDefault(a => !a.IsMe && a.IsValidTarget() && a.IsInRange(target.PredPos(200), 1350));
                     var tower = EntityManager.Turrets.Allies.FirstOrDefault(a => !a.IsDead && a.IsInRange(target.PredPos(200), 1350));
 
                     if (ally != null)
                     {
                         return ally.ServerPosition;
                     }
+
                     if (tower != null)
                     {
                         return tower.ServerPosition;
@@ -1024,15 +993,15 @@
 
             public enum Steps
             {
-                Nothing,
+                Nothing, 
 
-                UseQ,
+                UseQ, 
 
-                UseW,
+                UseW, 
 
-                UseWF,
+                UseWF, 
 
-                UseR,
+                UseR, 
 
                 UseF
             }
@@ -1048,6 +1017,7 @@
                     Orbwalker.OrbwalkTo(Game.CursorPos);
                     return;
                 }
+
                 Orbwalker.OrbwalkTo(Game.CursorPos);
                 if (user.Distance(Pos) < 200)
                 {
@@ -1058,18 +1028,16 @@
                     Step = Steps.UseW;
                 }
                 else if (Step == Steps.Nothing && user.Distance(Pos) > 400
-                         && ((Qtarget(Pos) != null && user.Distance(Qtarget(Pos)) < Q.Range)
-                             || (LeeSin.Qtarget() != null && LeeSin.Qtarget().Distance(Pos) < 500)) && WardJump.IsReady(Pos) && Q.IsReady())
+                         && ((Qtarget(Pos) != null && user.Distance(Qtarget(Pos)) < Q.Range) || (LeeSin.Qtarget() != null && LeeSin.Qtarget().Distance(Pos) < 500)) && WardJump.IsReady(Pos)
+                         && Q.IsReady())
                 {
                     Step = Steps.UseQ;
                 }
-                else if (Step == Steps.Nothing && WardFlashR && SpellsManager.Wtimer > 1000 && SpellsManager.Qtimer > 500
-                         && SpellsManager.Qtimer < 2000)
+                else if (Step == Steps.Nothing && WardFlashR && SpellsManager.Wtimer > 1000 && SpellsManager.Qtimer > 500 && SpellsManager.Qtimer < 2000)
                 {
                     Step = Steps.UseWF;
                 }
-                else if (Step == Steps.Nothing && user.Distance(Pos) < Flash.Range && !user.IsInRange(Pos, 200) && Flash != null
-                         && Flash.IsReady() && SpellsManager.Wtimer > 1000)
+                else if (Step == Steps.Nothing && user.Distance(Pos) < Flash.Range && !user.IsInRange(Pos, 200) && Flash != null && Flash.IsReady() && SpellsManager.Wtimer > 1000)
                 {
                     Step = Steps.UseF;
                 }
@@ -1092,6 +1060,7 @@
                         {
                             WardJump.Jump(Pos.Extend(user, 400).To3D(), false, true);
                         }
+
                         return;
                     case Steps.UseF:
                         Flash?.Cast(Pos);
@@ -1100,6 +1069,7 @@
                         SpellsManager.Q(Qtarget(Pos), true, true, true);
                         return;
                 }
+
                 Orbwalker.OrbwalkTo(Game.CursorPos);
             }
         }
@@ -1121,15 +1091,11 @@
 
             private static readonly Item[] Wards =
                 {
-                    new Item(ItemId.Warding_Totem_Trinket, 600f), new Item(ItemId.Sightstone, 600f),
-                    new Item(ItemId.Ruby_Sightstone, 600f), new Item(ItemId.Eye_of_the_Oasis, 600f),
-                    new Item(ItemId.Eye_of_the_Equinox, 600f), new Item(ItemId.Trackers_Knife, 600f),
-                    new Item(ItemId.Trackers_Knife_Enchantment_Warrior, 600f),
-                    new Item(ItemId.Trackers_Knife_Enchantment_Runic_Echoes, 600f),
-                    new Item(ItemId.Trackers_Knife_Enchantment_Sated_Devourer, 600f),
-                    new Item(ItemId.Trackers_Knife_Enchantment_Devourer, 600f),
-                    new Item(ItemId.Trackers_Knife_Enchantment_Cinderhulk, 600f),
-                    new Item(ItemId.Eye_of_the_Watchers, 600f),
+                    new Item(ItemId.Warding_Totem_Trinket, 600f), new Item(ItemId.Sightstone, 600f), new Item(ItemId.Ruby_Sightstone, 600f), 
+                    new Item(ItemId.Eye_of_the_Oasis, 600f), new Item(ItemId.Eye_of_the_Equinox, 600f), new Item(ItemId.Trackers_Knife, 600f), 
+                    new Item(ItemId.Trackers_Knife_Enchantment_Warrior, 600f), new Item(ItemId.Trackers_Knife_Enchantment_Runic_Echoes, 600f), 
+                    new Item(ItemId.Trackers_Knife_Enchantment_Sated_Devourer, 600f), new Item(ItemId.Trackers_Knife_Enchantment_Devourer, 600f), 
+                    new Item(ItemId.Trackers_Knife_Enchantment_Cinderhulk, 600f), new Item(ItemId.Eye_of_the_Watchers, 600f), 
                 };
 
             private static readonly Item[] VisionWards = { new Item(ItemId.Vision_Ward, 600f) };
@@ -1188,7 +1154,7 @@
             {
                 if (W.IsReady() && SpellsManager.W1 && SpellsManager.Wtimer > 1000)
                 {
-                    if ((Wtarget(vector3, combo) != null || Core.GameTickCount - lastward < 3000))
+                    if (Wtarget(vector3, combo) != null || Core.GameTickCount - lastward < 3000)
                     {
                         SpellsManager.W(bubba ? Wtarget(vector3, false, 100) : Wtarget(vector3, combo), true);
                     }
@@ -1210,8 +1176,8 @@
 
                 var minion = EntityManager.MinionsAndMonsters.AlliedMinions.Any(m => m.IsInRange(vector3, 200) && m.IsValidTarget());
 
-                if (UseWardReady && UseWard.IsInRange(vector3) && (!user.ServerPosition.Extend(vector3, 75).IsWall() || !vector3.IsWall())
-                    && !wardinrage && !ally && !minion && Core.GameTickCount - lastward > 1000)
+                if (UseWardReady && UseWard.IsInRange(vector3) && (!user.ServerPosition.Extend(vector3, 75).IsWall() || !vector3.IsWall()) && !wardinrage && !ally && !minion
+                    && Core.GameTickCount - lastward > 1000)
                 {
                     UseWard.Cast(vector3);
                     lastward = Core.GameTickCount;
@@ -1222,16 +1188,11 @@
             {
                 if (combo)
                 {
-                    var wardinragec =
-                        ObjectsManager.Wards.OrderBy(e => e.Distance(vector3)).FirstOrDefault(ward => ward.IsInRange(vector3, 300) && ward.IsValid);
+                    var wardinragec = ObjectsManager.Wards.OrderBy(e => e.Distance(vector3)).FirstOrDefault(ward => ward.IsInRange(vector3, 300) && ward.IsValid);
 
-                    var allyc =
-                        EntityManager.Heroes.Allies.OrderBy(e => e.Distance(vector3))
-                            .FirstOrDefault(a => a.IsInRange(vector3, 300) && a.IsValidTarget() && !a.IsMe);
+                    var allyc = EntityManager.Heroes.Allies.OrderBy(e => e.Distance(vector3)).FirstOrDefault(a => a.IsInRange(vector3, 300) && a.IsValidTarget() && !a.IsMe);
 
-                    var minionc =
-                        EntityManager.MinionsAndMonsters.AlliedMinions.OrderBy(e => e.Distance(vector3))
-                            .FirstOrDefault(m => m.IsInRange(vector3, 300) && m.IsValidTarget());
+                    var minionc = EntityManager.MinionsAndMonsters.AlliedMinions.OrderBy(e => e.Distance(vector3)).FirstOrDefault(m => m.IsInRange(vector3, 300) && m.IsValidTarget());
                     if (allyc != null)
                     {
                         return allyc;
@@ -1239,6 +1200,7 @@
 
                     return minionc ?? wardinragec;
                 }
+
                 var wardinrage = ObjectsManager.Wards.FirstOrDefault(ward => ward.IsInRange(vector3, range));
 
                 var ally = EntityManager.Heroes.Allies.FirstOrDefault(a => a.IsInRange(vector3, range) && a.IsValidTarget() && !a.IsMe);
@@ -1349,37 +1311,24 @@
             {
                 if (LeeSin.Q.IsReady() && target.IsKillable(LeeSin.Q.Range))
                 {
-                    LeeSin.Q.AllowedCollisionCount = MiscMenu.checkbox("smiteq") && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.High
-                                                     && Smite != null && Smite.IsReady() && Q1
-                                                         ? 1
-                                                         : 0;
                     if (Q1 && q1 && Qtimer > 1500)
                     {
-                        if (MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady()
-                            && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.High
+                        if (MiscMenu.checkbox("smiteq") && Smite != null && Smite.IsReady() && LeeSin.Q.GetPrediction(target).HitChance >= HitChance.High
                             && LeeSin.Q.GetPrediction(target)
                                    .CollisionObjects.Count(
-                                       o =>
-                                       o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster || o.IsMinion()) && o.IsKillable(Smite.Range)
-                                       && Smite.GetDamage(o) >= o.Health) == LeeSin.Q.AllowedCollisionCount
+                                       o => o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster || o.IsMinion()) && o.IsKillable(Smite.Range - 10) && Smite.GetDamage(o) >= o.Health) == 1
                             && !(Common.orbmode(Orbwalker.ActiveModes.LaneClear) || Common.orbmode(Orbwalker.ActiveModes.JungleClear)))
                         {
-                            LeeSin.Q.Cast(target, HitChance.Low);
                             Smite.Cast(
                                 LeeSin.Q.GetPrediction(target)
-                                    .CollisionObjects.FirstOrDefault(
-                                        o =>
-                                        o.NetworkId != target.NetworkId && o.IsMinion && o.IsKillable(Smite.Range) && Smite.GetDamage(o) >= o.Health));
+                                    .CollisionObjects.FirstOrDefault(o => o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster) && o.IsKillable(Smite.Range) && Smite.GetDamage(o) >= o.Health));
+                            LeeSin.Q.Cast(target);
                             LastQ = Core.GameTickCount;
                             return;
                         }
-                        LeeSin.Q.AllowedCollisionCount = 0;
-                        if (LeeSin.Q.AllowedCollisionCount == 0)
-                        {
-                            LeeSin.Q.Cast(target, HitChance.Low);
-                            LastQ = Core.GameTickCount;
-                            return;
-                        }
+
+                        LeeSin.Q.Cast(target, HitChance.Low);
+                        LastQ = Core.GameTickCount;
                         return;
                     }
 
@@ -1387,17 +1336,14 @@
                     {
                         if (insec)
                         {
-                            var qhero =
-                                EntityManager.Heroes.Enemies.Where(e => e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe))
-                                    .Any(e => e.IsInRange(target, LeeSin.W.Range - 50));
+                            var qhero = EntityManager.Heroes.Enemies.Where(e => e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe)).Any(e => e.IsInRange(target, Insec.Range() - 50));
                             var qminion =
-                                EntityManager.MinionsAndMonsters.EnemyMinions.Where(
-                                    e => e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe))
-                                    .Any(e => e.IsInRange(target, LeeSin.W.Range - 50));
+                                EntityManager.MinionsAndMonsters.EnemyMinions.Where(e => e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe))
+                                    .Any(e => e.IsInRange(target, Insec.Range() - 50));
                             var qmob =
                                 EntityManager.MinionsAndMonsters.GetJungleMonsters()
                                     .Where(e => e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe))
-                                    .Any(e => e.IsInRange(target, LeeSin.W.Range - 50));
+                                    .Any(e => e.IsInRange(target, Insec.Range() - 50));
                             if (qhero || qminion || qmob)
                             {
                                 LeeSin.Q2.Cast();
@@ -1423,6 +1369,7 @@
                         LeeSin.W.Cast(target);
                         LastW = Core.GameTickCount;
                     }
+
                     if (!W1 && W2)
                     {
                         Chat.Print("leesin debug: W2");
@@ -1442,6 +1389,7 @@
                         LastE = Core.GameTickCount;
                         return;
                     }
+
                     if (!E1 && E2)
                     {
                         LeeSin.E.Cast();
@@ -1455,9 +1403,8 @@
         {
             public static void GameObject_OnCreate(GameObject sender, System.EventArgs args)
             {
-                if (sender != null && SpellsManager.W1 && W.IsReady() && sender.Distance(user) <= W.Range && SpellsManager.Wtimer > 1000
-                    && !sender.IsDead && sender.IsAlly && SpellsManager.W1 && sender.isWard() && W.IsInRange((Obj_AI_Minion)sender)
-                    && (RMenu.keybind("bubba") || JumperMenu.keybind("normal") || MiscMenu.keybind("wardjump")))
+                if (sender != null && SpellsManager.W1 && W.IsReady() && sender.Distance(user) <= W.Range && SpellsManager.Wtimer > 1000 && !sender.IsDead && sender.IsAlly && SpellsManager.W1
+                    && sender.isWard() && W.IsInRange((Obj_AI_Minion)sender) && (RMenu.keybind("bubba") || JumperMenu.keybind("normal") || MiscMenu.keybind("wardjump")))
                 {
                     SpellsManager.W((Obj_AI_Base)sender, true);
                     WardJump.lastward = Core.GameTickCount;
@@ -1476,8 +1423,7 @@
 
             public static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
             {
-                if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.DangerLevel < Common.danger(MiscMenu)
-                    || !MiscMenu.checkbox("Rint") || !R.IsReady())
+                if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.DangerLevel < Common.danger(MiscMenu) || !MiscMenu.checkbox("Rint") || !R.IsReady())
                 {
                     return;
                 }
@@ -1487,9 +1433,8 @@
 
             public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
             {
-                if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.End == Vector3.Zero
-                    || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()) || !MiscMenu.checkbox("Rgap") || !R.IsReady()
-                    || user.HealthPercent > MiscMenu.slider("Rgaphp"))
+                if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.End == Vector3.Zero || !kCore.GapMenu.checkbox(e.SpellName + sender.ID())
+                    || !MiscMenu.checkbox("Rgap") || !R.IsReady() || user.HealthPercent > MiscMenu.slider("Rgaphp"))
                 {
                     return;
                 }
@@ -1505,6 +1450,7 @@
                     {
                         args.Process = false;
                     }
+
                     args.Process = false;
                     Chat.Print("leesin debug: wblocked");
                 }
@@ -1518,13 +1464,14 @@
                     if (args.Slot == SpellSlot.Q)
                     {
                         SpellsManager.LastpQ = Core.GameTickCount;
-                        /*
-                    if (Insec.Pos != null && (Insec.Step == Insec.Steps.UseQ && JumperMenu.keybind("normal")))
-                    {
-                        Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 250);
-                        Chat.Print("leesin debug: procces WardJump");
-                    }
-                            */
+                        if (Insec.Pos != null)
+                        {
+                            if (Insec.Step == Insec.Steps.UseQ && JumperMenu.keybind("normal"))
+                            {
+                                Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 250);
+                                Chat.Print("leesin debug: procces WardJump");
+                            }
+                        }
                     }
 
                     if (args.Slot == SpellSlot.W)
@@ -1532,18 +1479,23 @@
                         SpellsManager.LastpW = Core.GameTickCount;
                         if (JumperMenu.keybind("normal"))
                         {
-                            /*
-                            if (Insec.InsecTarget != null && Insec.Step == Insec.Steps.UseW)
+                            if (Insec.InsecTarget != null)
                             {
-                                Core.DelayAction(() => { R.Cast(Insec.InsecTarget); }, 100);
-                                Chat.Print("leesin debug: procces R");
+                                if (Insec.Step == Insec.Steps.UseW)
+                                {
+                                    Core.DelayAction(() => { R.Cast(Insec.InsecTarget); }, 100);
+                                    Chat.Print("leesin debug: procces R");
+                                }
                             }
-                            if (Insec.Pos != null && (Flash != null && Flash.IsReady() && (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF)))
+
+                            if (Insec.Pos != null)
                             {
-                                Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 250);
-                                Chat.Print("leesin debug: procces Flash");
+                                if (Flash != null && Flash.IsReady() && (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF))
+                                {
+                                    Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 250);
+                                    Chat.Print("leesin debug: procces Flash");
+                                }
                             }
-                            */
                         }
                     }
 
@@ -1559,18 +1511,20 @@
                         {
                             BubbaKush.CastFlash();
                         }
-                        /*
-                        if (Insec.Pos != null && (!user.IsInRange(Insec.Pos, 200) && Flash != null && Flash.IsReady() && Flash.IsInRange(Insec.Pos)
-                            && JumperMenu.keybind("normal")))
+
+                        if (Insec.Pos != null)
                         {
-                            if (Insec.Step == Insec.Steps.UseR)
+                            if (!user.IsInRange(Insec.Pos, 200) && Flash != null && Flash.IsReady() && Flash.IsInRange(Insec.Pos) && JumperMenu.keybind("normal"))
                             {
-                                Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 200);
-                                Chat.Print("leesin debug: procces Flash");
+                                if (Insec.Step == Insec.Steps.UseR)
+                                {
+                                    Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 200);
+                                    Chat.Print("leesin debug: procces Flash");
+                                }
                             }
                         }
-                        */
                     }
+
                     if (Flash != null && args.Slot == Flash.Slot)
                     {
                         SpellsManager.LastFlash = Core.GameTickCount;
@@ -1580,18 +1534,11 @@
 
             public static void Messages_OnMessage(Messages.WindowMessage args)
             {
-                var target =
-                    EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(Game.CursorPos))
-                        .FirstOrDefault(e => e.IsKillable() && e.IsInRange(Game.CursorPos, 100));
-                var Ally =
-                    EntityManager.Heroes.Allies.OrderBy(e => e.Distance(Game.CursorPos))
-                        .FirstOrDefault(e => e.IsValidTarget() && !e.IsDead && e.IsInRange(Game.CursorPos, 200));
+                var target = EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(Game.CursorPos)).FirstOrDefault(e => e.IsKillable() && e.IsInRange(Game.CursorPos, 100));
+                var Ally = EntityManager.Heroes.Allies.OrderBy(e => e.Distance(Game.CursorPos)).FirstOrDefault(e => e.IsValidTarget() && !e.IsDead && e.IsInRange(Game.CursorPos, 200));
                 var allyminion =
-                    EntityManager.MinionsAndMonsters.AlliedMinions.OrderBy(e => e.Distance(Game.CursorPos))
-                        .FirstOrDefault(e => e.IsValidTarget() && !e.IsDead && e.IsInRange(Game.CursorPos, 200));
-                var allyturret =
-                    EntityManager.Turrets.Allies.OrderBy(e => e.Distance(Game.CursorPos))
-                        .FirstOrDefault(e => !e.IsDead && e.IsInRange(Game.CursorPos, 200));
+                    EntityManager.MinionsAndMonsters.AlliedMinions.OrderBy(e => e.Distance(Game.CursorPos)).FirstOrDefault(e => e.IsValidTarget() && !e.IsDead && e.IsInRange(Game.CursorPos, 200));
+                var allyturret = EntityManager.Turrets.Allies.OrderBy(e => e.Distance(Game.CursorPos)).FirstOrDefault(e => !e.IsDead && e.IsInRange(Game.CursorPos, 200));
                 var allym = allyturret != null && allyminion != null && Ally != null;
                 if (args.Message == WindowMessages.LeftButtonDown)
                 {
@@ -1602,6 +1549,7 @@
                             MyTarget = null;
                             return;
                         }
+
                         MyTarget = target;
                     }
                     else
@@ -1611,26 +1559,31 @@
                             MyAlly = Ally;
                             return;
                         }
+
                         if (allyminion != null)
                         {
                             MyAlly = allyminion;
                             return;
                         }
+
                         if (allyturret != null)
                         {
                             MyAlly = allyturret;
                             return;
                         }
                     }
+
                     if (MyTarget != null && !MyTarget.IsKillable())
                     {
                         MyTarget = null;
                     }
+
                     if (MyAlly != null && MyAlly.IsDead)
                     {
                         MyAlly = null;
                     }
                 }
+
                 if (args.Message == WindowMessages.LeftButtonDoubleClick)
                 {
                     if (target == null && !allym)

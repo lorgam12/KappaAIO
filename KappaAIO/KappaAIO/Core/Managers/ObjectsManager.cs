@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace KappaAIO.Core.Managers
+﻿namespace KappaAIO.Core.Managers
 {
+    using System.Collections.Generic;
+
     using EloBuddy;
 
     internal class ObjectsManager

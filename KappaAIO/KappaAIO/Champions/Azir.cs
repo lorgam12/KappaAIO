@@ -1,7 +1,6 @@
 ﻿namespace KappaAIO.Champions
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
 
     using EloBuddy;
@@ -12,8 +11,8 @@
     using EloBuddy.SDK.Menu.Values;
     using EloBuddy.SDK.Rendering;
 
-    using Core;
-    using Core.Managers;
+    using KappaAIO.Core;
+    using KappaAIO.Core.Managers;
 
     using SharpDX;
 
@@ -29,22 +28,20 @@
 
         public static Vector3 Rpos(Obj_AI_Base target)
         {
-            Common.ally =
-                EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(R.Range))
-                    .FirstOrDefault(a => a.IsKillable() && a.IsValidTarget(1250) && !a.IsMe);
+            Common.ally = EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(R.Range)).FirstOrDefault(a => a.IsKillable() && a.IsValidTarget(1250) && !a.IsMe);
             Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(s => s.IsKillable(1250));
             if (Common.tower != null)
             {
                 return user.ServerPosition.Extend(Common.tower.ServerPosition, R.Range).To3D();
             }
+
             return Common.ally != null ? user.ServerPosition.Extend(Common.ally.ServerPosition, R.Range).To3D() : R.GetPrediction(target).CastPosition;
         }
 
         internal static bool Ehit(Obj_AI_Base target)
         {
             return
-                Orbwalker.AzirSoldiers.Select(
-                    soldier => new Geometry.Polygon.Rectangle(ObjectManager.Player.ServerPosition, soldier.ServerPosition, target.BoundingRadius + 35))
+                Orbwalker.AzirSoldiers.Select(soldier => new Geometry.Polygon.Rectangle(ObjectManager.Player.ServerPosition, soldier.ServerPosition, target.BoundingRadius + 35))
                     .Any(rectangle => rectangle.IsInside(target));
         }
 
@@ -216,14 +213,17 @@
                     R.Cast(rpos);
                 }
             }
+
             if (HarassMenu.keybind("toggle"))
             {
                 this.Harass();
             }
+
             if (JumperMenu.keybind("jump"))
             {
                 Jump(Game.CursorPos);
             }
+
             if (JumperMenu.keybind("normal"))
             {
                 Normal(TargetSelector.SelectedTarget);
@@ -236,9 +236,7 @@
 
             if (AutoMenu.checkbox("tower"))
             {
-                var azirtower =
-                    ObjectManager.Get<GameObject>()
-                        .FirstOrDefault(o => o != null && o.Name.ToLower().Contains("towerclicker") && user.Distance(o) < 500);
+                var azirtower = ObjectManager.Get<GameObject>().FirstOrDefault(o => o != null && o.Name.ToLower().Contains("towerclicker") && user.Distance(o) < 500);
                 if (azirtower != null && azirtower.CountEnemeis(800) >= AutoMenu.slider("Tenemy"))
                 {
                     Player.UseObject(azirtower);
@@ -307,20 +305,18 @@
 
         public static void Orbwalker_OnPreAttack(AttackableUnit target, Orbwalker.PreAttackArgs args)
         {
-            if (target == null || args.Target == null || !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear)
-                || Orbwalker.ValidAzirSoldiers.Count(s => s.IsAlly) < 1)
+            if (target == null || args.Target == null || !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear) || Orbwalker.ValidAzirSoldiers.Count(s => s.IsAlly) < 1)
             {
                 return;
             }
+
             var orbtarget = args.Target as Obj_AI_Base;
             foreach (var sold in Orbwalker.ValidAzirSoldiers)
             {
                 if (sold != null)
                 {
                     var sold1 = sold;
-                    var minion =
-                        EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(
-                            m => m.IsInRange(sold1, sold1.GetAutoAttackRange()) && m.IsKillable());
+                    var minion = EntityManager.MinionsAndMonsters.EnemyMinions.FirstOrDefault(m => m.IsInRange(sold1, sold1.GetAutoAttackRange()) && m.IsKillable());
                     if (minion != null && minion != orbtarget)
                     {
                         var killable = user.GetAutoAttackDamage(orbtarget, true) >= Prediction.Health.GetPrediction(orbtarget, (int)user.AttackDelay);
@@ -354,14 +350,14 @@
         {
             R.Width = 107 * (R.Level - 1) < 200 ? 220 : (107 * (R.Level - 1)) + 5;
 
-            int count = Orbwalker.AzirSoldiers.Count(s => s.IsAlly);
+            var count = Orbwalker.AzirSoldiers.Count(s => s.IsAlly);
             Q.Width = count != 0 ? 65 * count : 65;
         }
 
         public static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
-            if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(300) || e.End == Vector3.Zero || !e.End.IsInRange(user, 300)
-                || !kCore.GapMenu.checkbox(e.SpellName + sender.ID()) || !AutoMenu.checkbox("Gap") || !R.IsReady())
+            if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(300) || e.End == Vector3.Zero || !e.End.IsInRange(user, 300) || !kCore.GapMenu.checkbox(e.SpellName + sender.ID())
+                || !AutoMenu.checkbox("Gap") || !R.IsReady())
             {
                 return;
             }
@@ -371,8 +367,7 @@
 
         public static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
-            if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.DangerLevel < Common.danger(AutoMenu)
-                || !AutoMenu.checkbox("int") || !R.IsReady())
+            if (!sender.IsEnemy || sender == null || e == null || !sender.IsKillable(R.Range) || e.DangerLevel < Common.danger(AutoMenu) || !AutoMenu.checkbox("int") || !R.IsReady())
             {
                 return;
             }
@@ -422,8 +417,8 @@
                     var pred = W.GetPrediction(target);
                     W.Cast(pred.CastPosition);
                 }
-                if (menu.checkbox("Q") && !target.IsKillable(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana()
-                    && target.IsKillable(Q.Range - 25) && menu.checkbox("WQ"))
+
+                if (menu.checkbox("Q") && !target.IsKillable(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana() && target.IsKillable(Q.Range - 25) && menu.checkbox("WQ"))
                 {
                     var p = user.Position.Extend(target.Position, W.Range);
                     W.Cast(p.To3D());
@@ -442,11 +437,11 @@
 
                 if (Ec && user.Mana > Q.Mana() + E.Mana() && Ehit(target, predQ.CastPosition) && predQ.HitChance >= HitChance.Medium)
                 {
-                    if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= user.HealthPercent)
-                        || (!menu.checkbox("Edive") && target.IsUnderHisturret()))
+                    if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= user.HealthPercent) || (!menu.checkbox("Edive") && target.IsUnderHisturret()))
                     {
                         return;
                     }
+
                     if (E.Cast(predQ.CastPosition))
                     {
                         Q.Cast(predQ.CastPosition);
@@ -456,15 +451,8 @@
                 if (Qaoe)
                 {
                     var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(Q.Range) && e.IsKillable());
-                    var pred = Prediction.Position.PredictCircularMissileAoe(
-                        enemies.Cast<Obj_AI_Base>().ToArray(),
-                        Q.Range,
-                        (int)Orbwalker.AzirSoldierAutoAttackRange,
-                        Q.CastDelay,
-                        Q.Speed);
-                    var castpos =
-                        pred.OrderByDescending(p => p.GetCollisionObjects<AIHeroClient>().Length)
-                            .FirstOrDefault(p => p.CollisionObjects.Contains(target));
+                    var pred = Prediction.Position.PredictCircularMissileAoe(enemies.Cast<Obj_AI_Base>().ToArray(), Q.Range, (int)Orbwalker.AzirSoldierAutoAttackRange, Q.CastDelay, Q.Speed);
+                    var castpos = pred.OrderByDescending(p => p.GetCollisionObjects<AIHeroClient>().Length).FirstOrDefault(p => p.CollisionObjects.Contains(target));
                     if (castpos?.GetCollisionObjects<AIHeroClient>().Length > 1)
                     {
                         Q.Cast(castpos.CastPosition);
@@ -491,14 +479,15 @@
                     E.Cast(target);
                 }
             }
+
             if (Rc)
             {
                 var Raoe = user.CountEnemeis(R.Range) >= menu.slider("Raoe") || user.CountEnemeis(R.Width) >= menu.slider("Raoe");
 
                 if (target.IsKillable(R.Range - 25))
                 {
-                    if ((menu.checkbox("Rkill") && R.GetDamage(target) >= Prediction.Health.GetPrediction(target, R.CastDelay))
-                        || (menu.checkbox("Rsave") && menu.slider("RHP") >= user.HealthPercent) || (Raoe))
+                    if ((menu.checkbox("Rkill") && R.GetDamage(target) >= Prediction.Health.GetPrediction(target, R.CastDelay)) || (menu.checkbox("Rsave") && menu.slider("RHP") >= user.HealthPercent)
+                        || Raoe)
                     {
                         R.Cast(Rpos(target));
                     }
@@ -547,8 +536,8 @@
                     var pred = W.GetPrediction(target);
                     W.Cast(pred.CastPosition);
                 }
-                if (menu.checkbox("Q") && !target.IsKillable(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana()
-                    && target.IsKillable(Q.Range - 25) && menu.checkbox("WQ"))
+
+                if (menu.checkbox("Q") && !target.IsKillable(W.Range) && Q.IsReady() && user.Mana > Q.Mana() + W.Mana() && target.IsKillable(Q.Range - 25) && menu.checkbox("WQ"))
                 {
                     var p = user.Position.Extend(target.Position, W.Range);
                     W.Cast(p.To3D());
@@ -566,13 +555,13 @@
                 {
                     Q.Cast(target);
                 }
+
                 Q.Cast(target, Q.hitchance(Menuini));
             }
 
             if (Ec && Ehit(target))
             {
-                if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= user.HealthPercent)
-                    || (!menu.checkbox("Edive") && target.IsUnderHisturret()))
+                if ((target.CountEnemeis(750) >= menu.slider("Esafe")) || (menu.slider("EHP") >= user.HealthPercent) || (!menu.checkbox("Edive") && target.IsUnderHisturret()))
                 {
                     return;
                 }
@@ -604,20 +593,14 @@
                 {
                     var flashrange = Flash.Range + 250;
                     var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(flashrange) && e.IsKillable());
-                    var pred = Prediction.Position.PredictCircularMissileAoe(
-                        enemies.Cast<Obj_AI_Base>().ToArray(),
-                        flashrange,
-                        R.Width + 25,
-                        R.CastDelay,
-                        R.Speed);
-                    var castpos =
-                        pred.OrderByDescending(p => p.GetCollisionObjects<AIHeroClient>().Length)
-                            .FirstOrDefault(p => p.CollisionObjects.Contains(target));
+                    var pred = Prediction.Position.PredictCircularMissileAoe(enemies.Cast<Obj_AI_Base>().ToArray(), flashrange, R.Width + 25, R.CastDelay, R.Speed);
+                    var castpos = pred.OrderByDescending(p => p.GetCollisionObjects<AIHeroClient>().Length).FirstOrDefault(p => p.CollisionObjects.Contains(target));
                     if (castpos?.GetCollisionObjects<AIHeroClient>().Length > user.CountEnemeis(R.Range))
                     {
                         Flash.Cast(castpos.CastPosition);
                     }
                 }
+
                 R.Cast(rpos);
             }
             else
@@ -656,7 +639,7 @@
                                 Core.DelayAction(() => Q.Cast(qpos), delay);
                                 insecqtime = Game.Time;
                             }
-                        },
+                        }, 
                     100);
             }
 
@@ -666,9 +649,7 @@
         public static Vector3 insectpos(Obj_AI_Base target)
         {
             Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(t => !t.IsDead && t.IsInRange(target, 1250));
-            Common.ally =
-                EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(R.Range))
-                    .FirstOrDefault(a => !a.IsMe && a.IsValidTarget() && a.IsInRange(target, 1000));
+            Common.ally = EntityManager.Heroes.Allies.OrderByDescending(a => a.CountAllies(R.Range)).FirstOrDefault(a => !a.IsMe && a.IsValidTarget() && a.IsInRange(target, 1000));
             if (Common.tower != null)
             {
                 return Common.tower.ServerPosition;
@@ -680,8 +661,7 @@
         public static Vector3 insectpos()
         {
             Common.tower = EntityManager.Turrets.Allies.FirstOrDefault(t => t.IsKillable(1250));
-            Common.ally =
-                EntityManager.Heroes.Allies.OrderByDescending(a => a.CountEnemeis(R.Range)).FirstOrDefault(a => !a.IsMe && a.IsValidTarget(1000));
+            Common.ally = EntityManager.Heroes.Allies.OrderByDescending(a => a.CountEnemeis(R.Range)).FirstOrDefault(a => !a.IsMe && a.IsValidTarget(1000));
             if (Common.tower != null)
             {
                 return Common.tower.ServerPosition;
@@ -705,6 +685,7 @@
                 {
                     return;
                 }
+
                 W.Cast(wpos);
             }
             else
@@ -718,7 +699,7 @@
                                 {
                                     Core.DelayAction(() => Q.Cast(qpos), delay);
                                 }
-                            },
+                            }, 
                         100);
                 }
             }
@@ -772,6 +753,7 @@
                 {
                     spell.Cast(spell.GetKStarget());
                 }
+
                 if (KillStealMenu.checkbox(spell.Slot + "js") && spell.GetJStarget() != null)
                 {
                     spell.Cast(spell.GetJStarget());
@@ -791,15 +773,9 @@
 
                 var objAiMinions = minions as Obj_AI_Minion[] ?? minions.ToArray();
 
-                var bestQ = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
-                    objAiMinions.ToArray(),
-                    Orbwalker.AzirSoldierAutoAttackRange,
-                    (int)Q.Range);
+                var bestQ = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(objAiMinions.ToArray(), Orbwalker.AzirSoldierAutoAttackRange, (int)Q.Range);
 
-                var bestW = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
-                    objAiMinions.ToArray(),
-                    Orbwalker.AzirSoldierAutoAttackRange,
-                    (int)W.Range);
+                var bestW = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(objAiMinions.ToArray(), Orbwalker.AzirSoldierAutoAttackRange, (int)W.Range);
 
                 if (Wc && bestW.HitNumber > 0 && bestW.CastPosition != null)
                 {

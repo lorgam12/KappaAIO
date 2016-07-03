@@ -11,11 +11,7 @@
 
     internal class Program
     {
-        public static Champion[] hero =
-            {
-                Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar,
-                Champion.Xerath
-            };
+        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar, Champion.Xerath };
 
         private static void Main(string[] args)
         {
@@ -44,6 +40,7 @@
                 Console.WriteLine(warn + " KappaAIO: Failed To Load ! ");
                 Console.WriteLine(warn + " Case: " + Player.Instance.Hero + " Not Supported ");
             }
+
             Console.WriteLine(info + " ----------------------------------");
         }
     }

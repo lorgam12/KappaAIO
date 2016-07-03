@@ -3,15 +3,15 @@
     using System;
     using System.Linq;
 
-    using Core;
-    using Core.Managers;
-
     using EloBuddy;
     using EloBuddy.SDK;
     using EloBuddy.SDK.Enumerations;
     using EloBuddy.SDK.Events;
     using EloBuddy.SDK.Menu;
     using EloBuddy.SDK.Menu.Values;
+
+    using KappaAIO.Core;
+    using KappaAIO.Core.Managers;
 
     using SharpDX;
 
@@ -111,6 +111,7 @@
                 {
                     KillStealMenu.Add(spell.Slot + "ks", new CheckBox("Use " + spell.Slot));
                 }
+
                 KillStealMenu.AddSeparator(0);
                 KillStealMenu.AddGroupLabel("JungleSteal");
                 foreach (var spell in SpellList)
@@ -153,6 +154,7 @@
                         Q.Cast(target, Q.hitchance(Menuini));
                     }
                 }
+
                 if (AutoMenu.checkbox("AutoW"))
                 {
                     var target = aiHeroClients.FirstOrDefault(e => e.IsKillable(W.Range));
@@ -161,6 +163,7 @@
                         W.Cast(target, W.hitchance(Menuini));
                     }
                 }
+
                 if (AutoMenu.checkbox("AutoE"))
                 {
                     var target = aiHeroClients.FirstOrDefault(e => e.IsKillable(E.Range));
@@ -203,18 +206,22 @@
             {
                 Qlogic(target);
             }
+
             if (Wready)
             {
                 Wlogic(target);
             }
+
             if (Eready)
             {
                 Elogic(target);
             }
+
             if (RFinisher)
             {
                 Rlogic(target);
             }
+
             if (RAoe)
             {
                 Rlogic(target);
@@ -239,10 +246,12 @@
             {
                 Qlogic(target);
             }
+
             if (Wready)
             {
                 Wlogic(target);
             }
+
             if (Eready)
             {
                 Elogic(target);
@@ -268,10 +277,12 @@
             {
                 Qlogic(target);
             }
+
             if (Wready)
             {
                 Wlogic(target);
             }
+
             if (Eready)
             {
                 Elogic(target);
@@ -295,10 +306,12 @@
             {
                 Qlogic(target);
             }
+
             if (Wready)
             {
                 Wlogic(target);
             }
+
             if (Eready)
             {
                 Elogic(target);
@@ -346,6 +359,7 @@
             {
                 return;
             }
+
             var Combomode = Common.orbmode(Orbwalker.ActiveModes.Combo);
             var Harassmode = Common.orbmode(Orbwalker.ActiveModes.Harass);
             var LaneClearmode = Common.orbmode(Orbwalker.ActiveModes.LaneClear);
@@ -382,16 +396,14 @@
                     {
                         return;
                     }
+
                     Q.Cast(minion);
                 }
             }
 
             if (JungleClearmode)
             {
-                var minion =
-                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                        .OrderByDescending(m => m.MaxHealth)
-                        .FirstOrDefault(m => Q.GetPrediction(m).HitChance >= HitChance.High);
+                var minion = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderByDescending(m => m.MaxHealth).FirstOrDefault(m => Q.GetPrediction(m).HitChance >= HitChance.High);
 
                 if (minion != null)
                 {
@@ -406,20 +418,15 @@
             {
                 return;
             }
+
             var Combomode = Common.orbmode(Orbwalker.ActiveModes.Combo);
             var Harassmode = Common.orbmode(Orbwalker.ActiveModes.Harass);
             var LaneClearmode = Common.orbmode(Orbwalker.ActiveModes.LaneClear);
             var JungleClearmode = Common.orbmode(Orbwalker.ActiveModes.JungleClear);
 
             var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(W.Range) && e.IsKillable());
-            var pred = Prediction.Position.PredictCircularMissileAoe(
-                enemies.Cast<Obj_AI_Base>().ToArray(),
-                W.Range,
-                W.Width + 50,
-                W.CastDelay,
-                W.Speed);
-            var castpos =
-                pred.OrderByDescending(p => p.GetCollisionObjects<AIHeroClient>().Length).FirstOrDefault(p => p.CollisionObjects.Contains(target));
+            var pred = Prediction.Position.PredictCircularMissileAoe(enemies.Cast<Obj_AI_Base>().ToArray(), W.Range, W.Width + 50, W.CastDelay, W.Speed);
+            var castpos = pred.OrderByDescending(p => p.GetCollisionObjects<AIHeroClient>().Length).FirstOrDefault(p => p.CollisionObjects.Contains(target));
             if (Combomode)
             {
                 if (ComboMenu.checkbox("Wp"))
@@ -428,6 +435,7 @@
                     {
                         W.Cast(castpos.CastPosition);
                     }
+
                     if (target.brandpassive())
                     {
                         W.Cast(target, W.hitchance(Menuini));
@@ -445,18 +453,14 @@
                 {
                     W.Cast(castpos.CastPosition);
                 }
+
                 W.Cast(target, W.hitchance(Menuini));
             }
 
             if (LaneClearmode)
             {
                 var minions = EntityManager.MinionsAndMonsters.EnemyMinions.Where(e => e.IsKillable(W.Range) && e.IsKillable());
-                var loc = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
-                    minions.ToArray(),
-                    W.Width + 75,
-                    (int)W.Range + 50,
-                    W.CastDelay,
-                    W.Speed);
+                var loc = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(minions.ToArray(), W.Width + 75, (int)W.Range + 50, W.CastDelay, W.Speed);
 
                 var farmpos = loc.CastPosition;
 
@@ -468,16 +472,8 @@
 
             if (JungleClearmode)
             {
-                var minions =
-                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                        .OrderByDescending(m => m.MaxHealth)
-                        .Where(e => e.IsKillable(W.Range) && e.IsKillable());
-                var loc = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(
-                    minions.ToArray(),
-                    W.Width + 75,
-                    (int)W.Range + 50,
-                    W.CastDelay,
-                    W.Speed);
+                var minions = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderByDescending(m => m.MaxHealth).Where(e => e.IsKillable(W.Range) && e.IsKillable());
+                var loc = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(minions.ToArray(), W.Width + 75, (int)W.Range + 50, W.CastDelay, W.Speed);
                 var farmpos = loc.CastPosition;
 
                 if (farmpos != null)
@@ -565,9 +561,7 @@
                 if (ComboMenu.checkbox("RAoe"))
                 {
                     var AoeHit = target.CountEnemeis(400) >= hits;
-                    var bestaoe =
-                        EntityManager.Heroes.Enemies.OrderByDescending(e => e.CountEnemeis(400))
-                            .FirstOrDefault(e => e.IsKillable(R.Range) && e.IsKillable() && e.CountEnemeis(400) >= hits);
+                    var bestaoe = EntityManager.Heroes.Enemies.OrderByDescending(e => e.CountEnemeis(400)).FirstOrDefault(e => e.IsKillable(R.Range) && e.IsKillable() && e.CountEnemeis(400) >= hits);
                     if (AoeHit)
                     {
                         R.Cast(target);
@@ -590,10 +584,12 @@
                     {
                         return;
                     }
+
                     if (W.GetDamage(target) >= Prediction.Health.GetPrediction(target, W.CastDelay))
                     {
                         return;
                     }
+
                     if (E.GetDamage(target) >= Prediction.Health.GetPrediction(target, E.CastDelay))
                     {
                         return;
@@ -641,8 +637,7 @@
 
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
-            if (!sender.IsEnemy || !AutoMenu.checkbox("Gap") || sender == null || e == null || e.End == Vector3.Zero
-                || !e.End.IsInRange(user, Q.Range))
+            if (!sender.IsEnemy || !AutoMenu.checkbox("Gap") || sender == null || e == null || e.End == Vector3.Zero || !e.End.IsInRange(user, Q.Range))
             {
                 return;
             }

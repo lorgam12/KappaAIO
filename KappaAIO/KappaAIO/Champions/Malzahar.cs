@@ -10,8 +10,8 @@
     using EloBuddy.SDK.Menu;
     using EloBuddy.SDK.Menu.Values;
 
-    using Core;
-    using Core.Managers;
+    using KappaAIO.Core;
+    using KappaAIO.Core.Managers;
 
     internal class Malzahar : Base
     {
@@ -69,7 +69,7 @@
             ComboMenu.AddGroupLabel("Don't Use Ult On:");
             foreach (var enemy in EntityManager.Heroes.Enemies)
             {
-                CheckBox cb = new CheckBox(enemy.BaseSkinName + " (" + enemy.Name + ")") { CurrentValue = false };
+                var cb = new CheckBox(enemy.BaseSkinName + " (" + enemy.Name + ")") { CurrentValue = false };
                 ComboMenu.Add("DontUlt" + enemy.ID(), cb);
             }
 
@@ -88,6 +88,7 @@
                     JungleClearMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
                     KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
                 }
+
                 KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
                 DrawMenu.Add(spell.Slot.ToString(), new CheckBox(spell.Slot + " Range"));
                 ColorMenu.Add(spell.Slot.ToString(), new ColorPicker(spell.Slot + " Color", System.Drawing.Color.Chartreuse));
@@ -96,7 +97,7 @@
             KillStealMenu.AddGroupLabel("Don't Use Ult On:");
             foreach (var enemy in EntityManager.Heroes.Enemies)
             {
-                CheckBox cb = new CheckBox(enemy.BaseSkinName + " (" + enemy.Name + ")") { CurrentValue = false };
+                var cb = new CheckBox(enemy.BaseSkinName + " (" + enemy.Name + ")") { CurrentValue = false };
                 KillStealMenu.Add("DontUlt" + enemy.ID(), cb);
             }
 
@@ -232,6 +233,7 @@
             {
                 return;
             }
+
             Rlogic();
         }
 
@@ -248,9 +250,7 @@
                     return;
                 }
 
-                var targets =
-                    EntityManager.Heroes.Enemies.Where(
-                        e => e.IsUnderTurret() && !e.IsUnderHisturret() && !e.IsUnderEnemyturret() && e.IsKillable(R.Range));
+                var targets = EntityManager.Heroes.Enemies.Where(e => e.IsUnderTurret() && !e.IsUnderHisturret() && !e.IsUnderEnemyturret() && e.IsKillable(R.Range));
                 if (targets != null)
                 {
                     foreach (var target in targets.Where(target => target != null))
@@ -285,8 +285,7 @@
 
             var Rcomready = ComboMenu.checkbox("RCombo") && R.IsReady() && target.IsKillable(R.Range);
 
-            var RTurret = ComboMenu.checkbox("RTurret") && R.IsReady() && target.IsKillable(R.Range) && target.IsUnderTurret()
-                          && !target.IsUnderHisturret() && !target.IsUnderEnemyturret();
+            var RTurret = ComboMenu.checkbox("RTurret") && R.IsReady() && target.IsKillable(R.Range) && target.IsUnderTurret() && !target.IsUnderHisturret() && !target.IsUnderEnemyturret();
 
             if (Wready)
             {
@@ -381,12 +380,9 @@
                 if (minions != null)
                 {
                     var location =
-                        Prediction.Position.PredictCircularMissileAoe(
-                            minions.Cast<Obj_AI_Base>().ToArray(),
-                            W.Range,
-                            W.Radius + 100,
-                            W.CastDelay,
-                            W.Speed).OrderByDescending(r => r.GetCollisionObjects<Obj_AI_Minion>().Length).FirstOrDefault();
+                        Prediction.Position.PredictCircularMissileAoe(minions.Cast<Obj_AI_Base>().ToArray(), W.Range, W.Radius + 100, W.CastDelay, W.Speed)
+                            .OrderByDescending(r => r.GetCollisionObjects<Obj_AI_Minion>().Length)
+                            .FirstOrDefault();
 
                     if (location != null && location.CollisionObjects.Length >= 2)
                     {
@@ -402,12 +398,9 @@
                 if (minions != null)
                 {
                     var location =
-                        Prediction.Position.PredictCircularMissileAoe(
-                            minions.Cast<Obj_AI_Base>().ToArray(),
-                            Q.Range,
-                            Q.Radius + 50,
-                            Q.CastDelay,
-                            Q.Speed).OrderByDescending(r => r.GetCollisionObjects<Obj_AI_Minion>().Length).FirstOrDefault();
+                        Prediction.Position.PredictCircularMissileAoe(minions.Cast<Obj_AI_Base>().ToArray(), Q.Range, Q.Radius + 50, Q.CastDelay, Q.Speed)
+                            .OrderByDescending(r => r.GetCollisionObjects<Obj_AI_Minion>().Length)
+                            .FirstOrDefault();
 
                     if (location != null && location.CollisionObjects.Length >= 2)
                     {
@@ -443,10 +436,7 @@
 
             if (Wready)
             {
-                var minion =
-                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                        .OrderByDescending(e => e.MaxHealth)
-                        .FirstOrDefault(m => m.IsKillable() && m.IsKillable(W.Range));
+                var minion = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderByDescending(e => e.MaxHealth).FirstOrDefault(m => m.IsKillable() && m.IsKillable(W.Range));
                 if (minion != null)
                 {
                     W.Cast(minion);
@@ -455,10 +445,7 @@
 
             if (Qready)
             {
-                var minion =
-                    EntityManager.MinionsAndMonsters.GetJungleMonsters()
-                        .OrderByDescending(e => e.MaxHealth)
-                        .FirstOrDefault(m => m.IsKillable() && m.IsKillable(Q.Range));
+                var minion = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderByDescending(e => e.MaxHealth).FirstOrDefault(m => m.IsKillable() && m.IsKillable(Q.Range));
                 if (minion != null)
                 {
                     Q.Cast(minion);
@@ -485,6 +472,7 @@
             {
                 return;
             }
+
             foreach (var spell in SpellList.Where(s => s.IsReady()))
             {
                 if (KillStealMenu.checkbox(spell.Slot + "ks") && spell.GetKStarget() != null)
@@ -493,8 +481,10 @@
                     {
                         spell.Cast(spell.GetKStarget());
                     }
+
                     spell.Cast(spell.GetKStarget());
                 }
+
                 if (spell != R)
                 {
                     if (KillStealMenu.checkbox(spell.Slot + "js") && spell.GetJStarget() != null)

@@ -15,15 +15,18 @@
                     {
                         return HitChance.High;
                     }
+
                 case 1:
                     {
                         return HitChance.Medium;
                     }
+
                 case 2:
                     {
                         return HitChance.Low;
                     }
             }
+
             return HitChance.Unknown;
         }
 

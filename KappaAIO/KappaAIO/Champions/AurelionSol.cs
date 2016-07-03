@@ -1,6 +1,7 @@
 ﻿namespace KappaAIO.Champions
 {
     using System;
+    using System.Drawing;
     using System.Linq;
 
     using EloBuddy;
@@ -12,8 +13,6 @@
 
     using KappaAIO.Core;
     using KappaAIO.Core.Managers;
-
-    using Color = System.Drawing.Color;
 
     internal class AurelionSol : Base
     {
@@ -91,11 +90,13 @@
                         JungleClearMenu.Add(spell.Slot + "mana", new Slider("Use " + spell.Slot + " if Mana% is more than [{0}%]", 65));
                     }
                 }
+
                 if (spell == W)
                 {
                     DrawMenu.Add(spell.Slot.ToString(), new CheckBox(spell.Slot + " Max Range"));
                     ColorMenu.Add(spell.Slot.ToString(), new ColorPicker(spell.Slot + " Color", Color.Chartreuse));
                 }
+
                 if (spell != W)
                 {
                     DrawMenu.Add(spell.Slot.ToString(), new CheckBox(spell.Slot + " Range"));
@@ -133,8 +134,7 @@
                 return;
             }
 
-            if (miss.SpellCaster is AIHeroClient && miss.SpellCaster.IsValid && miss.SpellCaster.IsMe
-                && miss.SData.Name.Contains("AurelionSolQMissile"))
+            if (miss.SpellCaster is AIHeroClient && miss.SpellCaster.IsValid && miss.SpellCaster.IsMe && miss.SData.Name.Contains("AurelionSolQMissile"))
             {
                 QMissle = null;
             }
@@ -152,6 +152,7 @@
                         Q.Cast(rengar);
                         return;
                     }
+
                     if (R.IsReady() && AutoMenu.checkbox("GapR") && rengar.IsKillable(500))
                     {
                         R.Cast(rengar);
@@ -209,6 +210,7 @@
                     Q.Cast(target, Q.hitchance(Menuini));
                 }
             }
+
             if (QMissle != null && Q.Handle.ToggleState == 2 && Qmode == 1 && target.IsInRange(QMissle, Qsize))
             {
                 Q.Cast(Game.CursorPos);
@@ -222,6 +224,7 @@
                     {
                         W.Cast();
                     }
+
                     if (W.Handle.ToggleState == 2 && Wtarget.IsKillable(W2.Range))
                     {
                         W.Cast();
@@ -233,6 +236,7 @@
                     W.Cast();
                 }
             }
+
             if (useR)
             {
                 var enemies = EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range));
@@ -242,21 +246,16 @@
                     foreach (var enemy in aiHeroClients)
                     {
                         var predpos = Prediction.Position.PredictUnitPosition(enemy, R.CastDelay);
-                        var Rectangle = new Geometry.Polygon.Rectangle(
-                            user.ServerPosition,
-                            user.ServerPosition.Extend(predpos, R.Range).To3D(),
-                            R.Width);
+                        var Rectangle = new Geometry.Polygon.Rectangle(user.ServerPosition, user.ServerPosition.Extend(predpos, R.Range).To3D(), R.Width);
 
-                        if (aiHeroClients.Count(e => Rectangle.IsInside(Prediction.Position.PredictUnitPosition(e, R.CastDelay)))
-                            >= ComboMenu.slider("Raoe"))
+                        if (aiHeroClients.Count(e => Rectangle.IsInside(Prediction.Position.PredictUnitPosition(e, R.CastDelay))) >= ComboMenu.slider("Raoe"))
                         {
                             R.Cast(predpos.To3D());
                         }
                     }
                 }
 
-                if (Rfinisher && Rtarget != null && Rtarget.IsKillable(R.Range)
-                    && R.GetDamage(Rtarget) > Prediction.Health.GetPrediction(Rtarget, R.CastDelay))
+                if (Rfinisher && Rtarget != null && Rtarget.IsKillable(R.Range) && R.GetDamage(Rtarget) > Prediction.Health.GetPrediction(Rtarget, R.CastDelay))
                 {
                     R.Cast(Rtarget, R.hitchance(Menuini));
                 }
@@ -287,6 +286,7 @@
                         Q.Cast(target, Q.hitchance(Menuini));
                     }
                 }
+
                 if (QMissle != null && Q.Handle.ToggleState == 2 && Qmode == 1 && target.IsInRange(QMissle, Qsize))
                 {
                     Q.Cast(Game.CursorPos);
@@ -301,6 +301,7 @@
                     {
                         W.Cast();
                     }
+
                     if (W.Handle.ToggleState == 2 && Wtarget.IsKillable(W2.Range))
                     {
                         W.Cast();
@@ -335,8 +336,7 @@
         public override void JungleClear()
         {
             var useQ = JungleClearMenu.checkbox(Q.Slot.ToString()) && Q.IsReady() && Q.Mana(JungleClearMenu);
-            var mob =
-                EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderByDescending(m => m.MaxHealth).FirstOrDefault(m => m.IsKillable(Q.Range));
+            var mob = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderByDescending(m => m.MaxHealth).FirstOrDefault(m => m.IsKillable(Q.Range));
             if (!useQ || mob == null)
             {
                 return;
@@ -353,6 +353,7 @@
                 {
                     spell.Cast(spell.GetKStarget());
                 }
+
                 if (spell.GetJStarget() != null && spell.IsReady() && KillStealMenu.checkbox(spell.Slot + "js"))
                 {
                     spell.Cast(spell.GetJStarget());
@@ -373,11 +374,13 @@
                 {
                     return;
                 }
+
                 if (AutoMenu.checkbox("IntQ") && Q.IsReady() && sender.IsKillable(Q.Range))
                 {
                     Q.Cast(sender);
                     return;
                 }
+
                 if (AutoMenu.checkbox("IntR") && R.IsReady() && sender.IsKillable(500))
                 {
                     R.Cast(sender);
@@ -390,11 +393,13 @@
                 {
                     return;
                 }
+
                 if (AutoMenu.checkbox("GapQ") && Q.IsReady() && sender.IsKillable(Q.Range))
                 {
                     Q.Cast(sender);
                     return;
                 }
+
                 if (AutoMenu.checkbox("GapR") && R.IsReady() && sender.IsKillable(500))
                 {
                     R.Cast(sender);

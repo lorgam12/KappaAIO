@@ -1464,9 +1464,9 @@
                     if (args.Slot == SpellSlot.Q)
                     {
                         SpellsManager.LastpQ = Core.GameTickCount;
-                        if (Insec.Pos != null)
+                        if (JumperMenu.keybind("normal"))
                         {
-                            if (Insec.Step == Insec.Steps.UseQ && JumperMenu.keybind("normal"))
+                            if (Insec.Step == Insec.Steps.UseQ && Insec.Pos != null)
                             {
                                 Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 250);
                                 Chat.Print("leesin debug: procces WardJump");
@@ -1512,9 +1512,9 @@
                             BubbaKush.CastFlash();
                         }
 
-                        if (Insec.Pos != null)
+                        if (JumperMenu.keybind("normal") && Insec.Pos != null)
                         {
-                            if (!user.IsInRange(Insec.Pos, 200) && Flash != null && Flash.IsReady() && Flash.IsInRange(Insec.Pos) && JumperMenu.keybind("normal"))
+                            if (!user.IsInRange(Insec.Pos, 200) && Flash != null && Flash.IsReady() && Flash.IsInRange(Insec.Pos))
                             {
                                 if (Insec.Step == Insec.Steps.UseR)
                                 {

@@ -676,7 +676,7 @@
             var range = JumperMenu.slider("range");
             var qpos = user.ServerPosition.Extend(pos, Q.Range - 100).To3D();
             var wpos = user.ServerPosition.Extend(pos, W.Range).To3D();
-            var epos = user.ServerPosition.Extend(pos, E.Range).To3D();
+            var epos = Orbwalker.AzirSoldiers.OrderBy(s => s.Distance(pos)).FirstOrDefault(s => s.IsAlly);
             var ready = E.IsReady() && Q.IsReady() && user.Mana > Q.Mana() + E.Mana() + W.Mana();
 
             if (ready && Orbwalker.AzirSoldiers.Count(s => s.IsAlly && s.IsInRange(user, range)) < 1)

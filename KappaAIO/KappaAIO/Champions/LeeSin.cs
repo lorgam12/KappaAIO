@@ -161,6 +161,7 @@
             KillStealMenu.Add("E2j", new CheckBox("Use E2"));
 
             MiscMenu.AddGroupLabel("Misc Settings");
+            MiscMenu.Add("wjmax", new CheckBox("WardJump MAX Range Always"));
             MiscMenu.Add("wardjump", new KeyBind("Ward Jump", false, KeyBind.BindTypes.HoldActive, 'A'));
             MiscMenu.Add("smiteq", new CheckBox("Smite Q"));
             MiscMenu.Add("Rint", new CheckBox("R Interrupter"));
@@ -238,7 +239,7 @@
 
             if (MiscMenu.keybind("wardjump"))
             {
-                WardJump.Jump(user.ServerPosition.Extend(Game.CursorPos, 600).To3D());
+                WardJump.Jump(MiscMenu.checkbox("wjmax") ? user.ServerPosition.Extend(Game.CursorPos, 600).To3D() : Game.CursorPos);
             }
 
             lasttick = Core.GameTickCount;

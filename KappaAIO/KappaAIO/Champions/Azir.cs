@@ -172,8 +172,16 @@
                 KillStealMenu.AddGroupLabel("Stealer Settings");
                 foreach (var spell in SpellList.Where(s => s != W && s != E))
                 {
-                    KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
-                    KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
+                    if (spell.Slot == SpellSlot.R)
+                    {
+                        KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
+                        KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot, false));
+                    }
+                    else
+                    {
+                        KillStealMenu.Add(spell.Slot + "ks", new CheckBox("KillSteal " + spell.Slot));
+                        KillStealMenu.Add(spell.Slot + "js", new CheckBox("JungleSteal " + spell.Slot));
+                    }
                 }
 
                 DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));

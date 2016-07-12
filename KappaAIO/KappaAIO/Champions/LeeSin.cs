@@ -54,7 +54,7 @@ namespace KappaAIO.Champions
 
         static LeeSin()
         {
-            Q = new Spell.Skillshot(SpellSlot.Q, 1100, SkillShotType.Linear, 250, 1, 75) { AllowedCollisionCount = 0 };
+            Q = new Spell.Skillshot(SpellSlot.Q, 1100, SkillShotType.Linear, 250, 1800, 75) { AllowedCollisionCount = 0 };
             Q2 = new Spell.Active(SpellSlot.Q, 1300);
             W = new Spell.Targeted(SpellSlot.W, 700);
             E = new Spell.Active(SpellSlot.E, 350);

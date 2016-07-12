@@ -10,7 +10,7 @@ namespace KappaAIO.Core
         {
             return spell.IsReady()
                        ? EntityManager.Heroes.Enemies.Where(e => e.IsKillable() && e.IsKillable(spell.Range) && kCore.ks.checkbox(e.ID()))
-                             .FirstOrDefault(enemy => spell.GetDamage(enemy) >= Prediction.Health.GetPrediction(enemy, spell.CastDelay))
+                             .FirstOrDefault(enemy => spell.GetDamage(enemy) >= Prediction.Health.GetPrediction(enemy, (int)spell.TravelTime(enemy)))
                        : null;
         }
 
@@ -19,7 +19,7 @@ namespace KappaAIO.Core
             return
                 EntityManager.MinionsAndMonsters.GetJungleMonsters()
                     .Where(j => j.IsKillable() && kCore.Junglemobs.Contains(j.BaseSkinName) && j.IsKillable(spell.Range) && kCore.ks.checkbox(j.BaseSkinName))
-                    .FirstOrDefault(jmob => spell.GetDamage(jmob) >= Prediction.Health.GetPrediction(jmob, spell.CastDelay));
+                    .FirstOrDefault(jmob => spell.GetDamage(jmob) >= Prediction.Health.GetPrediction(jmob, (int)spell.TravelTime(jmob)));
         }
     }
 }

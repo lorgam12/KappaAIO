@@ -12,15 +12,30 @@ namespace KappaAIO.Core
     {
         public static Menu CoreMenu, GapMenu, ks;
 
-        public static readonly string[] Junglemobs =
-            {
-                "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water", "SRU_Dragon_Elder", "SRU_Baron", "SRU_Gromp", "SRU_Krug",
-                "SRU_Razorbeak", "Sru_Crab", "SRU_Murkwolf", "SRU_Blue", "SRU_Red", "SRU_RiftHerald", "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss",
-                "AscXerath"
-            };
+        public static string[] Junglemobs = { "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss", };
 
         public static void Execute()
         {
+            switch (Game.MapId)
+            {
+                case GameMapId.SummonersRift:
+                    Junglemobs = new[]
+                                     {
+                                         "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water", "SRU_Dragon_Elder", "SRU_Baron", "SRU_Gromp", "SRU_Krug", "SRU_Razorbeak",
+                                         "Sru_Crab", "SRU_Murkwolf", "SRU_Blue", "SRU_Red", "SRU_RiftHerald"
+                                     };
+                    break;
+                case GameMapId.CrystalScar:
+                    Junglemobs = new[] { "AscXerath" };
+                    break;
+                case GameMapId.TwistedTreeline:
+                    Junglemobs = new[] { "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss" };
+                    break;
+                default:
+                    Junglemobs = new[] { "None" };
+                    break;
+            }
+
             foreach (var ward in
                 ObjectManager.Get<Obj_AI_Minion>()
                     .Where(w => w.Name.ToLower().Contains("ward") && w != null && w.IsAlly && w.IsValid && w.Health > 0 && !w.IsDead && !w.Name.ToLower().Contains("wardcorpse")))

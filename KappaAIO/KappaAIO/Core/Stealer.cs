@@ -1,10 +1,9 @@
-﻿namespace KappaAIO.Core
+﻿using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+
+namespace KappaAIO.Core
 {
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-
     public static class Stealer
     {
         public static Obj_AI_Base GetKStarget(this Spell.SpellBase spell)

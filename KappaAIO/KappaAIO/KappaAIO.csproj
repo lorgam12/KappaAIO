@@ -61,6 +61,7 @@
     <Compile Include="Champions\Malzahar.cs" />
     <Compile Include="Champions\Xerath.cs" />
     <Compile Include="Core\CheckVersion.cs" />
+    <Compile Include="Core\Database.cs" />
     <Compile Include="Core\Managers\ColorPicker.cs" />
     <Compile Include="Core\Common.cs" />
     <Compile Include="Core\DamageLib.cs" />

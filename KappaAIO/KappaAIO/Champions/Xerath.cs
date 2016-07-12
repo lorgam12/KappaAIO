@@ -1,23 +1,19 @@
-﻿namespace KappaAIO.Champions
+﻿using System;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Rendering;
+using KappaAIO.Core;
+using KappaAIO.Core.Managers;
+using SharpDX;
+using Color = System.Drawing.Color;
+
+namespace KappaAIO.Champions
 {
-    using System;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Enumerations;
-    using EloBuddy.SDK.Events;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Menu.Values;
-    using EloBuddy.SDK.Rendering;
-
-    using KappaAIO.Core;
-    using KappaAIO.Core.Managers;
-
-    using SharpDX;
-
-    using Color = System.Drawing.Color;
-
     internal class Xerath : Base
     {
         private static bool hasbought;
@@ -67,7 +63,7 @@
         {
             get
             {
-                return Player.HasBuff("XerathLocusOfPower2") || (Common.LastCastedSpell.Name == "XerathLocusOfPower2" && Core.GameTickCount - Common.LastCastedSpell.Time < 500);
+                return Player.HasBuff("XerathLocusOfPower2") || (Common.LastCastedSpell.Name == "XerathLocusOfPower2" && EloBuddy.SDK.Core.GameTickCount - Common.LastCastedSpell.Time < 500);
             }
         }
 
@@ -244,7 +240,7 @@
                         RCharge.TapKeyPressed = false;
                         break;
                     case "XerathLocusPulse":
-                        RCharge.CastT = Core.GameTickCount;
+                        RCharge.CastT = EloBuddy.SDK.Core.GameTickCount;
                         RCharge.Index++;
                         RCharge.Position = args.End;
                         RCharge.TapKeyPressed = false;
@@ -352,7 +348,7 @@
             {
                 if (rTarget.TotalShieldHealth() - R.GetDamage(rTarget) < 0)
                 {
-                    if (Core.GameTickCount - RCharge.CastT <= 0)
+                    if (EloBuddy.SDK.Core.GameTickCount - RCharge.CastT <= 0)
                     {
                         return;
                     }
@@ -360,7 +356,7 @@
 
                 if (RCharge.Index != 0 && rTarget.Distance(RCharge.Position) > 1000)
                 {
-                    if (Core.GameTickCount - RCharge.CastT <= Math.Min(2500, rTarget.Distance(RCharge.Position) - 1000))
+                    if (EloBuddy.SDK.Core.GameTickCount - RCharge.CastT <= Math.Min(2500, rTarget.Distance(RCharge.Position) - 1000))
                     {
                         return;
                     }
@@ -375,7 +371,7 @@
 
                     case 1:
                         var delay = RMenu.slider("delay" + (RCharge.Index + 1));
-                        if (Core.GameTickCount - RCharge.CastT > delay)
+                        if (EloBuddy.SDK.Core.GameTickCount - RCharge.CastT > delay)
                         {
                             R.Cast(rTarget, R.hitchance(Menuini));
                         }

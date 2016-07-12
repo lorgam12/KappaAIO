@@ -1,23 +1,19 @@
-﻿namespace KappaAIO.Champions
+﻿using System;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Rendering;
+using KappaAIO.Core;
+using KappaAIO.Core.Managers;
+using SharpDX;
+using Color = System.Drawing.Color;
+
+namespace KappaAIO.Champions
 {
-    using System;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Enumerations;
-    using EloBuddy.SDK.Events;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Menu.Values;
-    using EloBuddy.SDK.Rendering;
-
-    using KappaAIO.Core;
-    using KappaAIO.Core.Managers;
-
-    using SharpDX;
-
-    using Color = System.Drawing.Color;
-
     internal class Kindred : Base
     {
         private static readonly Spell.Skillshot Q;

@@ -1,20 +1,17 @@
-﻿namespace KappaAIO.Champions
+﻿using System;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+using KappaAIO.Core;
+using KappaAIO.Core.Managers;
+using SharpDX;
+
+namespace KappaAIO.Champions
 {
-    using System;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Enumerations;
-    using EloBuddy.SDK.Events;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Menu.Values;
-
-    using KappaAIO.Core;
-    using KappaAIO.Core.Managers;
-
-    using SharpDX;
-
     internal class Brand : Base
     {
         private static readonly Spell.Skillshot Q;

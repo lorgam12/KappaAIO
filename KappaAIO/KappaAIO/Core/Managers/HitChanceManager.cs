@@ -1,10 +1,10 @@
-﻿namespace KappaAIO.Core.Managers
-{
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Enumerations;
-    using EloBuddy.SDK.Menu;
+﻿using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Menu;
 
+namespace KappaAIO.Core.Managers
+{
     internal static class HitChanceManager
     {
         public static HitChance hitchance(this Spell.SpellBase spell, Menu m)

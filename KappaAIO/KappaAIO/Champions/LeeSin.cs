@@ -1,20 +1,18 @@
-﻿namespace KappaAIO.Champions
+﻿using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Rendering;
+using KappaAIO.Core;
+using KappaAIO.Core.Managers;
+using SharpDX;
+using static KappaAIO.Core.Database.Items;
+
+namespace KappaAIO.Champions
 {
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Enumerations;
-    using EloBuddy.SDK.Events;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Menu.Values;
-    using EloBuddy.SDK.Rendering;
-
-    using KappaAIO.Core;
-    using KappaAIO.Core.Managers;
-
-    using SharpDX;
-
     internal class LeeSin : Base
     {
         private static float lasttick;
@@ -219,7 +217,7 @@
 
         public override void Active()
         {
-            if (Core.GameTickCount - lasttick < 69 && fpsboost)
+            if (EloBuddy.SDK.Core.GameTickCount - lasttick < 69 && fpsboost)
             {
                 return;
             }
@@ -239,10 +237,17 @@
 
             if (MiscMenu.keybind("wardjump"))
             {
-                WardJump.Jump(MiscMenu.checkbox("wjmax") ? user.ServerPosition.Extend(Game.CursorPos, 600).To3D() : Game.CursorPos);
+                if (MiscMenu.checkbox("wjmax"))
+                {
+                    WardJump.Jump(user.ServerPosition.Extend(Game.CursorPos, 600).To3D());
+                }
+                else if (W.IsInRange(Game.CursorPos))
+                {
+                    WardJump.Jump(Game.CursorPos);
+                }
             }
 
-            lasttick = Core.GameTickCount;
+            lasttick = EloBuddy.SDK.Core.GameTickCount;
         }
 
         public override void Combo()
@@ -394,7 +399,7 @@
 
             if (mode.Equals(1))
             {
-                if (Core.GameTickCount - SpellsManager.LastR < 1500 && Core.GameTickCount - SpellsManager.LastR > 350)
+                if (EloBuddy.SDK.Core.GameTickCount - SpellsManager.LastR < 1500 && EloBuddy.SDK.Core.GameTickCount - SpellsManager.LastR > 350)
                 {
                     Chat.Print("leesin debug: Q2 Star");
                     SpellsManager.Q(target, true, true);
@@ -711,7 +716,7 @@
 
             BubbaKush.DoBubba(null, (1 + 1).Equals(2));
 
-            Drawing.DrawText(X, Y, System.Drawing.Color.White, (Core.GameTickCount - SpellsManager.LastpW).ToString(), 5);
+            Drawing.DrawText(X, Y, System.Drawing.Color.White, (EloBuddy.SDK.Core.GameTickCount - SpellsManager.LastpW).ToString(), 5);
         }
 
         private static class BubbaKush
@@ -797,7 +802,7 @@
                     {
                         Chat.Print("leesin debug: RFlash");
                         R.Cast(target);
-                        Rflash = Core.GameTickCount;
+                        Rflash = EloBuddy.SDK.Core.GameTickCount;
                     }
 
                     if (user.IsInRange(Pos, 100))
@@ -879,7 +884,7 @@
             {
                 if (Pos != null && Flash != null)
                 {
-                    if (Flash.IsReady() && !user.IsInRange(Pos, 150) && Core.GameTickCount - SpellsManager.LastpW > 1000)
+                    if (Flash.IsReady() && !user.IsInRange(Pos, 150) && EloBuddy.SDK.Core.GameTickCount - SpellsManager.LastpW > 1000)
                     {
                         Chat.Print("leesin debug: Flash");
                         Flash.Cast(Pos);
@@ -900,6 +905,11 @@
 
             public static Obj_AI_Base Qtarget(Vector3 vector3)
             {
+                if (LeeSin.Qtarget() != null && LeeSin.Qtarget().IsInRange(vector3, Range()))
+                {
+                    return LeeSin.Qtarget();
+                }
+
                 var Hero =
                     EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(vector3))
                         .FirstOrDefault(
@@ -921,11 +931,6 @@
                             e =>
                             e.IsKillable() && e.Distance(vector3) < Range()
                             && (Q.GetPrediction(e).HitChance > HitChance.Collision || e.Buffs.Any(b => b.Name.ToLower().Contains("qone") && b.Caster.IsMe)) && e.Health > Q.GetDamage(e));
-
-                if (LeeSin.Qtarget() != null && LeeSin.Qtarget().IsInRange(vector3, Range()))
-                {
-                    return LeeSin.Qtarget();
-                }
 
                 if (Hero != null)
                 {
@@ -994,15 +999,15 @@
 
             public enum Steps
             {
-                Nothing, 
+                Nothing,
 
-                UseQ, 
+                UseQ,
 
-                UseW, 
+                UseW,
 
-                UseWF, 
+                UseWF,
 
-                UseR, 
+                UseR,
 
                 UseF
             }
@@ -1057,11 +1062,10 @@
                         WardJump.Jump(Pos);
                         return;
                     case Steps.UseWF:
-                        if (user.IsInRange(Pos.Extend(user, 400).To3D(), 50))
+                        if (user.IsInRange(Pos.Extend(user, 350).To3D(), 600))
                         {
-                            WardJump.Jump(Pos.Extend(user, 400).To3D(), false, true);
+                            WardJump.Jump(Pos.Extend(user, 350).To3D(), false, true);
                         }
-
                         return;
                     case Steps.UseF:
                         Flash?.Cast(Pos);
@@ -1081,7 +1085,7 @@
             {
                 get
                 {
-                    return W.IsReady() && SpellsManager.W1 && Core.GameTickCount - SpellsManager.LastpW > 1000;
+                    return W.IsReady() && SpellsManager.W1 && EloBuddy.SDK.Core.GameTickCount - SpellsManager.LastpW > 1000;
                 }
             }
 
@@ -1092,14 +1096,11 @@
 
             private static readonly Item[] Wards =
                 {
-                    new Item(ItemId.Warding_Totem_Trinket, 600f), new Item(ItemId.Sightstone, 600f), new Item(ItemId.Ruby_Sightstone, 600f), 
-                    new Item(ItemId.Eye_of_the_Oasis, 600f), new Item(ItemId.Eye_of_the_Equinox, 600f), new Item(ItemId.Trackers_Knife, 600f), 
-                    new Item(ItemId.Trackers_Knife_Enchantment_Warrior, 600f), new Item(ItemId.Trackers_Knife_Enchantment_Runic_Echoes, 600f), 
-                    new Item(ItemId.Trackers_Knife_Enchantment_Sated_Devourer, 600f), new Item(ItemId.Trackers_Knife_Enchantment_Devourer, 600f), 
-                    new Item(ItemId.Trackers_Knife_Enchantment_Cinderhulk, 600f), new Item(ItemId.Eye_of_the_Watchers, 600f), 
+                    YellowTrinket, RubySightStone, SightStone, EyeOfTheEquinox, EyeOfTheOasis, EyeOfTheWatchers, TrackerKnife, TrackerKnife_Cinderhulk,
+                    TrackerKnife_Devourer, TrackerKnife_Runic_Echoes, TrackerKnife_Sated_Devourer, TrackerKnife_Warrior
                 };
 
-            private static readonly Item[] VisionWards = { new Item(ItemId.Vision_Ward, 600f) };
+            private static readonly Item[] VisionWards = { VisionWard };
 
             public static float lastward;
 
@@ -1155,9 +1156,9 @@
             {
                 if (W.IsReady() && SpellsManager.W1 && SpellsManager.Wtimer > 1000)
                 {
-                    if (Wtarget(vector3, combo) != null || Core.GameTickCount - lastward < 3000)
+                    if (Wtarget(vector3, combo) != null || EloBuddy.SDK.Core.GameTickCount - lastward < 3000)
                     {
-                        SpellsManager.W(bubba ? Wtarget(vector3, false, 100) : Wtarget(vector3, combo), true);
+                        SpellsManager.W(bubba ? Wtarget(vector3, false, 100) : Wtarget(vector3, combo), true, false, true);
                     }
                     else
                     {
@@ -1178,10 +1179,10 @@
                 var minion = EntityManager.MinionsAndMonsters.AlliedMinions.Any(m => m.IsInRange(vector3, 200) && m.IsValidTarget());
 
                 if (UseWardReady && UseWard.IsInRange(vector3) && (!user.ServerPosition.Extend(vector3, 75).IsWall() || !vector3.IsWall()) && !wardinrage && !ally && !minion
-                    && Core.GameTickCount - lastward > 1000)
+                    && EloBuddy.SDK.Core.GameTickCount - lastward > 1000)
                 {
                     UseWard.Cast(vector3);
-                    lastward = Core.GameTickCount;
+                    lastward = EloBuddy.SDK.Core.GameTickCount;
                 }
             }
 
@@ -1224,7 +1225,7 @@
             {
                 get
                 {
-                    return Core.GameTickCount - lastspell;
+                    return EloBuddy.SDK.Core.GameTickCount - lastspell;
                 }
             }
 
@@ -1236,7 +1237,7 @@
             {
                 get
                 {
-                    return Core.GameTickCount - LastFlash;
+                    return EloBuddy.SDK.Core.GameTickCount - LastFlash;
                 }
             }
 
@@ -1246,7 +1247,7 @@
             {
                 get
                 {
-                    return Core.GameTickCount - LastpQ;
+                    return EloBuddy.SDK.Core.GameTickCount - LastpQ;
                 }
             }
 
@@ -1258,7 +1259,7 @@
             {
                 get
                 {
-                    return Core.GameTickCount - LastpW;
+                    return EloBuddy.SDK.Core.GameTickCount - LastpW;
                 }
             }
 
@@ -1270,7 +1271,7 @@
             {
                 get
                 {
-                    return Core.GameTickCount - LastR;
+                    return EloBuddy.SDK.Core.GameTickCount - LastR;
                 }
             }
 
@@ -1280,7 +1281,7 @@
             {
                 get
                 {
-                    return Core.GameTickCount - LastpE;
+                    return EloBuddy.SDK.Core.GameTickCount - LastpE;
                 }
             }
 
@@ -1324,12 +1325,12 @@
                                 LeeSin.Q.GetPrediction(target)
                                     .CollisionObjects.FirstOrDefault(o => o.NetworkId != target.NetworkId && (o.IsMinion || o.IsMonster) && o.IsKillable(Smite.Range) && Smite.GetDamage(o) >= o.Health));
                             LeeSin.Q.Cast(target);
-                            LastQ = Core.GameTickCount;
+                            LastQ = EloBuddy.SDK.Core.GameTickCount;
                             return;
                         }
 
                         LeeSin.Q.Cast(target, HitChance.Low);
-                        LastQ = Core.GameTickCount;
+                        LastQ = EloBuddy.SDK.Core.GameTickCount;
                         return;
                     }
 
@@ -1348,34 +1349,46 @@
                             if (qhero || qminion || qmob)
                             {
                                 LeeSin.Q2.Cast();
-                                LastQ = Core.GameTickCount;
+                                LastQ = EloBuddy.SDK.Core.GameTickCount;
                             }
                         }
                         else
                         {
                             LeeSin.Q2.Cast();
-                            LastQ = Core.GameTickCount;
+                            LastQ = EloBuddy.SDK.Core.GameTickCount;
                         }
                     }
                 }
             }
 
-            public static void W(Obj_AI_Base target, bool w1, bool W2 = false)
+            public static void W(Obj_AI_Base target, bool w1, bool W2 = false, bool WardJump = false)
             {
-                if (LeeSin.W.IsReady() && target.IsValidTarget(LeeSin.W.Range))
+                if (LeeSin.W.IsReady())
                 {
-                    if (W1 && w1 && Wtimer > Game.Ping)
+                    if (WardJump)
                     {
-                        Chat.Print("leesin debug: W1");
-                        LeeSin.W.Cast(target);
-                        LastW = Core.GameTickCount;
+                        if (W1 && w1 && Wtimer >= Game.Ping && target != null)
+                        {
+                            Chat.Print("leesin debug: W1");
+                            LeeSin.W.Cast(target);
+                            LastW = EloBuddy.SDK.Core.GameTickCount;
+                        }
                     }
-
-                    if (!W1 && W2)
+                    if (target.IsValidTarget(LeeSin.W.Range))
                     {
-                        Chat.Print("leesin debug: W2");
-                        LeeSin.W.Cast(target);
-                        LastW = Core.GameTickCount;
+                        if (W1 && w1 && Wtimer >= Game.Ping)
+                        {
+                            Chat.Print("leesin debug: W1");
+                            LeeSin.W.Cast(target);
+                            LastW = EloBuddy.SDK.Core.GameTickCount;
+                        }
+
+                        if (!W1 && W2)
+                        {
+                            Chat.Print("leesin debug: W2");
+                            LeeSin.W.Cast(target);
+                            LastW = EloBuddy.SDK.Core.GameTickCount;
+                        }
                     }
                 }
             }
@@ -1387,14 +1400,14 @@
                     if (E1 && e1 && Etimer > 500)
                     {
                         LeeSin.E.Cast();
-                        LastE = Core.GameTickCount;
+                        LastE = EloBuddy.SDK.Core.GameTickCount;
                         return;
                     }
 
                     if (!E1 && E2)
                     {
                         LeeSin.E.Cast();
-                        LastE = Core.GameTickCount;
+                        LastE = EloBuddy.SDK.Core.GameTickCount;
                     }
                 }
             }
@@ -1407,8 +1420,8 @@
                 if (sender != null && SpellsManager.W1 && W.IsReady() && sender.Distance(user) <= W.Range && SpellsManager.Wtimer > 1000 && !sender.IsDead && sender.IsAlly && SpellsManager.W1
                     && sender.isWard() && W.IsInRange((Obj_AI_Minion)sender) && (RMenu.keybind("bubba") || JumperMenu.keybind("normal") || MiscMenu.keybind("wardjump")))
                 {
-                    SpellsManager.W((Obj_AI_Base)sender, true);
-                    WardJump.lastward = Core.GameTickCount;
+                    EloBuddy.SDK.Core.RepeatAction(() => SpellsManager.W((Obj_AI_Base)sender, true), 10, 200);
+                    WardJump.lastward = EloBuddy.SDK.Core.GameTickCount;
                 }
             }
 
@@ -1445,7 +1458,7 @@
 
             public static void Spellbook_OnCastSpell(Spellbook sender, SpellbookCastSpellEventArgs args)
             {
-                if (sender.Owner.IsMe && args.Slot == SpellSlot.W && Core.GameTickCount - SpellsManager.LastW < Game.Ping)
+                if (sender.Owner.IsMe && args.Slot == SpellSlot.W && EloBuddy.SDK.Core.GameTickCount - SpellsManager.LastW < Game.Ping)
                 {
                     if ((JumperMenu.keybind("normal") || RMenu.keybind("bubba") || MiscMenu.keybind("wardjump")) && !SpellsManager.W1)
                     {
@@ -1461,15 +1474,15 @@
             {
                 if (sender.IsMe)
                 {
-                    SpellsManager.lastspell = Core.GameTickCount;
+                    SpellsManager.lastspell = EloBuddy.SDK.Core.GameTickCount;
                     if (args.Slot == SpellSlot.Q)
                     {
-                        SpellsManager.LastpQ = Core.GameTickCount;
+                        SpellsManager.LastpQ = EloBuddy.SDK.Core.GameTickCount;
                         if (JumperMenu.keybind("normal"))
                         {
                             if (Insec.Step == Insec.Steps.UseQ && Insec.Pos != null)
                             {
-                                Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 250);
+                                EloBuddy.SDK.Core.DelayAction(() => { WardJump.Jump(Insec.Pos); }, 250);
                                 Chat.Print("leesin debug: procces WardJump");
                             }
                         }
@@ -1477,14 +1490,14 @@
 
                     if (args.Slot == SpellSlot.W)
                     {
-                        SpellsManager.LastpW = Core.GameTickCount;
+                        SpellsManager.LastpW = EloBuddy.SDK.Core.GameTickCount;
                         if (JumperMenu.keybind("normal"))
                         {
                             if (Insec.InsecTarget != null)
                             {
                                 if (Insec.Step == Insec.Steps.UseW)
                                 {
-                                    Core.DelayAction(() => { R.Cast(Insec.InsecTarget); }, 100);
+                                    EloBuddy.SDK.Core.DelayAction(() => { R.Cast(Insec.InsecTarget); }, 100);
                                     Chat.Print("leesin debug: procces R");
                                 }
                             }
@@ -1493,7 +1506,7 @@
                             {
                                 if (Flash != null && Flash.IsReady() && (Insec.Step == Insec.Steps.UseWF || Insec.Step == Insec.Steps.UseF))
                                 {
-                                    Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 250);
+                                    EloBuddy.SDK.Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 250);
                                     Chat.Print("leesin debug: procces Flash");
                                 }
                             }
@@ -1502,13 +1515,13 @@
 
                     if (args.Slot == SpellSlot.E)
                     {
-                        SpellsManager.LastpE = Core.GameTickCount;
+                        SpellsManager.LastpE = EloBuddy.SDK.Core.GameTickCount;
                     }
 
                     if (args.Slot == SpellSlot.R)
                     {
-                        SpellsManager.LastR = Core.GameTickCount;
-                        if (Flash != null && Core.GameTickCount - BubbaKush.Rflash < 500)
+                        SpellsManager.LastR = EloBuddy.SDK.Core.GameTickCount;
+                        if (Flash != null && EloBuddy.SDK.Core.GameTickCount - BubbaKush.Rflash < 500)
                         {
                             BubbaKush.CastFlash();
                         }
@@ -1519,7 +1532,7 @@
                             {
                                 if (Insec.Step == Insec.Steps.UseR)
                                 {
-                                    Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 200);
+                                    EloBuddy.SDK.Core.DelayAction(() => { Flash.Cast(Insec.Pos); }, 200);
                                     Chat.Print("leesin debug: procces Flash");
                                 }
                             }
@@ -1528,7 +1541,7 @@
 
                     if (Flash != null && args.Slot == Flash.Slot)
                     {
-                        SpellsManager.LastFlash = Core.GameTickCount;
+                        SpellsManager.LastFlash = EloBuddy.SDK.Core.GameTickCount;
                     }
                 }
             }

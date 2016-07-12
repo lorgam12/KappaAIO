@@ -1,22 +1,21 @@
-﻿namespace KappaAIO.Core
+﻿using System;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+
+namespace KappaAIO.Core
 {
-    using System;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Events;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Menu.Values;
-
     internal class kCore
     {
         public static Menu CoreMenu, GapMenu, ks;
 
         public static readonly string[] Junglemobs =
             {
-                "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water", "SRU_Dragon_Elder", "SRU_Baron", "SRU_Gromp", "SRU_Krug", 
-                "SRU_Razorbeak", "Sru_Crab", "SRU_Murkwolf", "SRU_Blue", "SRU_Red", "SRU_RiftHerald", "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss", 
+                "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water", "SRU_Dragon_Elder", "SRU_Baron", "SRU_Gromp", "SRU_Krug",
+                "SRU_Razorbeak", "Sru_Crab", "SRU_Murkwolf", "SRU_Blue", "SRU_Red", "SRU_RiftHerald", "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss",
                 "AscXerath"
             };
 

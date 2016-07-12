@@ -1,16 +1,13 @@
-﻿namespace KappaAIO.Core.Managers
+﻿using System.Collections.Generic;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Rendering;
+using SharpDX;
+using Color = System.Drawing.Color;
+
+namespace KappaAIO.Core.Managers
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Rendering;
-
-    using SharpDX;
-
-    using Color = System.Drawing.Color;
-
     internal static class DrawingsManager
     {
         public static void SpellRange(this Spell.SpellBase spell, Color Colors, bool draw = false)

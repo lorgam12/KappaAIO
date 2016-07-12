@@ -1,11 +1,10 @@
-﻿namespace KappaAIO.Core
+﻿using System.Collections.Generic;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+
+namespace KappaAIO.Core
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-
     public static class DamageLib
     {
         public static readonly List<Data> Database = new List<Data>();
@@ -89,7 +88,7 @@
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.Q, DamageType = DamageType.Physical, Floats = new float[] { 55, 75, 95, 115, 135 }, AP = 0, AD = 0.2f, 
+                                slot = SpellSlot.Q, DamageType = DamageType.Physical, Floats = new float[] { 55, 75, 95, 115, 135 }, AP = 0, AD = 0.2f,
                                 MaxHP = new[] { 0.05f, 0.05f, 0.05f, 0.05f, 0.05f }
                             });
                     Database.Add(
@@ -105,7 +104,7 @@
                     Database.Add(
                         new Data
                             {
-                                slot = SpellSlot.W, DamageType = DamageType.Mixed, Floats = new float[] { 30 + 10, 33 + 15, 35 + 20, 37 + 25, 40 + 35 }, AP = 0.1f, AD = 0.4f, 
+                                slot = SpellSlot.W, DamageType = DamageType.Mixed, Floats = new float[] { 30 + 10, 33 + 15, 35 + 20, 37 + 25, 40 + 35 }, AP = 0.1f, AD = 0.4f,
                                 MaxHP = new float[] { 0, 0, 0, 0, 0 }
                             });
                     Database.Add(

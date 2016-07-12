@@ -1,17 +1,15 @@
-﻿namespace KappaAIO.Champions
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Spells;
+using KappaAIO.Core;
+using KappaAIO.Core.Managers;
+
+namespace KappaAIO.Champions
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Spells;
-
-    using KappaAIO.Core;
-    using KappaAIO.Core.Managers;
-
     public abstract class Base
     {
         public static AIHeroClient user = Player.Instance;

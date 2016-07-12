@@ -1,18 +1,16 @@
-﻿namespace KappaAIO.Champions
+﻿using System;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+using KappaAIO.Core;
+using KappaAIO.Core.Managers;
+
+namespace KappaAIO.Champions
 {
-    using System;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Enumerations;
-    using EloBuddy.SDK.Events;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Menu.Values;
-
-    using KappaAIO.Core;
-    using KappaAIO.Core.Managers;
-
     internal class Malzahar : Base
     {
         private static Spell.Skillshot Q { get; }

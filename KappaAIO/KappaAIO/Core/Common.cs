@@ -1,21 +1,18 @@
-﻿namespace KappaAIO.Core
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Notifications;
+using KappaAIO.Core.Managers;
+using SharpDX;
+
+namespace KappaAIO.Core
 {
-    using System;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Enumerations;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Menu.Values;
-    using EloBuddy.SDK.Notifications;
-
-    using KappaAIO.Core.Managers;
-
-    using SharpDX;
-
     public static class Common
     {
         public static int lastNotification = 0;
@@ -23,6 +20,30 @@
         public static AIHeroClient ally;
 
         public static Obj_AI_Turret tower;
+
+        internal class Logger
+        {
+            public static void Error(string error)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "KappaAIO] Error: " + error);
+                Console.ResetColor();
+            }
+
+            public static void Info(string info)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "KappaAIO] Info: " + info);
+                Console.ResetColor();
+            }
+
+            public static void Warn(string Warn)
+            {
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "KappaAIO] Warn: " + Warn);
+                Console.ResetColor();
+            }
+        }
 
         public static DangerLevel danger(Menu m)
         {

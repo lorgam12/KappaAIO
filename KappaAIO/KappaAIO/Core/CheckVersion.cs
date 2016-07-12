@@ -1,14 +1,10 @@
-﻿namespace KappaAIO.Core
+﻿using System;
+using System.Net;
+using EloBuddy;
+using Version = System.Version;
+
+namespace KappaAIO.Core
 {
-    using System;
-    using System.IO;
-    using System.Net;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-
-    using Version = System.Version;
-
     internal class CheckVersion
     {
         private static string UpdateMsg = string.Empty;
@@ -17,19 +13,42 @@
 
         private const string WebVersionPath = "https://raw.githubusercontent.com/plsfixrito/KappaAIO/master/KappaAIO/KappaAIO/Properties/AssemblyInfo.cs";
 
-        private static readonly Version CurrentVersionPath = typeof(CheckVersion).Assembly.GetName().Version;
+        private static readonly Version CurrentVersion = typeof(CheckVersion).Assembly.GetName().Version;
 
         public static void Init()
         {
             try
             {
+                var WebClient = new WebClient();
+                WebClient.DownloadStringCompleted += delegate(object sender, DownloadStringCompletedEventArgs args) { UpdateMsg = args.Result; };
+                WebClient.DownloadStringTaskAsync(UpdateMsgPath);
+
+                var WebClient2 = new WebClient();
+                WebClient2.DownloadStringCompleted += delegate(object sender, DownloadStringCompletedEventArgs args)
+                    {
+                        if (!args.Result.Contains(CurrentVersion.ToString()))
+                        {
+                            Common.Logger.Warn("There is a new Update Available for KappaAIO !");
+                            Chat.Print("<b>KappaAIO: There is a new Update Available for KappaAIO !</b>");
+                            Common.Logger.Info(UpdateMsg);
+                            Common.ShowNotification("There is a new Update Available for KappaAIO !", 10000, UpdateMsg);
+                            Chat.Print("<b>KappaAIO: " + UpdateMsg + "</b>");
+                        }
+                        else
+                        {
+                            Common.Logger.Info("Your AIO is updated !");
+                        }
+                    };
+                WebClient2.DownloadStringTaskAsync(WebVersionPath);
+
+                /*
                 GetResponse(WebRequest.Create(UpdateMsgPath), response => { UpdateMsg = new StreamReader(response.GetResponseStream()).ReadToEnd().ToString(); });
 
-                Core.DelayAction(
+                EloBuddy.SDK.Core.DelayAction(
                     () =>
                         {
                             GetResponse(
-                                WebRequest.Create(WebVersionPath), 
+                                WebRequest.Create(WebVersionPath),
                                 response =>
                                     {
                                         var data = new StreamReader(response.GetResponseStream()).ReadToEnd().ToString();
@@ -62,45 +81,14 @@
                                             }
                                         }
                                     });
-                        }, 
+                        },
                     500);
+                    */
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + "Warn] KappaAIO: Failed To Check for Updates !");
-                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + ex);
-                Console.ResetColor();
-            }
-        }
-
-        // Credits to MarioGK
-        private static void GetResponse(WebRequest Request, Action<HttpWebResponse> ResponseAction)
-        {
-            try
-            {
-                Action wrapperAction = () =>
-                    {
-                        Request.BeginGetResponse(
-                            iar =>
-                                {
-                                    var Response = (HttpWebResponse)((HttpWebRequest)iar.AsyncState).EndGetResponse(iar);
-                                    ResponseAction(Response);
-                                }, 
-                            Request);
-                    };
-                wrapperAction.BeginInvoke(
-                    iar =>
-                        {
-                            var Action = (Action)iar.AsyncState;
-                            Action.EndInvoke(iar);
-                        }, 
-                    wrapperAction);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(DateTime.Now.ToString("[H:mm:ss - ") + ex);
-                Console.ResetColor();
+                Common.Logger.Error("Failed To Check for Updates !");
+                Common.Logger.Error(ex.ToString());
             }
         }
     }

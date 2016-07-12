@@ -1,19 +1,16 @@
-﻿namespace KappaAIO.Core.Managers
+﻿using System;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Rendering;
+using SharpDX;
+using SharpDX.Direct3D9;
+using Color = System.Drawing.Color;
+using Line = EloBuddy.SDK.Rendering.Line;
+using RectangleF = SharpDX.RectangleF;
+
+namespace KappaAIO.Core.Managers
 {
-    using System;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Menu.Values;
-    using EloBuddy.SDK.Rendering;
-
-    using SharpDX;
-    using SharpDX.Direct3D9;
-
-    using Color = System.Drawing.Color;
-    using Line = EloBuddy.SDK.Rendering.Line;
-    using RectangleF = SharpDX.RectangleF;
-
     /// <summary>
     /// A Color Picker for EloBuddy.net using 4 sliders adjusting the red, green, blue and alpha values respectively.
     /// </summary>
@@ -235,8 +232,8 @@
             this.MouseClickedBox = RectangleF.Empty;
             this.DisplayNameTextFont = new FontDescription()
                                            {
-                                               Height = 20, Width = 8, CharacterSet = FontCharacterSet.Default, Weight = DefaultFont.Weight, OutputPrecision = FontPrecision.Default, 
-                                               Quality = FontQuality.Default, FaceName = DefaultFont.FaceName, Italic = false, MipLevels = DefaultFont.MipLevels, 
+                                               Height = 20, Width = 8, CharacterSet = FontCharacterSet.Default, Weight = DefaultFont.Weight, OutputPrecision = FontPrecision.Default,
+                                               Quality = FontQuality.Default, FaceName = DefaultFont.FaceName, Italic = false, MipLevels = DefaultFont.MipLevels,
                                                PitchAndFamily = FontPitchAndFamily.Default
                                            };
 
@@ -401,9 +398,9 @@
             // Color Display Bar
             this.DrawRectangle(this.ColorBarNative, DefaultColorGold, 2, false);
             Line.DrawLine(
-                this.CurrentValue, 
-                this.ColorBarNative.Height - 2, 
-                this.SetVector(this.ColorBarNative.TopLeft, this.ColorBarNative.TopLeft.X + 1, this.ColorBarNative.Center.Y), 
+                this.CurrentValue,
+                this.ColorBarNative.Height - 2,
+                this.SetVector(this.ColorBarNative.TopLeft, this.ColorBarNative.TopLeft.X + 1, this.ColorBarNative.Center.Y),
                 this.SetVector(this.ColorBarNative.TopRight, this.ColorBarNative.Right, this.ColorBarNative.Center.Y));
 
             // Red

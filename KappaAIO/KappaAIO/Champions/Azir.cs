@@ -1,21 +1,18 @@
-﻿namespace KappaAIO.Champions
+﻿using System;
+using System.Linq;
+using EloBuddy;
+using EloBuddy.SDK;
+using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
+using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
+using EloBuddy.SDK.Rendering;
+using KappaAIO.Core;
+using KappaAIO.Core.Managers;
+using SharpDX;
+
+namespace KappaAIO.Champions
 {
-    using System;
-    using System.Linq;
-
-    using EloBuddy;
-    using EloBuddy.SDK;
-    using EloBuddy.SDK.Enumerations;
-    using EloBuddy.SDK.Events;
-    using EloBuddy.SDK.Menu;
-    using EloBuddy.SDK.Menu.Values;
-    using EloBuddy.SDK.Rendering;
-
-    using KappaAIO.Core;
-    using KappaAIO.Core.Managers;
-
-    using SharpDX;
-
     internal class Azir : Base
     {
         private static Spell.Skillshot Q { get; }
@@ -195,7 +192,7 @@
             }
             catch (Exception e)
             {
-                Common.Log(e.ToString());
+                Common.Logger.Error(e.ToString());
             }
         }
 
@@ -631,15 +628,15 @@
 
             if (ready && soldier != null)
             {
-                Core.DelayAction(
+                EloBuddy.SDK.Core.DelayAction(
                     () =>
                         {
                             if (E.Cast(target))
                             {
-                                Core.DelayAction(() => Q.Cast(qpos), delay);
+                                EloBuddy.SDK.Core.DelayAction(() => Q.Cast(qpos), delay);
                                 insecqtime = Game.Time;
                             }
-                        }, 
+                        },
                     100);
             }
 
@@ -692,14 +689,14 @@
             {
                 if (ready)
                 {
-                    Core.DelayAction(
+                    EloBuddy.SDK.Core.DelayAction(
                         () =>
                             {
                                 if (E.Cast(epos))
                                 {
-                                    Core.DelayAction(() => Q.Cast(qpos), delay);
+                                    EloBuddy.SDK.Core.DelayAction(() => Q.Cast(qpos), delay);
                                 }
-                            }, 
+                            },
                         100);
                 }
             }

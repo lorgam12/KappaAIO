@@ -592,20 +592,37 @@ namespace KappaAIO.Champions
                         m.IsKillable(Q.Range) && Q.GetPrediction(m).HitChance >= HitChance.Low
                         && (Q.GetDamage(m) >= m.Health && (SpellsManager.Q1 || (Qtarget() != null && Qtarget().ID().Equals(m.ID())))));
 
-            if (Passive <= LaneClearMenu.slider("Passive") || SpellsManager.lastspelltimer > 2500)
+            if (LaneClearMenu.slider("Passive") >= Passive || SpellsManager.lastspelltimer > 2500)
             {
                 if (Q.IsReady() && ((LaneClearMenu.checkbox("Q1") && SpellsManager.Q1) || LaneClearMenu.checkbox("Q2")))
                 {
                     if (Qlasthit != null)
                     {
-                        SpellsManager.Q(Qlasthit, LaneClearMenu.checkbox("Q1"), LaneClearMenu.checkbox("Q2") && Qtarget() != null && Qlasthit.ID().Equals(Qtarget().ID()));
-                        return;
+                        if (LaneClearMenu.checkbox("Q1") && SpellsManager.Q1)
+                        {
+                            SpellsManager.Q(Qlasthit, LaneClearMenu.checkbox("Q1"));
+                            return;
+                        }
+                        if (LaneClearMenu.checkbox("Q2") && !SpellsManager.Q1 && Qtarget() != null && Qlasthit.ID().Equals(Qtarget().ID()))
+                        {
+                            SpellsManager.Q(Qlasthit, false, LaneClearMenu.checkbox("Q2"));
+                            return;
+                        }
                     }
+
 
                     if (Qminion != null)
                     {
-                        SpellsManager.Q(Qminion, LaneClearMenu.checkbox("Q1"), LaneClearMenu.checkbox("Q2") && Qtarget() != null && Qtarget().ID().Equals(Qminion.ID()));
-                        return;
+                        if (LaneClearMenu.checkbox("Q1") && SpellsManager.Q1)
+                        {
+                            SpellsManager.Q(Qminion, LaneClearMenu.checkbox("Q1"));
+                            return;
+                        }
+                        if (LaneClearMenu.checkbox("Q2") && !SpellsManager.Q1 && Qtarget() != null && Qtarget().ID().Equals(Qminion.ID()))
+                        {
+                            SpellsManager.Q(Qminion, false, LaneClearMenu.checkbox("Q2"));
+                            return;
+                        }
                     }
                 }
 
@@ -613,7 +630,14 @@ namespace KappaAIO.Champions
                 {
                     if (Eminions && eminion != null)
                     {
-                        SpellsManager.E(eminion, LaneClearMenu.checkbox("E1"), LaneClearMenu.checkbox("E2"));
+                        if (SpellsManager.E1)
+                        {
+                            SpellsManager.E(eminion, LaneClearMenu.checkbox("E1"));
+                            return;
+                        }
+
+                        SpellsManager.E(eminion, false, LaneClearMenu.checkbox("E2"));
+                        return;
                     }
                 }
             }

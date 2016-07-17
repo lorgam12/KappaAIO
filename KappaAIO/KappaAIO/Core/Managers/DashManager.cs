@@ -15,7 +15,8 @@ namespace KappaAIO.Core.Managers
         {
             Dash.OnDash += delegate(Obj_AI_Base sender, Dash.DashEventArgs args)
                 {
-                    if(!sender.IsMe || sender == null || args == null) return;
+                    if (!sender.IsMe || sender == null || args == null)
+                        return;
                     StartTick = args.StartTick;
                     EndTick = args.EndTick;
                     DashEnd = args.EndPos;
@@ -24,11 +25,14 @@ namespace KappaAIO.Core.Managers
 
         public static bool SafeDash(this Obj_AI_Base target, bool DiveTurrets, int EnemiesLimit, int healthLimit)
         {
-            if (target.EndPos().UnderTurret()) return false;
+            if (target.EndPos().UnderTurret())
+                return false;
 
-            if (target.EndPos().CountEnemiesInRange(750) >= EnemiesLimit && Player.Instance.HealthPercent < healthLimit) return false;
+            if (target.EndPos().CountEnemiesInRange(750) >= EnemiesLimit && Player.Instance.HealthPercent < healthLimit)
+                return false;
 
-            if (target.EndPos().CountEnemiesInRange(750) >= target.EndPos().CountAlliesInRange(750)) return false;
+            if (target.EndPos().CountEnemiesInRange(750) >= target.EndPos().CountAlliesInRange(750))
+                return false;
 
             return true;
         }

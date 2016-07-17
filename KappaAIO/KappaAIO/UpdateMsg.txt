@@ -1,1 +1,1 @@
-Added auto shield to leesin & Improved Kindred R Saver !
+Fixed LeeSin Jungle & Lane Clear !

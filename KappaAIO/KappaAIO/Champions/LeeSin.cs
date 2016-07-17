@@ -154,7 +154,7 @@ namespace KappaAIO.Champions
             JungleClearMenu.Add("W2", new CheckBox("Use W2"));
             JungleClearMenu.Add("E1", new CheckBox("Use E1"));
             JungleClearMenu.Add("E2", new CheckBox("Use E2"));
-            JungleClearMenu.Add("Passive", new Slider("Passive Count", 2, 0, 2));
+            JungleClearMenu.Add("Passive", new Slider("Passive Count", 0, 0, 2));
 
             KillStealMenu.AddGroupLabel("Killsteal Settings (Champions)");
             KillStealMenu.Add("Q1", new CheckBox("Use Q1"));
@@ -676,20 +676,44 @@ namespace KappaAIO.Champions
             {
                 if (W.IsReady() && mob.IsKillable(E.Range) && ((JungleClearMenu.checkbox("W1") && SpellsManager.W1) || JungleClearMenu.checkbox("W2")))
                 {
-                    SpellsManager.W(user, JungleClearMenu.checkbox("W1"), JungleClearMenu.checkbox("W2"));
-                    return;
+                    if (JungleClearMenu.checkbox("W1") && SpellsManager.W1)
+                    {
+                        SpellsManager.W(user, JungleClearMenu.checkbox("W1"));
+                        return;
+                    }
+                    if (JungleClearMenu.checkbox("W2") && !SpellsManager.W1)
+                    {
+                        SpellsManager.W(user, false, JungleClearMenu.checkbox("W2"));
+                        return;
+                    }
                 }
 
                 if (E.IsReady() && mob.IsKillable(E.Range) && ((JungleClearMenu.checkbox("E1") && SpellsManager.E1) || JungleClearMenu.checkbox("E2")))
                 {
-                    SpellsManager.E(mob, JungleClearMenu.checkbox("E1"), JungleClearMenu.checkbox("E2"));
-                    return;
+                    if (JungleClearMenu.checkbox("E1") && SpellsManager.E1)
+                    {
+                        SpellsManager.E(mob, JungleClearMenu.checkbox("E1"));
+                        return;
+                    }
+                    if (JungleClearMenu.checkbox("E2") && !SpellsManager.E1)
+                    {
+                        SpellsManager.E(mob, false, JungleClearMenu.checkbox("E2"));
+                        return;
+                    }
                 }
 
                 if (Q.IsReady() && mob.IsKillable(Q.Range) && ((JungleClearMenu.checkbox("Q1") && SpellsManager.Q1) || JungleClearMenu.checkbox("Q2")))
                 {
-                    SpellsManager.Q(mob, JungleClearMenu.checkbox("Q1"), JungleClearMenu.checkbox("Q2"));
-                    return;
+                    if (JungleClearMenu.checkbox("Q1") && SpellsManager.Q1)
+                    {
+                        SpellsManager.Q(mob, JungleClearMenu.checkbox("Q1"));
+                        return;
+                    }
+                    if (JungleClearMenu.checkbox("Q2") && !SpellsManager.Q1)
+                    {
+                        SpellsManager.Q(mob, false, JungleClearMenu.checkbox("Q2"));
+                        return;
+                    }
                 }
             }
         }

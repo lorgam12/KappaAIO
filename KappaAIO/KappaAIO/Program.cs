@@ -9,10 +9,7 @@ namespace KappaAIO
 {
     internal class Program
     {
-        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar, Champion.Xerath };
-
-        public static string info = "[" + DateTime.Now.ToString("H:mm:ss") + " - Info]";
-        public static string warn = "[" + DateTime.Now.ToString("H:mm:ss") + " - Warn]";
+        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar, Champion.Xerath, /*Champion.Yasuo*/ };
 
         private static void Main(string[] args)
         {
@@ -24,15 +21,16 @@ namespace KappaAIO
         {
             if (hero.Contains(Player.Instance.Hero))
             {
+                Core.KappaEvade.SpellsDetector.Init();
+                kCore.Execute();
                 Chat.Print("<font color='#FFFFFF'><b>KappaAIO Loaded</b></font>");
                 CheckVersion.Init();
                 var Instance = (Base)Activator.CreateInstance(null, "KappaAIO.Champions." + Player.Instance.Hero).Unwrap();
                 DamageLib.DamageDatabase();
-                kCore.Execute();
-                Console.WriteLine(info + " KappaAIO: " + Player.Instance.Hero + " Loaded !");
-                Console.WriteLine(info + " Have Fun !");
+                Common.Logger.Info(Player.Instance.Hero + " Loaded !");
+                Common.Logger.Info("Have Fun !");
                 Common.ShowNotification(Player.Instance.ChampionName + " - Loaded", 5000);
-                Console.WriteLine(info + " ----------------------------------");
+                Common.Logger.Info("----------------------------------");
             }
             else
             {

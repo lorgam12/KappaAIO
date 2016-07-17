@@ -9,7 +9,7 @@ using EloBuddy.SDK.Rendering;
 using KappaAIO.Core;
 using KappaAIO.Core.Managers;
 using SharpDX;
-using static KappaAIO.Core.Database.Items;
+using static KappaAIO.Core.ItemsDatabase.Items;
 
 namespace KappaAIO.Champions
 {
@@ -66,6 +66,7 @@ namespace KappaAIO.Champions
             SpellList.Add(R);
 
             Menuini = MainMenu.AddMenu("LeeSin", "LeeSin");
+            AutoMenu = Menuini.AddSubMenu("Auto Shield");
             RMenu = Menuini.AddSubMenu("BubbaKush Settings");
             JumperMenu = Menuini.AddSubMenu("Insec Settings");
             ComboMenu = Menuini.AddSubMenu("Combo Settings");
@@ -80,6 +81,14 @@ namespace KappaAIO.Champions
             Menuini.Add("debug", new CheckBox("Debug Functions", false));
             Menuini.Add("fpsboost", new CheckBox("FPS Boost (FIX FPS Issues)", false));
             Menuini.AddLabel("Fps Boost: Fixed FPS Issues But can reduce the Performance");
+            
+            AutoMenu.Add("W", new CheckBox("Use W", false));
+            foreach (var ally in EntityManager.Heroes.Allies)
+            {
+                AutoMenu.AddSeparator(0);
+                AutoMenu.Add(ally.ID(), new CheckBox("Shield " + ally.ChampionName + " (" + ally.Name + ")"));
+                AutoMenu.Add(ally.ID() + "hp", new Slider("Shield Incoming Damage {0}%", 30));
+            }
 
             RMenu.AddGroupLabel("BubbaKush Mode");
             RMenu.Add("list", new ComboBox("Mode", 0, "Auto", "Close > LowHP", "MaxHP > LowHP"));
@@ -189,6 +198,19 @@ namespace KappaAIO.Champions
             Chat.OnMessage += Chat_OnMessage;
             Chat.OnInput += Chat_OnInput;
             Chat.OnClientSideMessage += Chat_OnClientSideMessage;
+            OnIncDmg += LeeSin_OnIncDmg;
+        }
+
+        private static void LeeSin_OnIncDmg(Obj_AI_Base sender, Obj_AI_Base target, GameObjectProcessSpellCastEventArgs args, float IncDamage)
+        {
+            if(!sender.IsEnemy || !target.IsAlly || !AutoMenu.checkbox("W") || !SpellsManager.W1 || !W.IsReady()) return;
+
+            var hp = AutoMenu.slider(target.ID() + "hp");
+            var dmgpercent = (IncDamage / target.TotalShieldHealth()) * 100;
+            if (target != null && target.IsKillable(W.Range) && (dmgpercent >= hp || hp >= target.HealthPercent))
+            {
+                SpellsManager.W(target, true);
+            }
         }
 
         private static void Chat_OnClientSideMessage(ChatClientSideMessageEventArgs args)

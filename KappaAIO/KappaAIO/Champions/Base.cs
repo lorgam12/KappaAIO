@@ -7,6 +7,7 @@ using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Spells;
 using KappaAIO.Core;
 using KappaAIO.Core.Managers;
+using SharpDX;
 
 namespace KappaAIO.Champions
 {
@@ -16,7 +17,7 @@ namespace KappaAIO.Champions
 
         public static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
 
-        public static Menu Menuini, RMenu, AutoMenu, JumperMenu, ComboMenu, HarassMenu, LaneClearMenu, JungleClearMenu, KillStealMenu, MiscMenu, DrawMenu, ColorMenu;
+        public static Menu Menuini, RMenu, EvadeMenu, AutoMenu, JumperMenu, ComboMenu, HarassMenu, LaneClearMenu, JungleClearMenu, KillStealMenu, MiscMenu, DrawMenu, ColorMenu;
 
         public static Spell.Skillshot Flash;
 
@@ -36,9 +37,77 @@ namespace KappaAIO.Champions
 
         public abstract void Draw();
 
+        public delegate void InComingDamage(Obj_AI_Base sender, Obj_AI_Base target, GameObjectProcessSpellCastEventArgs args, float IncDamage);
+
+        public static event InComingDamage OnIncDmg;
+
         protected Base()
         {
             this.Initialize();
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
+        }
+
+        private static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (!(args.Target is AIHeroClient) || user.IsDead)
+            {
+                return;
+            }
+
+            var caster = sender;
+            var target = (AIHeroClient)args.Target;
+
+            if (!(caster is AIHeroClient || caster is Obj_AI_Turret) || !caster.IsEnemy || target == null || caster == null || !target.IsAlly || !target.IsKillable())
+            {
+                return;
+            }
+
+            var aaprecent = (caster.GetAutoAttackDamage(target, true) / target.TotalShieldHealth()) * 100;
+            var death = caster.GetAutoAttackDamage(target, true) >= target.TotalShieldHealth() || aaprecent >= target.HealthPercent;
+
+            OnIncDmg?.Invoke(caster, target, args, caster.GetAutoAttackDamage(target, true));
+        }
+
+        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (!(args.Target is AIHeroClient) || !sender.IsEnemy || user.IsDead)
+            {
+                return;
+            }
+
+            var caster = sender;
+            var enemy = sender as AIHeroClient;
+            var target = (AIHeroClient)args.Target;
+            Common.ally = EntityManager.Heroes.Allies.FirstOrDefault(a => a.IsInRange(args.End, 100) && a.IsKillable() && !a.IsMe);
+            var hitally = Common.ally != null && args.End != Vector3.Zero && args.End.Distance(Common.ally) < 100;
+            var hitme = args.End != Vector3.Zero && args.End.Distance(user) < 100;
+
+            if (!(caster is AIHeroClient || caster is Obj_AI_Turret) || !caster.IsEnemy || enemy == null || caster == null)
+            {
+                return;
+            }
+
+            if (((target.IsAlly && !target.IsMe) || hitally) && Common.ally != null && Common.ally.IsValidTarget())
+            {
+                var spelldamageally = enemy.GetSpellDamage(Common.ally, args.Slot);
+                var damagepercentally = (spelldamageally / Common.ally.TotalShieldHealth()) * 100;
+                var deathally = damagepercentally >= Common.ally.HealthPercent || spelldamageally >= Common.ally.TotalShieldHealth()
+                                || caster.GetAutoAttackDamage(Common.ally, true) >= Common.ally.TotalShieldHealth()
+                                || enemy.GetAutoAttackDamage(Common.ally, true) >= Common.ally.TotalShieldHealth();
+                
+                OnIncDmg?.Invoke(caster, Common.ally, args, spelldamageally);
+            }
+
+            if (target.IsMe || hitme)
+            {
+                var spelldamageme = enemy.GetSpellDamage(user, args.Slot);
+                var damagepercentme = (spelldamageme / user.TotalShieldHealth()) * 100;
+                var deathme = damagepercentme >= user.HealthPercent || spelldamageme >= user.TotalShieldHealth() || caster.GetAutoAttackDamage(user, true) >= user.TotalShieldHealth()
+                              || enemy.GetAutoAttackDamage(user, true) >= user.TotalShieldHealth();
+
+                OnIncDmg?.Invoke(caster, user, args, spelldamageme);
+            }
         }
 
         public void Initialize()

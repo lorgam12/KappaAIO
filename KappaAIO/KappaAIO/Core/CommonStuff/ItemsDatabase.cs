@@ -3,7 +3,7 @@ using EloBuddy.SDK;
 
 namespace KappaAIO.Core
 {
-    public static class Database
+    public static class ItemsDatabase
     {
         internal static class Items
         {

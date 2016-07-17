@@ -143,7 +143,7 @@ namespace KappaAIO.Core
 
             if (!Database.Exists(s => s.slot == Spell.Slot))
             {
-                return 0;
+                return Player.Instance.GetSpellDamage(target, Spell.Slot);
             }
 
             var spell = Database.FirstOrDefault(s => s.slot == Spell.Slot);

@@ -5,6 +5,8 @@ using EloBuddy.SDK;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
+using KappaAIO.Core.KappaEvade;
+using KappaAIO.Core.Managers;
 
 namespace KappaAIO.Core
 {
@@ -12,7 +14,7 @@ namespace KappaAIO.Core
     {
         public static Menu CoreMenu, GapMenu, ks;
 
-        public static string[] Junglemobs = { "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss", };
+        public static string[] Junglemobs;
 
         public static void Execute()
         {
@@ -40,9 +42,10 @@ namespace KappaAIO.Core
                 ObjectManager.Get<Obj_AI_Minion>()
                     .Where(w => w.Name.ToLower().Contains("ward") && w != null && w.IsAlly && w.IsValid && w.Health > 0 && !w.IsDead && !w.Name.ToLower().Contains("wardcorpse")))
             {
-                Managers.ObjectsManager.Wards.Add(ward);
+                ObjectsManager.Wards.Add(ward);
             }
 
+            DashManager.Init();
             CoreMenu = MainMenu.AddMenu("KappaCore", "KappaCore");
             GapMenu = CoreMenu.AddSubMenu("Anti-GapCloser Settings");
             ks = CoreMenu.AddSubMenu("Stealer");
@@ -69,18 +72,20 @@ namespace KappaAIO.Core
                 ks.Add(mob, new CheckBox(mob));
             }
 
+            //SkillShotsDetector.Init();
+
             GameObject.OnCreate += delegate(GameObject sender, EventArgs args)
                 {
                     if (sender.Name.ToLower().Contains("ward") && sender.IsAlly && !sender.Name.ToLower().Contains("wardcorpse"))
                     {
-                        Managers.ObjectsManager.Wards.Add((Obj_AI_Minion)sender);
+                        ObjectsManager.Wards.Add((Obj_AI_Minion)sender);
                     }
                 };
             GameObject.OnDelete += delegate(GameObject sender, EventArgs args)
                 {
                     if (sender.Name.ToLower().Contains("ward") && sender.IsAlly && !sender.Name.ToLower().Contains("wardcorpse"))
                     {
-                        Managers.ObjectsManager.Wards.Remove((Obj_AI_Minion)sender);
+                        ObjectsManager.Wards.Remove((Obj_AI_Minion)sender);
                     }
                 };
         }

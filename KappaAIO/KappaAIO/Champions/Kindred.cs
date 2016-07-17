@@ -94,9 +94,35 @@ namespace KappaAIO.Champions
 
             Orbwalker.OnUnkillableMinion += Clear.Orbwalker_OnUnkillableMinion;
             Orbwalker.OnPostAttack += Compat.Orbwalker_OnPostAttack;
-            Obj_AI_Base.OnBasicAttack += Auto.Obj_AI_Base_OnBasicAttack;
             Obj_AI_Base.OnProcessSpellCast += Auto.Obj_AI_Base_OnProcessSpellCast;
             Gapcloser.OnGapcloser += Auto.Gapcloser_OnGapcloser;
+            OnIncDmg += Kindred_OnIncDmg;
+        }
+
+        private static void Kindred_OnIncDmg(Obj_AI_Base sender, Obj_AI_Base target, GameObjectProcessSpellCastEventArgs args, float IncDamage)
+        {
+            if(!AutoMenu.checkbox("R") || !R.IsReady() || !sender.IsEnemy) return;
+
+            var allyhp = AutoMenu.slider("Rally");
+            var mehp = AutoMenu.slider("Rhp");
+
+            if (target != null && target.IsKillable(R.Range))
+            {
+                if (target.IsAlly && !target.IsMe)
+                {
+                    if (IncDamage >= target.Health || allyhp >= target.Health)
+                    {
+                        R.Cast();
+                    }
+                }
+                if (target.IsMe)
+                {
+                    if (IncDamage >= target.Health || mehp >= target.Health)
+                    {
+                        R.Cast();
+                    }
+                }
+            }
         }
 
         private static AIHeroClient Target()
@@ -318,92 +344,6 @@ namespace KappaAIO.Champions
                 if (sender.IsMe && args.Slot == SpellSlot.Q)
                 {
                     Orbwalker.ResetAutoAttack();
-                }
-
-                if (!(args.Target is AIHeroClient) || !sender.IsEnemy || !AutoMenu.checkbox("R") || !R.IsReady() && user.IsDead)
-                {
-                    return;
-                }
-
-                var caster = sender;
-                var enemy = sender as AIHeroClient;
-                var target = (AIHeroClient)args.Target;
-                Common.ally = EntityManager.Heroes.Allies.FirstOrDefault(a => a.IsInRange(args.End, 100) && a.IsKillable(R.Range) && !a.IsMe);
-                var hitally = Common.ally != null && args.End != Vector3.Zero && args.End.Distance(Common.ally) < 100;
-                var hitme = args.End != Vector3.Zero && args.End.Distance(user) < 100;
-                var allyhp = AutoMenu.slider("Rally");
-                var mehp = AutoMenu.slider("Rhp");
-
-                if (!(caster is AIHeroClient || caster is Obj_AI_Turret) || !caster.IsEnemy || enemy == null || caster == null)
-                {
-                    return;
-                }
-
-                if (((target.IsAlly && !target.IsMe) || hitally) && Common.ally != null && Common.ally.IsValidTarget(R.Range))
-                {
-                    var spelldamageally = enemy.GetSpellDamage(Common.ally, args.Slot);
-                    var damagepercentally = (spelldamageally / Common.ally.TotalShieldHealth()) * 100;
-                    var deathally = damagepercentally >= Common.ally.HealthPercent || spelldamageally >= Common.ally.TotalShieldHealth()
-                                    || caster.GetAutoAttackDamage(Common.ally, true) >= Common.ally.TotalShieldHealth()
-                                    || enemy.GetAutoAttackDamage(Common.ally, true) >= Common.ally.TotalShieldHealth();
-
-                    if (Common.ally.IsInRange(user, R.Range) && !Common.ally.IsMe)
-                    {
-                        if (allyhp > Common.ally.HealthPercent || deathally)
-                        {
-                            R.Cast();
-                        }
-                    }
-                }
-
-                if (target.IsMe || hitme)
-                {
-                    var spelldamageme = enemy.GetSpellDamage(user, args.Slot);
-                    var damagepercentme = (spelldamageme / user.TotalShieldHealth()) * 100;
-                    var deathme = damagepercentme >= user.HealthPercent || spelldamageme >= user.TotalShieldHealth() || caster.GetAutoAttackDamage(user, true) >= user.TotalShieldHealth()
-                                  || enemy.GetAutoAttackDamage(user, true) >= user.TotalShieldHealth();
-
-                    if (mehp > user.HealthPercent || deathme)
-                    {
-                        R.Cast();
-                    }
-                }
-            }
-
-            public static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-            {
-                if (!(args.Target is AIHeroClient) || !AutoMenu.checkbox("R") || !R.IsReady() && user.IsDead)
-                {
-                    return;
-                }
-
-                var caster = sender;
-                var target = (AIHeroClient)args.Target;
-                var allyhp = AutoMenu.slider("Rally");
-                var mehp = AutoMenu.slider("Rhp");
-
-                if (!(caster is AIHeroClient || caster is Obj_AI_Turret) || !caster.IsEnemy || target == null || caster == null || !target.IsAlly || !target.IsKillable())
-                {
-                    return;
-                }
-
-                var aaprecent = (caster.GetAutoAttackDamage(target, true) / target.TotalShieldHealth()) * 100;
-                var death = caster.GetAutoAttackDamage(target, true) >= target.TotalShieldHealth() || aaprecent >= target.HealthPercent;
-
-                if (target.IsAlly && !target.IsMe && target.IsKillable(R.Range))
-                {
-                    if (allyhp > target.HealthPercent || death)
-                    {
-                        R.Cast();
-                    }
-                }
-
-                if (target.IsMe)
-                {
-                    if (mehp > target.HealthPercent || death)
-                    {
-                        R.Cast();
-                    }
                 }
             }
         }

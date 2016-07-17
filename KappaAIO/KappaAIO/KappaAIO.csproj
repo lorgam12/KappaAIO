@@ -59,17 +59,21 @@
     <Compile Include="Champions\LeeSin.cs" />
     <Compile Include="Champions\Malzahar.cs" />
     <Compile Include="Champions\Xerath.cs" />
-    <Compile Include="Core\CheckVersion.cs" />
-    <Compile Include="Core\Database.cs" />
+    <Compile Include="Champions\Yasuo.cs" />
+    <Compile Include="Core\CommonStuff\CheckVersion.cs" />
+    <Compile Include="Core\CommonStuff\ItemsDatabase.cs" />
+    <Compile Include="Core\KappaEvade\Database.cs" />
     <Compile Include="Core\Managers\ColorPicker.cs" />
-    <Compile Include="Core\Common.cs" />
-    <Compile Include="Core\DamageLib.cs" />
+    <Compile Include="Core\CommonStuff\Common.cs" />
+    <Compile Include="Core\CommonStuff\DamageLib.cs" />
+    <Compile Include="Core\Managers\DashManager.cs" />
     <Compile Include="Core\Managers\DrawingsManager.cs" />
-    <Compile Include="Core\kCore.cs" />
+    <Compile Include="Core\CommonStuff\kCore.cs" />
     <Compile Include="Core\Managers\HitChanceManager.cs" />
     <Compile Include="Core\Managers\KappaSelector.cs" />
     <Compile Include="Core\Managers\ObjectsManager.cs" />
-    <Compile Include="Core\Stealer.cs" />
+    <Compile Include="Core\KappaEvade\SpellsDetector.cs" />
+    <Compile Include="Core\CommonStuff\Stealer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

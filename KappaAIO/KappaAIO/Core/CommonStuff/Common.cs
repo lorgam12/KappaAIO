@@ -52,6 +52,13 @@ namespace KappaAIO.Core
             }
         }
 
+        public static bool UnderTurret(this Vector3 pos, bool EnemyTurret = true)
+        {
+            return EnemyTurret
+                       ? EntityManager.Turrets.Enemies.Any(t => t.IsInRange(pos, t.GetAutoAttackRange() + 25) && !t.IsDead)
+                       : EntityManager.Turrets.Allies.Any(t => t.IsInRange(pos, t.GetAutoAttackRange() + 25) && !t.IsDead);
+        }
+
         public static float TravelTime(this Spell.SpellBase spell, Obj_AI_Base target)
         {
             return (target.Distance(Player.Instance) / spell.Handle.SData.MissileSpeed) + spell.CastDelay + (Game.Ping / 2);
@@ -181,15 +188,17 @@ namespace KappaAIO.Core
 
         public static bool checkbox(this Menu m, string id)
         {
-            try
-            {
-                return m[id].Cast<CheckBox>().CurrentValue;
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e);
-            }
-            return false;
+            return m[id].Cast<CheckBox>().CurrentValue;
+        }
+
+        public static KeyBind CreateKeyBind(this Menu m, string id, string name, bool defaultvalue, KeyBind.BindTypes bindType, uint defaultvalue1 = 27U)
+        {
+            return m.Add(id, new KeyBind(name, defaultvalue, bindType, defaultvalue1));
+        }
+
+        public static bool HasYasuoEBuff(this Obj_AI_Base target)
+        {
+            return target.HasBuff("YasuoDashWrapper");
         }
 
         public static bool keybind(this Menu m, string id)

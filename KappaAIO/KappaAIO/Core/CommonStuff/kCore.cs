@@ -5,10 +5,9 @@ using EloBuddy.SDK;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
-using KappaAIO.Core.KappaEvade;
 using KappaAIO.Core.Managers;
 
-namespace KappaAIO.Core
+namespace KappaAIO.Core.CommonStuff
 {
     internal class kCore
     {
@@ -71,8 +70,6 @@ namespace KappaAIO.Core
             {
                 ks.Add(mob, new CheckBox(mob));
             }
-
-            //SkillShotsDetector.Init();
 
             GameObject.OnCreate += delegate(GameObject sender, EventArgs args)
                 {

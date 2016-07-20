@@ -2,7 +2,7 @@
 using EloBuddy;
 using EloBuddy.SDK;
 
-namespace KappaAIO.Core
+namespace KappaAIO.Core.CommonStuff
 {
     public static class Stealer
     {

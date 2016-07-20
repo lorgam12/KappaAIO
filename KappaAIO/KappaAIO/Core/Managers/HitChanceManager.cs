@@ -2,6 +2,7 @@
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu;
+using KappaAIO.Core.CommonStuff;
 
 namespace KappaAIO.Core.Managers
 {

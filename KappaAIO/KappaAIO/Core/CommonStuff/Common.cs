@@ -11,7 +11,7 @@ using EloBuddy.SDK.Notifications;
 using KappaAIO.Core.Managers;
 using SharpDX;
 
-namespace KappaAIO.Core
+namespace KappaAIO.Core.CommonStuff
 {
     public static class Common
     {
@@ -61,7 +61,7 @@ namespace KappaAIO.Core
 
         public static float TravelTime(this Spell.SpellBase spell, Obj_AI_Base target)
         {
-            return (target.Distance(Player.Instance) / spell.Handle.SData.MissileSpeed) + spell.CastDelay + (Game.Ping / 2);
+            return ((target.Distance(Player.Instance) / spell.Handle.SData.MissileSpeed) * 1000) + spell.CastDelay + (Game.Ping / 2);
         }
 
         public static DangerLevel danger(Menu m)
@@ -284,15 +284,7 @@ namespace KappaAIO.Core
 
         public static float Mana(this Spell.SpellBase spell)
         {
-            try
-            {
-                return spell.Handle.SData.Mana;
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e);
-            }
-            return 0;
+            return spell.Handle.SData.Mana;
         }
 
         public static string ID(this Obj_AI_Base target)

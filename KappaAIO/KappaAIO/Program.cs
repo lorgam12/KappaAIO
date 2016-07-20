@@ -3,13 +3,13 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK.Events;
 using KappaAIO.Champions;
-using KappaAIO.Core;
+using KappaAIO.Core.CommonStuff;
 
 namespace KappaAIO
 {
     internal class Program
     {
-        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar, Champion.Xerath, /*Champion.Yasuo*/ };
+        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar, Champion.Xerath, /*Champion.Yasuo */};
 
         private static void Main(string[] args)
         {
@@ -19,9 +19,9 @@ namespace KappaAIO
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
+            //KappaEvade.KappaEvade.Init();
             if (hero.Contains(Player.Instance.Hero))
             {
-                Core.KappaEvade.SpellsDetector.Init();
                 kCore.Execute();
                 Chat.Print("<font color='#FFFFFF'><b>KappaAIO Loaded</b></font>");
                 CheckVersion.Init();

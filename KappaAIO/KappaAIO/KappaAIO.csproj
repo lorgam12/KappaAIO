@@ -62,7 +62,9 @@
     <Compile Include="Champions\Yasuo.cs" />
     <Compile Include="Core\CommonStuff\CheckVersion.cs" />
     <Compile Include="Core\CommonStuff\ItemsDatabase.cs" />
-    <Compile Include="Core\KappaEvade\Database.cs" />
+    <Compile Include="KappaEvade\Database.cs" />
+    <Compile Include="KappaEvade\debug.cs" />
+    <Compile Include="KappaEvade\KappaEvade.cs" />
     <Compile Include="Core\Managers\ColorPicker.cs" />
     <Compile Include="Core\CommonStuff\Common.cs" />
     <Compile Include="Core\CommonStuff\DamageLib.cs" />
@@ -72,7 +74,7 @@
     <Compile Include="Core\Managers\HitChanceManager.cs" />
     <Compile Include="Core\Managers\KappaSelector.cs" />
     <Compile Include="Core\Managers\ObjectsManager.cs" />
-    <Compile Include="Core\KappaEvade\SpellsDetector.cs" />
+    <Compile Include="KappaEvade\SpellsDetector.cs" />
     <Compile Include="Core\CommonStuff\Stealer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

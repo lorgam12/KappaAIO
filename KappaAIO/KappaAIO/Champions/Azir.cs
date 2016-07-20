@@ -7,7 +7,7 @@ using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using KappaAIO.Core;
+using KappaAIO.Core.CommonStuff;
 using KappaAIO.Core.Managers;
 using SharpDX;
 
@@ -205,7 +205,7 @@ namespace KappaAIO.Champions
                 var rpos = user.ServerPosition.Extend(insectpos(), R.Range).To3D();
 
                 var qtime = Game.Time - insecqtime;
-                if ((qtime > 0.1f && qtime < 0.1) || TargetSelector.SelectedTarget.IsKillable(R.Range - 75))
+                if ((qtime > 0.1f && qtime < 0.1) || TargetSelector.SelectedTarget != null && TargetSelector.SelectedTarget.IsKillable(R.Range - 75))
                 {
                     R.Cast(rpos);
                 }
@@ -221,7 +221,7 @@ namespace KappaAIO.Champions
                 Jump(Game.CursorPos);
             }
 
-            if (JumperMenu.keybind("normal"))
+            if (JumperMenu.keybind("normal") && TargetSelector.SelectedTarget != null)
             {
                 Normal(TargetSelector.SelectedTarget);
             }
@@ -252,7 +252,6 @@ namespace KappaAIO.Champions
 
             if (DrawMenu.checkbox("insec") && (NormalInsec || NewInsec))
             {
-                var insecpos = insectpos(target);
                 float x;
                 float y;
                 if (target == null)
@@ -274,28 +273,31 @@ namespace KappaAIO.Champions
                         Drawing.DrawText(x, y, colors, "CREATE A SOLDIER NEAR THE TARGET FIRST", 5);
                     }
                 }
+                if (target != null)
+                {
+                    var insecpos = insectpos(target);
+                    if (insecpos == Vector3.Zero)
+                    {
+                        x = Game.CursorPos.WorldToScreen().X;
+                        y = Game.CursorPos.WorldToScreen().Y - 15;
+                        Drawing.DrawText(x, y, colors, "Cant Detect Insec Position", 5);
+                    }
+                    else
+                    {
+                        x = insecpos.WorldToScreen().X;
+                        y = insecpos.WorldToScreen().Y;
+                        Drawing.DrawText(x, y, colors, "Insec Position", 5);
+                    }
 
-                if (insecpos == Vector3.Zero)
-                {
-                    x = Game.CursorPos.WorldToScreen().X;
-                    y = Game.CursorPos.WorldToScreen().Y - 15;
-                    Drawing.DrawText(x, y, colors, "Cant Detect Insec Position", 5);
-                }
-                else
-                {
-                    x = insecpos.WorldToScreen().X;
-                    y = insecpos.WorldToScreen().Y;
-                    Drawing.DrawText(x, y, colors, "Insec Position", 5);
-                }
-
-                if (target != null && insecpos != Vector3.Zero)
-                {
-                    var pos = target.ServerPosition.Extend(insecpos, -200).To3D();
-                    var rpos = user.ServerPosition.Extend(insecpos, R.Range).To3D();
-                    Circle.Draw(Color.White, 100, rpos);
-                    Circle.Draw(Color.White, 100, pos);
-                    Circle.Draw(Color.White, 200, insecpos);
-                    Line.DrawLine(colors, pos, rpos);
+                    if (target != null && insecpos != Vector3.Zero)
+                    {
+                        var pos = target.ServerPosition.Extend(insecpos, -200).To3D();
+                        var rpos = user.ServerPosition.Extend(insecpos, R.Range).To3D();
+                        Circle.Draw(Color.White, 100, rpos);
+                        Circle.Draw(Color.White, 100, pos);
+                        Circle.Draw(Color.White, 200, insecpos);
+                        Line.DrawLine(colors, pos, rpos);
+                    }
                 }
             }
         }
@@ -336,7 +338,7 @@ namespace KappaAIO.Champions
 
             if (args.Slot == SpellSlot.Q || args.Slot == SpellSlot.W)
             {
-                Orbwalker.ResetAutoAttack();
+                //Orbwalker.ResetAutoAttack();
             }
 
             Common.LastCastedSpell.Spell = args.Slot;
@@ -469,11 +471,11 @@ namespace KappaAIO.Champions
                 var killable = target.TotalDamage(SpellList) >= Prediction.Health.GetPrediction(target, (int)time);
                 if (menu.checkbox("Ekill") && killable && user.Mana >= Common.Mana())
                 {
-                    E.Cast(target);
+                    E.Cast(target.ServerPosition);
                 }
                 else
                 {
-                    E.Cast(target);
+                    E.Cast(target.ServerPosition);
                 }
             }
 
@@ -563,7 +565,7 @@ namespace KappaAIO.Champions
                     return;
                 }
 
-                E.Cast(target);
+                E.Cast(target.ServerPosition);
             }
         }
 
@@ -631,7 +633,7 @@ namespace KappaAIO.Champions
                 EloBuddy.SDK.Core.DelayAction(
                     () =>
                         {
-                            if (E.Cast(target))
+                            if (E.Cast(target.ServerPosition))
                             {
                                 EloBuddy.SDK.Core.DelayAction(() => Q.Cast(qpos), delay);
                                 insecqtime = Game.Time;
@@ -685,25 +687,22 @@ namespace KappaAIO.Champions
 
                 W.Cast(wpos);
             }
-            else
+            if (ready && epos != null)
             {
-                if (ready)
-                {
-                    EloBuddy.SDK.Core.DelayAction(
-                        () =>
-                            {
-                                if (E.Cast(epos))
-                                {
-                                    EloBuddy.SDK.Core.DelayAction(() => Q.Cast(qpos), delay);
-                                }
-                            },
-                        100);
-                }
+                EloBuddy.SDK.Core.DelayAction(
+                    () =>
+                    {
+                        if (E.Cast(epos.ServerPosition))
+                        {
+                            EloBuddy.SDK.Core.DelayAction(() => Q.Cast(qpos), delay);
+                        }
+                    },
+                    250);
             }
 
             if (Common.LastCastedSpell.Spell == SpellSlot.E)
             {
-                var timer = (Game.Time - Common.LastCastedSpell.Time) * 100;
+                var timer = Game.Time - Common.LastCastedSpell.Time;
                 if (timer - delay < 0.1f && Q.IsReady())
                 {
                     Q.Cast(qpos);

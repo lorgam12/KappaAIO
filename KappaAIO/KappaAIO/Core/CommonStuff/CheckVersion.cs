@@ -3,7 +3,7 @@ using System.Net;
 using EloBuddy;
 using Version = System.Version;
 
-namespace KappaAIO.Core
+namespace KappaAIO.Core.CommonStuff
 {
     internal class CheckVersion
     {

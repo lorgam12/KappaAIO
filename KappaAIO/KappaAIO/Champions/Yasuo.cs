@@ -7,8 +7,8 @@ using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
-using KappaAIO.Core;
-using KappaAIO.Core.KappaEvade;
+using KappaAIO.Core.CommonStuff;
+using KappaAIO.KappaEvade;
 using KappaAIO.Core.Managers;
 using SharpDX;
 using static KappaAIO.Core.Managers.DashManager;
@@ -39,7 +39,6 @@ namespace KappaAIO.Champions
                 return user.HasBuff("YasuoQ3W");
             }
         }
-        private static int laste;
         private static Spell.Skillshot Q;
         private static Spell.Skillshot W;
         private static Spell.Targeted E;
@@ -92,7 +91,7 @@ namespace KappaAIO.Champions
                 JumpSpots.Add(new Vector3(8172, 3158, 51), "SRU_KrugMini5.1.1"); //Krugsmall Back
                 JumpSpots.Add(new Vector3(8272, 3608, 53), "SRU_RedMini4.1.3"); //Redsmall2 Back
                 JumpSpots.Add(new Vector3(6424, 5258, 48), "SRU_Razorbeak3.1.1"); //Birdsbig back
-                JumpSpots.Add(new Vector3(7324, 5908, 52), "SRU_RazorbeakMini3.1.3"); //Birdsmall3 Back
+                JumpSpots.Add(new Vector3(7224, 5958, 52), "SRU_RazorbeakMini3.1.2"); //Birdsmall3 Back
                 JumpSpots.Add(new Vector3(3674, 7058, 50), "SRU_MurkwolfMini2.1.3"); //Wolfsmall Back
                 JumpSpots.Add(new Vector3(4324, 6258, 51), "SRU_MurkwolfMini2.1.2"); //Wolfsmall2 Back
                 JumpSpots.Add(new Vector3(3624, 7408, 51), "SRU_BlueMini21.1.3"); //Bluesmall2 Back
@@ -130,7 +129,6 @@ namespace KappaAIO.Champions
             SpellList.Add(R);
 
             Menuini = MainMenu.AddMenu("Yasuo", "Yasuo");
-            EvadeMenu = Menuini.AddSubMenu("Evade Settings");
             DrawMenu = Menuini.AddSubMenu("Drawings Settings");
             ColorMenu = Menuini.AddSubMenu("Color Picker");
 
@@ -141,41 +139,6 @@ namespace KappaAIO.Champions
             Menuini.CreateKeyBind("wall", "Wall Jump INISDE Camp > OUT Camp", false, KeyBind.BindTypes.HoldActive, 'S');
            // Menuini.CreateKeyBind("wall2", "Wall Jump OUTSIDE Camp > IN Camp", false, KeyBind.BindTypes.HoldActive, 'Z');
 
-            EvadeMenu.AddGroupLabel("W Spells");
-            EvadeMenu.Add("W", new CheckBox("Use W"));
-            EvadeMenu.Add("impact", new CheckBox("Block Before Impact"));
-            EvadeMenu.Add("rnd", new CheckBox("Randomize Delay"));
-            EvadeMenu.Add("combo", new CheckBox("Block In Combo Mode ONLY"));
-            EvadeMenu.Add("dl", new Slider("Min Danger Level To Block {0}", 3, 0, 5));
-            var min = EvadeMenu.Add("min", new Slider("Min Delay {0} (In MilliSeconds)", 0, 0, 500));
-            var max = EvadeMenu.Add("max", new Slider("Max Delay {0} (In MilliSeconds)", 250, 0, 1000));
-
-            min.OnValueChange += delegate(ValueBase<int> sender, ValueBase<int>.ValueChangeArgs args)
-            {
-                max.MinValue = args.NewValue;
-                if (args.NewValue > max.CurrentValue)
-                    {
-                        max.CurrentValue = args.NewValue + 1;
-                    }
-                };
-
-            foreach (var enemy in EntityManager.Heroes.Enemies)
-            {
-                EvadeMenu.AddSeparator(0);
-                foreach (var spell in Database.TargetedSpells.TargetedSpellsList.Where(s => s.hero == enemy.Hero))
-                {
-                    EvadeMenu.Add(enemy.ID() + spell.slot, new CheckBox(enemy.ChampionName + " - " + spell.slot, spell.DangerLevel > 2));
-                    EvadeMenu.Add(enemy.ID() + spell.slot + "dl", new Slider(enemy.ChampionName + " " + spell.slot + " Danger Level {0}", spell.DangerLevel, 0, 5));
-                }
-                /*
-                foreach (var spell in Database.SkillShotSpells.SkillShotsSpellsList.Where(s => s.hero == enemy.Hero))
-                {
-                    EvadeMenu.Add(enemy.ID() + spell.slot, new CheckBox(enemy.ChampionName + " - " + spell.slot, spell.DangerLevel > 2));
-                    EvadeMenu.Add(enemy.ID() + spell.slot + "dl", new Slider(enemy.ChampionName + " " + spell.slot + " Danger Level {0}", spell.DangerLevel, 0, 5));
-                }
-                */
-            }
-
             foreach (var spell in SpellList)
             {
                 DrawMenu.Add(spell.Slot.ToString(), new CheckBox(spell.Slot + " Range"));
@@ -183,21 +146,9 @@ namespace KappaAIO.Champions
             }
             DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));
             DrawMenu.AddLabel("Draws = ComboDamage / Enemy Current Health");
-            
+
+            //KappaEvade.KappaEvade.Init();
             Messages.OnMessage += Messages_OnMessage;
-            SpellsDetector.OnTargetedSpellDetected += SpellsDetector_OnTargetedSpellDetected;
-        }
-
-        private static void SpellsDetector_OnTargetedSpellDetected(Obj_AI_Base sender, Obj_AI_Base target, GameObjectProcessSpellCastEventArgs args, Database.TargetedSpells.TSpell spell)
-        {
-            if(!target.IsMe || !W.IsReady()) return;
-
-            if (EvadeMenu.slider(sender.ID() + spell.slot + "dl") >= EvadeMenu.slider("dl") && EvadeMenu.checkbox(sender.ID() + spell.slot))
-            {
-                var impact = (args.Start.Distance(user) / args.SData.MissileSpeed) + (250 - Game.Ping);
-                var delay = EvadeMenu.checkbox("impact") ? impact : EvadeMenu.checkbox("rnd") ? new Random().Next(EvadeMenu.slider("min"), EvadeMenu.slider("max")) : EvadeMenu.slider("max");
-                EloBuddy.SDK.Core.DelayAction(() => W.Cast(user.ServerPosition.Extend(args.Start, 200).To3D()), (int)delay);
-            }
         }
 
         private static void Messages_OnMessage(Messages.WindowMessage args)
@@ -231,14 +182,17 @@ namespace KappaAIO.Champions
         {
             foreach (var spot in JumpSpots.OrderBy(s => s.Key.Distance(Game.CursorPos)))
             {
-                if (spot.Key.IsInRange(Game.CursorPos, 150))
+                if (spot.Key.IsInRange(Game.CursorPos, 300))
                 {
+                    Chat.Print("IsInRange");
                     var mob = EntityManager.MinionsAndMonsters.GetJungleMonsters().FirstOrDefault(j => j.Name == spot.Value && j.CanDash() && j.IsValidTarget() && spot.Key.IsInRange(j, E.Range));
                     if (mob != null)
                     {
+                        Chat.Print("mob != null");
                         Chat.Print(mob.IsValidTarget(E.Range) && !mob.EndPos().IsWall() && mob.ServerPosition.Extend(user, 200).To3D().IsWall());
                         if ((mob.IsValidTarget(225) && mob.EndPos().IsWall() && !mob.EndPos().Extend(user, -140).IsWall()) || (mob.IsValidTarget(E.Range) && !mob.EndPos().IsWall() && mob.ServerPosition.Extend(user, 200).To3D().IsWall()))
                         {
+                            Chat.Print("E.Cast(mob);");
                             E.Cast(mob);
                             return;
                         }

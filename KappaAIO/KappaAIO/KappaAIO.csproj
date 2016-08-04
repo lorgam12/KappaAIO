@@ -62,6 +62,7 @@
     <Compile Include="Champions\Yasuo.cs" />
     <Compile Include="Core\CommonStuff\CheckVersion.cs" />
     <Compile Include="Core\CommonStuff\ItemsDatabase.cs" />
+    <Compile Include="KappaEvade\Collision.cs" />
     <Compile Include="KappaEvade\Database.cs" />
     <Compile Include="KappaEvade\debug.cs" />
     <Compile Include="KappaEvade\KappaEvade.cs" />

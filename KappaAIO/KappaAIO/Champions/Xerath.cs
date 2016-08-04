@@ -84,7 +84,7 @@ namespace KappaAIO.Champions
             Scryb = new Item((int)ItemId.Farsight_Alteration, 3500f);
             Q = new Spell.Chargeable(SpellSlot.Q, 750, 1500, 1500, 500, int.MaxValue, 100) { AllowedCollisionCount = int.MaxValue };
             W = new Spell.Skillshot(SpellSlot.W, 1100, SkillShotType.Circular, 250, int.MaxValue, 100) { AllowedCollisionCount = int.MaxValue };
-            E = new Spell.Skillshot(SpellSlot.E, 1050, SkillShotType.Linear, 250, 1600, 70);
+            E = new Spell.Skillshot(SpellSlot.E, 1050, SkillShotType.Linear, 250, 1600, 70) { AllowedCollisionCount = 0 };
             R = new Spell.Skillshot(SpellSlot.R, 3200, SkillShotType.Circular, 500, int.MaxValue, 120) { AllowedCollisionCount = int.MaxValue };
 
             SpellList.Add(Q);
@@ -299,6 +299,7 @@ namespace KappaAIO.Champions
                 }
                 else if (!useW || !W.IsReady() || user.Distance(Target) > W.Range)
                 {
+                    if(Q.hitchance(Menuini) >= HitChance.Low)
                     Q.StartCharging();
                 }
             }
@@ -309,14 +310,14 @@ namespace KappaAIO.Champions
             AIHeroClient bestTarget = null;
             var bestRatio = 0f;
             var target = TargetSelector.SelectedTarget;
-            if (target.IsKillable() && target.IsKillable() && (Game.CursorPos.Distance(target.ServerPosition) < distance && user.Distance(target) < R.Range))
+            if (target != null && target.IsKillable() && (Game.CursorPos.Distance(target.ServerPosition) < distance && user.Distance(target) < R.Range))
             {
                 return TargetSelector.SelectedTarget;
             }
 
             foreach (var hero in EntityManager.Heroes.Enemies)
             {
-                if (!hero.IsKillable(R.Range) || !hero.IsKillable() || Game.CursorPos.Distance(hero.ServerPosition) > distance)
+                if (hero == null || !hero.IsKillable(R.Range) || Game.CursorPos.Distance(hero.ServerPosition) > distance)
                 {
                     continue;
                 }
@@ -406,7 +407,7 @@ namespace KappaAIO.Champions
                                 return;
                             }
 
-                            if (Q.IsCharging)
+                            if (Q.IsCharging && Q.IsInRange(Q.GetKStarget()))
                             {
                                 Q.Cast(Q.GetKStarget(), Q.hitchance(Menuini));
                             }
@@ -430,7 +431,7 @@ namespace KappaAIO.Champions
                                 return;
                             }
 
-                            if (Q.IsCharging)
+                            if (Q.IsCharging && Q.IsInRange(Q.GetJStarget()))
                             {
                                 Q.Cast(Q.GetJStarget(), Q.hitchance(Menuini));
                             }
@@ -452,9 +453,9 @@ namespace KappaAIO.Champions
 
             var useE = LaneClearMenu.checkbox("E") && E.IsReady() && E.Mana(LaneClearMenu);
 
-            var allMinionsQ = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(Q.MaximumRange));
+            var allMinionsQ = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m != null && m.IsKillable(Q.MaximumRange));
 
-            var allMinionsW = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(W.Range));
+            var allMinionsW = EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m != null && m.IsKillable(W.Range));
 
             var objAiMinionsQ = allMinionsQ as Obj_AI_Minion[] ?? allMinionsQ.ToArray();
 
@@ -522,7 +523,7 @@ namespace KappaAIO.Champions
             if (useE)
             {
                 var useEi = LaneClearMenu.combobox(E.Slot + "mode");
-                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(E.Range)))
+                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m != null && m.IsKillable(E.Range)))
                 {
                     if (minion != null && (useEi == 0 || useEi == 2))
                     {
@@ -548,8 +549,8 @@ namespace KappaAIO.Champions
 
             var useE = JungleClearMenu.checkbox("E") && E.IsReady() && E.Mana(JungleClearMenu);
 
-            var allMinionsQ = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable(Q.MaximumRange));
-            var allMinionsW = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable(W.Range));
+            var allMinionsQ = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m != null && m.IsKillable(Q.MaximumRange));
+            var allMinionsW = EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m != null && m.IsKillable(W.Range));
             var objAiMinionsQ = allMinionsQ as Obj_AI_Minion[] ?? allMinionsQ.ToArray();
             var objAiMinionsW = allMinionsW as Obj_AI_Minion[] ?? allMinionsW.ToArray();
 
@@ -600,7 +601,7 @@ namespace KappaAIO.Champions
 
             if (useE)
             {
-                foreach (var minion in EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable(E.Range)))
+                foreach (var minion in EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m != null && m.IsKillable(E.Range)))
                 {
                     if (E.GetDamage(minion) >= Prediction.Health.GetPrediction(minion, E.CastDelay))
                     {
@@ -661,7 +662,7 @@ namespace KappaAIO.Champions
             if (R.IsReady() && MiscMenu.checkbox("Notifications") && Environment.TickCount - Common.lastNotification > 5000)
             {
                 foreach (var enemy in
-                    EntityManager.Heroes.Enemies.Where(h => h.IsKillable() && R.GetDamage(h) * 3 > h.Health))
+                    EntityManager.Heroes.Enemies.Where(h => h != null && h.IsKillable() && R.GetDamage(h) * 3 > h.Health))
                 {
                     Common.ShowNotification(enemy.ChampionName + ": is killable R!!!", 4000);
                     Common.lastNotification = Environment.TickCount;
@@ -747,7 +748,7 @@ namespace KappaAIO.Champions
             {
                 var t = TargetSelector.GetTarget(R.Range, DamageType.Physical);
 
-                if (t.IsKillable())
+                if (t != null && t.IsKillable())
                 {
                     var rDamage = R.GetDamage(t);
                     if (rDamage * 5 > t.Health)

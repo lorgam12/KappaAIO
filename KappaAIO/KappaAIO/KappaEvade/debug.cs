@@ -43,8 +43,8 @@ namespace KappaAIO.KappaEvade
             SkillShots.Add("W", new CheckBox("Use W"));
             SkillShots.Add("combo", new CheckBox("Block In Combo Mode ONLY"));
             SkillShots.Add("dl", new Slider("Min Danger Level To Block {0}", 1, 0, 5));
-            SkillShots.Add("range", new Slider("Extra spell Range {0}", 50, 0, 500));
-            SkillShots.Add("width", new Slider("Extra spell Width {0}", 50, 0, 500));
+            SkillShots.Add("range", new Slider("Extra spell Range {0}", 50, 0, 150));
+            SkillShots.Add("width", new Slider("Extra spell Width {0}", 15, 0, 75));
 
             Targeted.AddSeparator();
             SkillShots.AddSeparator();

@@ -4,25 +4,54 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using KappaAIO.Core.CommonStuff;
-using KappaAIO.KappaEvade;
 using KappaAIO.Core.Managers;
 using SharpDX;
-using static KappaAIO.Core.Managers.DashManager;
 
 namespace KappaAIO.Champions
 {
     // why are you looking at my codez ( ͡° ͜ʖ ͡°)
     internal class Yasuo : Base
     {
+        public static bool BeforeImpact
+        {
+            get
+            {
+                return LowestKnockUpTime < 125 + Game.Ping && LowestKnockUpTime > 0;
+            }
+        }
+        public static float LowestKnockUpTime
+        {
+            get
+            {
+                var buffs =
+                    EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range) && e.IsAirborne())
+                        .Select(a => a.Buffs.FirstOrDefault(b => b.Type == BuffType.Knockback || b.Type == BuffType.Knockup))
+                        .OrderBy(b => b.EndTime - Game.Time);
+                var buff = buffs.FirstOrDefault();
+                return buff != null ? (buff.EndTime - Game.Time) * 1000 : 1000;
+            }
+        }
+
+        public static Geometry.Polygon.Sector ESector(Obj_AI_Base target)
+        {
+            return new Geometry.Polygon.Sector(user.ServerPosition, target.PredPos(250).To3D(), (float)(60 * Math.PI / 180), 475);
+        }
+
+        public static Geometry.Polygon.Sector ESector(Vector3 target)
+        {
+            return new Geometry.Polygon.Sector(user.ServerPosition, target, (float)(60 * Math.PI / 180), 475);
+        }
+
         public static uint QRange
         {
             get
             {
-                return (uint)(Q3 ? 1000 : 475);
+                return user.IsDashing() ? 375 : (uint)(Q3 ? 1000 : 475);
             }
         }
         public static int QWidth
@@ -39,36 +68,11 @@ namespace KappaAIO.Champions
                 return user.HasBuff("YasuoQ3W");
             }
         }
-        private static Spell.Skillshot Q;
-        private static Spell.Skillshot W;
-        private static Spell.Targeted E;
-        private static Spell.Active R;
-        private static Dictionary<Vector3, string> JumpSpots = new Dictionary<Vector3, string>();
-        /*private static List<Vector3> JumpSpots = new List<Vector3>()
-                                                     {
-                                                         //Blue team
-                                                         new Vector3(8299, 2662, 51), //Krugsmall front
-                                                         new Vector3(8541, 2679, 50),  //Krugsmall front
-                                                         //new Vector3(8220, 3160, 52), //Krugsmall back
-                                                         new Vector3(7620, 4120, 54), //Redsmall front
-                                                         new Vector3(7850, 3930, 54), //Redsmall2 front
-                                                         new Vector3(6836, 5488, 54), //Birdsmall front
-                                                         new Vector3(3897, 6479, 52), //Wolfsmall front
-                                                         new Vector3(3721, 6542, 52), //Wolfsmall2 front
-                                                         new Vector3(3714, 8073, 51), //Bluesmall front
-                                                         new Vector3(3833, 7931, 52), //Bluebig front
-                                                         new Vector3(2249, 8425, 51), //Gromp front
-                                                         //Red team
-                                                         new Vector3(6528, 12250, 56), //Krugsmall front
-                                                         new Vector3(6325, 12253, 56), //Krugbig front
-                                                         new Vector3(6980, 10978, 56), //Redsmall front
-                                                         new Vector3(7244, 10878, 56), //Redsmall2 front
-                                                         new Vector3(7913, 9412, 52), //Birdsmall front
-                                                         new Vector3(10867, 8363, 62), //Wolfsmall front
-                                                         new Vector3(11081, 8312, 61), //Wolfsmall2 front
-                                                         new Vector3(10974, 7010, 51), //Bluebig front
-                                                         new Vector3(12575, 6380, 51), //Gromp front
-                                                     };*/
+        private static readonly Spell.Skillshot Q;
+        private static readonly Spell.Skillshot W;
+        private static readonly Spell.Targeted E;
+        private static readonly Spell.Active R;
+        private static readonly Dictionary<Vector3, string> JumpSpots = new Dictionary<Vector3, string>();
 
         static Yasuo()
         {
@@ -119,6 +123,7 @@ namespace KappaAIO.Champions
                 JumpSpots.Add(new Vector3(11122, 7506, 52), "SRU_BlueMini7.1.2"); //Bluesmall Back
                 JumpSpots.Add(new Vector3(13172, 6408, 54), "SRU_Gromp14.1.1"); //Gromp Back
             }
+
             Q = new Spell.Skillshot(SpellSlot.Q, 475, SkillShotType.Linear, 250, int.MaxValue, 50);
             W = new Spell.Skillshot(SpellSlot.W, 400, SkillShotType.Linear, 250, int.MaxValue, 150);
             E = new Spell.Targeted(SpellSlot.E, 475);
@@ -129,15 +134,34 @@ namespace KappaAIO.Champions
             SpellList.Add(R);
 
             Menuini = MainMenu.AddMenu("Yasuo", "Yasuo");
+            AutoMenu = Menuini.AddSubMenu("Auto");
+            ComboMenu = Menuini.AddSubMenu("Combo");
+            JumperMenu = Menuini.AddSubMenu("Flee");
             DrawMenu = Menuini.AddSubMenu("Drawings Settings");
             ColorMenu = Menuini.AddSubMenu("Color Picker");
 
-            Menuini.Add("orb", new CheckBox("Orbwalker While Holding flee key"));
-            Menuini.Add("spot", new CheckBox("Orbwalk To Closest Jump Spot"));
-            Menuini.Add("spots", new CheckBox("Only Accurate Wall jumps"));
-            Menuini.CreateKeyBind("flee", "Flee Across all units", false, KeyBind.BindTypes.HoldActive, 'A');
-            Menuini.CreateKeyBind("wall", "Wall Jump INISDE Camp > OUT Camp", false, KeyBind.BindTypes.HoldActive, 'S');
-           // Menuini.CreateKeyBind("wall2", "Wall Jump OUTSIDE Camp > IN Camp", false, KeyBind.BindTypes.HoldActive, 'Z');
+            Menuini.Add("Qhit", new ComboBox("Q HitChance", 0, "High", "Medium", "Low"));
+
+            AutoMenu.CreateCheckBox("Raoe", "Use AUTO R AOE");
+            AutoMenu.CreateSlider("Rhits", "Auto AOE R Hits {0}", 3, 1, 6);
+
+            ComboMenu.CreateCheckBox("Q", "Use Q");
+            ComboMenu.CreateCheckBox("Q3", "Use Q3");
+            ComboMenu.CreateCheckBox("E", "Use E");
+            ComboMenu.CreateCheckBox("R", "Use R Finisher");
+            ComboMenu.CreateCheckBox("RCombo", "Use R For Combo Damage");
+            ComboMenu.CreateCheckBox("Raoe", "Use R AoE");
+            ComboMenu.CreateSlider("RHits", "R Hit {0} Enemies", 2, 1, 6);
+            ComboMenu.AddSeparator(0);
+            ComboMenu.AddGroupLabel("Advanced Settings");
+            ComboMenu.CreateCheckBox("EQ", "E > Q");
+            ComboMenu.CreateCheckBox("EQ3", "E > Q3");
+            ComboMenu.CreateCheckBox("Egap", "E GapClose To Selected Target");
+            ComboMenu.CreateCheckBox("Edive", "E Dive Towers", false);
+
+            JumperMenu.CreateKeyBind("flee", "Flee Across all units", false, KeyBind.BindTypes.HoldActive, 'A');
+            JumperMenu.CreateKeyBind("wall", "Wall Jump", false, KeyBind.BindTypes.HoldActive, 'S');
+            //JumperMenu.CreateKeyBind("wall2", "Wall Jump OUTSIDE Camp > IN Camp", false, KeyBind.BindTypes.HoldActive, 'Z');
 
             foreach (var spell in SpellList)
             {
@@ -147,8 +171,8 @@ namespace KappaAIO.Champions
             DrawMenu.Add("damage", new CheckBox("Draw Combo Damage"));
             DrawMenu.AddLabel("Draws = ComboDamage / Enemy Current Health");
 
-            //KappaEvade.KappaEvade.Init();
-            Messages.OnMessage += Messages_OnMessage;
+            KappaEvade.KappaEvade.Init();
+            //Messages.OnMessage += Messages_OnMessage;
         }
 
         private static void Messages_OnMessage(Messages.WindowMessage args)
@@ -156,25 +180,6 @@ namespace KappaAIO.Champions
             if (args.Message == WindowMessages.LeftButtonDown)
             {
                 Chat.Print(user.ServerPosition);
-            }
-        }
-
-        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-        {
-            var caster = sender as AIHeroClient;
-            var hero = args.Target as AIHeroClient;
-            if (caster == null || !caster.IsEnemy || hero == null || !hero.IsMe || !W.IsReady()) return;
-
-            if (Database.TargetedSpells.TargetedSpellsList.Any(s => s.hero == caster.Hero && s.slot == args.Slot))
-            {
-                var spell = Database.TargetedSpells.TargetedSpellsList.FirstOrDefault(s => s.hero == caster.Hero && s.slot == args.Slot);
-                if (EvadeMenu.slider(caster.ID() + spell.slot + "dl") >= EvadeMenu.slider("dl"))
-                {
-                    var impact = (args.Start.Distance(user) / args.SData.MissileSpeed) + (250 - Game.Ping);
-                    var delay = EvadeMenu.checkbox("impact") ? impact : EvadeMenu.checkbox("rnd") ? new Random().Next(EvadeMenu.slider("min"), EvadeMenu.slider("max")) : EvadeMenu.slider("max");
-                    Chat.Print(delay);
-                    EloBuddy.SDK.Core.DelayAction(() => W.Cast(user.ServerPosition.Extend(args.Start, 200).To3D()), (int)delay);
-                }
             }
         }
 
@@ -190,7 +195,8 @@ namespace KappaAIO.Champions
                     {
                         Chat.Print("mob != null");
                         Chat.Print(mob.IsValidTarget(E.Range) && !mob.EndPos().IsWall() && mob.ServerPosition.Extend(user, 200).To3D().IsWall());
-                        if ((mob.IsValidTarget(225) && mob.EndPos().IsWall() && !mob.EndPos().Extend(user, -140).IsWall()) || (mob.IsValidTarget(E.Range) && !mob.EndPos().IsWall() && mob.ServerPosition.Extend(user, 200).To3D().IsWall()))
+                        if ((mob.IsValidTarget(225) && mob.EndPos().IsWall() && !mob.EndPos().Extend(user, -140).IsWall())
+                            || (mob.IsValidTarget(E.Range) && !mob.EndPos().IsWall() && mob.ServerPosition.Extend(user, 200).To3D().IsWall()))
                         {
                             Chat.Print("E.Cast(mob);");
                             E.Cast(mob);
@@ -204,59 +210,22 @@ namespace KappaAIO.Champions
                     Orbwalker.OrbwalkTo(Game.CursorPos);
                 }
             }
-            /*
-                var spot = JumpSpots.OrderBy(s => s.Distance(Game.CursorPos)).FirstOrDefault(s => s.Distance(Game.CursorPos) <= 1000 && ObjectManager.Get<Obj_AI_Minion>().Count(m => m.IsValidTarget() && m.IsInRange(s, 100)) > 0);
-                if (Menuini.keybind("wall") || Menuini.keybind("flee"))
-                {
-                    if (spot != null && spot.Distance(user) < 2500 && Menuini.checkbox("spot") && EloBuddy.SDK.Core.GameTickCount - laste > 1000 && Menuini.keybind("wall"))
-                    {
-                        Orbwalker.OrbwalkTo(spot.To2D().To3DWorld());
-                    }
-                    else
-                    {
-                        if (Menuini.checkbox("orb"))
-                        {
-                            Orbwalker.OrbwalkTo(Game.CursorPos);
-                        }
-                    }
-                }
-                foreach (var obj in ObjectManager.Get<Obj_AI_Base>().OrderBy(o => o.EndPos().Distance(Game.CursorPos)).Where(o => o.IsValidTarget(E.Range) && !o.isWard() && o.CanDash() && E.IsReady()))
-                {
-                    if (Menuini.keybind("wall") && EloBuddy.SDK.Core.GameTickCount - laste > 1000)
-                    {
-                        if ((obj.EndPos().IsWall() && !obj.EndPos().Extend(user, -135).IsWall())/* || (!obj.EndPos().IsWall() && obj.ServerPosition.Extend(user, 250).IsWall()))
-                        {
-                            if (Menuini.checkbox("spots"))
-                            {
-                                if (user.IsInRange(spot, 50))
-                                {
-                                    E.Cast(obj);
-                                    laste = EloBuddy.SDK.Core.GameTickCount;
-                                    return;
-                                }
-                            }
-                            E.Cast(obj);
-                            laste = EloBuddy.SDK.Core.GameTickCount;
-                            return;
-                        }
-                    }
-                }*/
         }
 
         public override void Active()
         {
-            Q.Range = QRange;
-            Q.Width = QWidth;
+            UpdateSpells();
+            RAOE(AutoMenu.checkbox("Raoe"), AutoMenu.slider("Rhits"));
 
             foreach (var obj in ObjectManager.Get<Obj_AI_Base>().OrderBy(o => o.EndPos().Distance(Game.CursorPos)).Where(o => o.IsValidTarget(E.Range) && !o.isWard() && o.CanDash() && E.IsReady()))
             {
-                if (Menuini.keybind("flee") && !obj.EndPos().IsWall() && new Geometry.Polygon.Sector(user.ServerPosition, Game.CursorPos, (float)(60 * Math.PI / 180), 475).IsInside(obj))
+                if (JumperMenu.keybind("flee") && !obj.EndPos().IsWall() && new Geometry.Polygon.Sector(user.ServerPosition, Game.CursorPos, (float)(60 * Math.PI / 180), 475).IsInside(obj))
                 {
                     E.Cast(obj);
                     return;
                 }
             }
-            if (Menuini.keybind("wall"))
+            if (JumperMenu.keybind("wall"))
             {
                 WallJump();
             }
@@ -264,6 +233,60 @@ namespace KappaAIO.Champions
 
         public override void Combo()
         {
+            RAOE(ComboMenu.checkbox("Raoe"), ComboMenu.slider("Rhits"));
+
+            var target = TargetSelector.GetTarget(Q.Range + 100, DamageType.Physical);
+            var selected = TargetSelector.SelectedTarget;
+            if (selected != null && selected.IsValidTarget())
+            {
+                target = selected;
+            }
+
+            if (ComboMenu.checkbox("E") && target != null && !target.IsValidTarget(user.GetAutoAttackRange()))
+            {
+                if (ComboMenu.checkbox("Egap"))
+                {
+                    foreach (var obj in ObjectManager.Get<Obj_AI_Base>().OrderBy(e => e.EndPos().Distance(target)).Where(e => e != null && ESector(target).IsInside(e) && e.IsValidTarget()))
+                    {
+                        if (obj == target)
+                        {
+                            if(obj.EndPos().IsInRange(target.PredPos(250), user.GetAutoAttackRange()))
+                            EQ(obj, target, ComboMenu.checkbox("EQ") || (ComboMenu.checkbox("EQ3") && Q3), ComboMenu.checkbox("Edive"));
+                        }
+                        else
+                        {
+                            EQ(obj, target, ComboMenu.checkbox("EQ") || (ComboMenu.checkbox("EQ3") && Q3), ComboMenu.checkbox("Edive"));
+                        }
+                    }
+                }
+                else
+                {
+                    EQ(target, target, ComboMenu.checkbox("EQ") || ComboMenu.checkbox("EQ3") && Q3, ComboMenu.checkbox("Edive"));
+                }
+            }
+
+            if (target != null && target.IsKillable(Q.Range + 25))
+            {
+                if (Q3 && Q.IsReady() && target.IsKillable(Q.Range))
+                {
+                    Q3AOE(target, 2);
+                }
+
+                if ((ComboMenu.checkbox("Q") || ComboMenu.checkbox("Q3") && Q3) && !user.IsDashing() && target.IsKillable(Q.Range) && Q.IsReady())
+                {
+                    Q.Cast(target, Q.hitchance(Menuini));
+                }
+
+                if (ComboMenu.checkbox("E") && E.IsReady())
+                {
+                    EQ(target, target, ComboMenu.checkbox("EQ") || ComboMenu.checkbox("EQ3") && Q3, ComboMenu.checkbox("Edive"));
+                }
+
+                if (BeforeImpact && target.IsKillable(R.Range) && R.IsReady() && target.IsAirborne() && ((ComboMenu.checkbox("R") && BeforeImpact && R.GetDamage(target) >= target.Health) || (ComboMenu.checkbox("RCombo") && target.TotalDamage(SpellList) + user.GetAutoAttackDamage(target, true) >= target.Health)))
+                {
+                    R.Cast();
+                }
+            }
         }
 
         public override void Harass()
@@ -284,12 +307,17 @@ namespace KappaAIO.Champions
 
         public override void Draw()
         {
+            var target = TargetSelector.GetTarget(Q.Range + 1000, DamageType.Physical);
+            if (target != null)
+            {
+                new Geometry.Polygon.Rectangle(user.ServerPosition, user.ServerPosition.Extend(Q.GetPrediction(target).CastPosition, Q.Range).To3D(), Q.Width).Draw(System.Drawing.Color.AliceBlue, 2);
+            }
             foreach (var spot in JumpSpots.Select(s => s.Key))
             {
                 Circle.Draw(Color.AliceBlue, 100, spot);
             }
 
-            new Geometry.Polygon.Sector(user.ServerPosition, Game.CursorPos, (float)(60 * Math.PI / 180), 475).Draw(System.Drawing.Color.AliceBlue, 2);
+            ESector(Game.CursorPos).Draw(System.Drawing.Color.AliceBlue, 2);
 
             foreach (var obj in ObjectManager.Get<Obj_AI_Minion>().Where(o => o.IsValidTarget(1000) && o.IsEnemy))
             {
@@ -301,6 +329,57 @@ namespace KappaAIO.Champions
 
             /*if (DashEnd != null)
                 Circle.Draw(Color.White, 100, DashEnd);*/
+        }
+
+        public static void UpdateSpells()
+        {
+            Q.Range = QRange;
+            Q.Width = QWidth;
+            var attackspeed = Player.Instance.AttackSpeedMod / 2;
+            var reduceddelay = 250 * (attackspeed * 0.017f) * 0.1f * 100;
+            Q.CastDelay = (int)(250 - reduceddelay);
+            Q.Speed = Q3 ? 1150 : int.MaxValue;
+        }
+
+        public static void Q3AOE(Obj_AI_Base target, int HitNumber)
+        {
+            if (!user.IsDashing() && Q3 && EntityManager.Heroes.Enemies.Count(
+                e => e.IsKillable() && new Geometry.Polygon.Rectangle(user.ServerPosition, user.ServerPosition.Extend(Q.GetPrediction(target).CastPosition, Q.Range).To3D(), Q.Width).IsInside(Q.GetPrediction(e).CastPosition)) >= HitNumber)
+            {
+                Q.Cast(target);
+            }
+        }
+
+        public static void EQ(Obj_AI_Base target1, Obj_AI_Base target2, bool Enabled, bool dive)
+        {
+            if (ECast(target1, dive) && E.IsReady() && target1.CanDash())
+            {
+                if (Enabled && target2 != null && Q.IsReady() && target2.IsInRange(target1.EndPos(), 375))
+                {
+                    Q.Cast(target2);
+                }
+            }
+            if (Enabled && target2 != null && Q.IsReady() && user.IsDashing())
+            {
+                Q.Cast(target2);
+            }
+        }
+
+        public static bool ECast(Obj_AI_Base target, bool dive, bool advDive = false)
+        {
+            if ((target.EndPos().UnderTurret() && dive) || !target.EndPos().UnderTurret())
+            {
+                return E.Cast(target);
+            }
+            return false;
+        }
+
+        public static void RAOE(bool Enable, int HitsNumber)
+        {
+            if (EntityManager.Heroes.Enemies.Count(e => e.IsAirborne() && e.IsKillable(R.Range)) >= HitsNumber && Enable && BeforeImpact && R.IsReady())
+            {
+                R.Cast();
+            }
         }
     }
 }

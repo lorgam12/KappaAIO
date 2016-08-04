@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using EloBuddy;
+using EloBuddy.SDK;
 using EloBuddy.SDK.Constants;
 using SharpDX;
 
@@ -37,7 +38,7 @@ namespace KappaAIO.KappaEvade
 
             var missile = sender as MissileClient;
             var caster = missile?.SpellCaster as AIHeroClient;
-            if (caster == null || missile == null || !missile.IsValid || missile.IsAutoAttack() || caster.IsEnemy)
+            if (caster == null || missile == null || !missile.IsValid || missile.IsAutoAttack() || !caster.IsEnemy)
                 return;
 
             Chat.Print("OnCreate Detected " + missile.SData.Name + " " + missile.SData.MissileSpeed + " " + missile.SData.CastRange);
@@ -45,6 +46,7 @@ namespace KappaAIO.KappaEvade
             {
                 Chat.Print("OnCreate Added " + missile.SData.Name);
                 var spell = Database.SkillShotSpells.SkillShotsSpellsList.FirstOrDefault(s => s.hero == caster.Hero && missile.SData.Name.ToLower() == s.MissileName.ToLower());
+                if(!spell.DetectByMissile) return;
                 OnSkillShotDetected?.Invoke(caster, null, spell, missile.StartPosition, missile.EndPosition, spell.Range, spell.Width, missile);
             }
         }
@@ -53,13 +55,14 @@ namespace KappaAIO.KappaEvade
         {
             var caster = sender as AIHeroClient;
             var hero = args.Target as AIHeroClient;
-            if (caster == null || caster.IsEnemy)
+            if (caster == null || !caster.IsEnemy)
                 return;
 
             if (Database.SkillShotSpells.SkillShotsSpellsList.Any(s => s.hero == caster.Hero && s.slot == args.Slot && args.SData.Name.ToLower() == s.SpellName.ToLower()))
             {
                 Chat.Print("OnProcessSpellCast Detected " + args.SData.Name);
                 var spell = Database.SkillShotSpells.SkillShotsSpellsList.FirstOrDefault(s => s.hero == caster.Hero && s.slot == args.Slot && args.SData.Name.ToLower() == s.SpellName.ToLower());
+                if (spell.DetectByMissile) return;
                 OnSkillShotDetected?.Invoke(sender, args, spell, args.Start, args.End, spell.Range, spell.Width, null);
             }
 

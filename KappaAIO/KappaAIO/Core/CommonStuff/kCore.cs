@@ -37,13 +37,6 @@ namespace KappaAIO.Core.CommonStuff
                     break;
             }
 
-            foreach (var ward in
-                ObjectManager.Get<Obj_AI_Minion>()
-                    .Where(w => w.Name.ToLower().Contains("ward") && w != null && w.IsAlly && w.IsValid && w.Health > 0 && !w.IsDead && !w.Name.ToLower().Contains("wardcorpse")))
-            {
-                ObjectsManager.Wards.Add(ward);
-            }
-
             DashManager.Init();
             CoreMenu = MainMenu.AddMenu("KappaCore", "KappaCore");
             GapMenu = CoreMenu.AddSubMenu("Anti-GapCloser Settings");
@@ -71,20 +64,7 @@ namespace KappaAIO.Core.CommonStuff
                 ks.Add(mob, new CheckBox(mob));
             }
 
-            GameObject.OnCreate += delegate(GameObject sender, EventArgs args)
-                {
-                    if (sender.Name.ToLower().Contains("ward") && sender.IsAlly && !sender.Name.ToLower().Contains("wardcorpse"))
-                    {
-                        ObjectsManager.Wards.Add((Obj_AI_Minion)sender);
-                    }
-                };
-            GameObject.OnDelete += delegate(GameObject sender, EventArgs args)
-                {
-                    if (sender.Name.ToLower().Contains("ward") && sender.IsAlly && !sender.Name.ToLower().Contains("wardcorpse"))
-                    {
-                        ObjectsManager.Wards.Remove((Obj_AI_Minion)sender);
-                    }
-                };
+            ObjectsManager.Init();
         }
     }
 }

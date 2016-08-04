@@ -17,6 +17,7 @@ namespace KappaAIO.KappaEvade
         {
             Common.Logger.Info("KappaEvade Loaded");
             SpellsDetector.Init();
+            Collision.Init();
             SpellsDetector.OnSkillShotDetected += SpellsDetector_OnSkillShotDetected;
             Drawing.OnDraw += Drawing_OnDraw;
             GameObject.OnDelete += GameObject_OnDelete;
@@ -66,6 +67,8 @@ namespace KappaAIO.KappaEvade
         }
 
         public static List<ActiveSpells> DetectedSpells = new List<ActiveSpells>();
+
+        public static List<ActiveSpells> DetectedMissiles = new List<ActiveSpells>();
 
         private static void GameObject_OnCreate(GameObject sender, EventArgs args)
         {
@@ -133,13 +136,7 @@ namespace KappaAIO.KappaEvade
 
         private static void Game_OnTick(EventArgs args)
         {
-            foreach (var spell in DetectedSpells /*.Where(s => s.spell.ForceRemove)*/)
-            {
-                //Chat.Print(Game.Time - spell.EndTime);
-                //Chat.Print("OnTick remove " + spell.spell.MissileName);
-                DetectedSpells.RemoveAll(s => Game.Time - s.EndTime >= 0);
-                return;
-            }
+            DetectedSpells.RemoveAll(s => Game.Time - s.EndTime >= 0);
         }
 
         private static void GameObject_OnDelete(GameObject sender, EventArgs args)
@@ -160,7 +157,7 @@ namespace KappaAIO.KappaEvade
 
         private static void Drawing_OnDraw(EventArgs args)
         {
-            foreach (var spell in DetectedSpells /*.Where(s => debug.SkillShots.checkbox(s.Caster.ID() + s.spell.slot + "draw"))*/)
+            foreach (var spell in Collision.NewSpells/*.Where(s => debug.SkillShots.checkbox(s.Caster.ID() + s.spell.slot + "draw"))*/)
             {
                 if (spell.Missile != null)
                 {

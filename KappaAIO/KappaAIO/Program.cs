@@ -9,7 +9,7 @@ namespace KappaAIO
 {
     internal class Program
     {
-        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar, Champion.Xerath, /*Champion.Yasuo */};
+        public static Champion[] hero = { Champion.AurelionSol, Champion.Azir, Champion.Brand, Champion.Kindred, Champion.LeeSin, Champion.Malzahar, Champion.Xerath, /*Champion.Yasuo*/ };
 
         private static void Main(string[] args)
         {
@@ -19,7 +19,6 @@ namespace KappaAIO
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
-            //KappaEvade.KappaEvade.Init();
             if (hero.Contains(Player.Instance.Hero))
             {
                 kCore.Execute();
@@ -36,6 +35,16 @@ namespace KappaAIO
             {
                 Common.Logger.Warn("KappaAIO: Failed To Load ! ");
                 Common.Logger.Warn("Case: " + Player.Instance.Hero + " Not Supported ");
+            }
+            Chat.OnInput += Chat_OnMessage;
+        }
+
+        private static void Chat_OnMessage(ChatInputEventArgs chatInputEventArgs)
+        {
+            if (chatInputEventArgs.Input.ToLower() == "Load KappaEvade".ToLower())
+            {
+                chatInputEventArgs.Process = false;
+                KappaEvade.KappaEvade.Init();
             }
         }
     }

@@ -6,7 +6,6 @@ using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
-using KappaAIO.Core;
 using KappaAIO.Core.CommonStuff;
 using KappaAIO.Core.Managers;
 

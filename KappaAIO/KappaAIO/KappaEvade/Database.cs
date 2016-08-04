@@ -37,7 +37,8 @@ namespace KappaAIO.KappaEvade
 					 SpellName = "AhriOrbofDeception",
                      MissileName = "AhriOrbMissile",
                      Collisions = new []{ Collision.YasuoWall },
-                     IsFixedRange = true
+                     IsFixedRange = true,
+                     DetectByMissile = true
                    },
                new SSpell
                   {
@@ -52,7 +53,8 @@ namespace KappaAIO.KappaEvade
 					 SpellName = "AhriOrbReturn",
                      MissileName = "AhriOrbReturn",
                      Collisions = new []{ Collision.YasuoWall },
-                     IsFixedRange = false
+                     IsFixedRange = false,
+                     DetectByMissile = true
                    },
                new SSpell
                    {
@@ -131,7 +133,8 @@ namespace KappaAIO.KappaEvade
                      MissileName = "VolleyAttack",
                      Collisions = new []{ Collision.YasuoWall, Collision.Heros, Collision.Minions },
                      ForceRemove = true,
-                     IsFixedRange = true
+                     IsFixedRange = true,
+                     DetectByMissile = true
                    },
                new SSpell
                    {
@@ -489,7 +492,7 @@ namespace KappaAIO.KappaEvade
                      CastDelay = 1000,
                      Range = 15000,
                      Speed = 2000,
-                     Width = 80,
+                     Width = 160,
                      SpellName = "EzrealTrueshotBarrage",
                      MissileName = "EzrealTrueshotBarrage",
                      Collisions = new []{ Collision.YasuoWall },
@@ -1217,7 +1220,8 @@ namespace KappaAIO.KappaEvade
                      MissileName = "MissFortuneBullets",
                      Collisions = new []{ Collision.YasuoWall },
                      //ForceRemove = true,
-                     IsFixedRange = true
+                     IsFixedRange = true,
+                     DetectByMissile = true
                    },
                new SSpell
                    {
@@ -1229,12 +1233,13 @@ namespace KappaAIO.KappaEvade
                      Range = 1450,
                      Speed = int.MaxValue,
                      Width = 70,
-                     Angle = 10,
+                     Angle = 6,
                      SpellName = "MissFortuneBulletTime",
                      MissileName = "MissFortuneBulletEMPTY",
                      Collisions = new []{ Collision.YasuoWall },
                      ForceRemove = true,
-                     IsFixedRange = true
+                     IsFixedRange = true,
+                     DetectByMissile = true
                    },
                new SSpell
                    {
@@ -1401,7 +1406,8 @@ namespace KappaAIO.KappaEvade
                      SpellName = "PoppyRSpell",
                      MissileName = "PoppyRMissile",
                      Collisions = new []{ Collision.YasuoWall },
-                     IsFixedRange = false
+                     IsFixedRange = false,
+                     DetectByMissile = true
                    },
                new SSpell
                    {
@@ -1804,10 +1810,11 @@ namespace KappaAIO.KappaEvade
                      Range = 1450,
                      Speed = 1000,
                      Width = 40,
-                     SpellName = "SealFateMissile",
+                     SpellName = "WildCards",
                      MissileName = "SealFateMissile",
                      Collisions = new []{ Collision.YasuoWall },
-                     IsFixedRange = true
+                     IsFixedRange = true,
+                     DetectByMissile = true
                    },
                new SSpell
                    {
@@ -1863,10 +1870,11 @@ namespace KappaAIO.KappaEvade
                      Range = 1800,
                      Speed = 1900,
                      Width = 70,
-                     SpellName = "VarusQMissile",
+                     SpellName = "VarusQ",
                      MissileName = "VarusQMissile",
                      Collisions = new []{ Collision.YasuoWall },
-                     IsFixedRange = false
+                     IsFixedRange = false,
+                     DetectByMissile = true
                    },
                new SSpell
                    {
@@ -2128,31 +2136,19 @@ namespace KappaAIO.KappaEvade
             public struct SSpell
             {
                 public Type type;
-
                 public Champion hero;
-
                 public SpellSlot slot;
-
                 public int DangerLevel;
-
                 public float Range;
-
                 public float Angle;
-
                 public float Width;
-
                 public float Speed;
-
                 public float CastDelay;
-
                 public string MissileName;
-
                 public string SpellName;
-
                 public bool ForceRemove;
-
                 public bool IsFixedRange;
-
+                public bool DetectByMissile;
                 public Collision[] Collisions;
             }
 

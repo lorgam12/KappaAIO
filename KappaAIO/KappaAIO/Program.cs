@@ -41,7 +41,7 @@ namespace KappaAIO
 
         private static void Chat_OnMessage(ChatInputEventArgs chatInputEventArgs)
         {
-            if (chatInputEventArgs.Input.ToLower() == "Load KappaEvade".ToLower())
+            if (chatInputEventArgs.Input.Equals("Load KappaEvade", StringComparison.CurrentCultureIgnoreCase))
             {
                 chatInputEventArgs.Process = false;
                 KappaEvade.KappaEvade.Init();

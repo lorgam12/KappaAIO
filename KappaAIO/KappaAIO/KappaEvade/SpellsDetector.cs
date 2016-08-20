@@ -38,14 +38,14 @@ namespace KappaAIO.KappaEvade
 
             var missile = sender as MissileClient;
             var caster = missile?.SpellCaster as AIHeroClient;
-            if (caster == null || missile == null || !missile.IsValid || missile.IsAutoAttack() || !caster.IsEnemy)
+            if (caster == null || missile == null || !missile.IsValid || missile.IsAutoAttack() || caster.IsEnemy)
                 return;
 
             Chat.Print("OnCreate Detected " + missile.SData.Name + " " + missile.SData.MissileSpeed + " " + missile.SData.CastRange);
-            if (Database.SkillShotSpells.SkillShotsSpellsList.Any(s => s.hero == caster.Hero && missile.SData.Name.ToLower() == s.MissileName.ToLower()))
+            if (Database.SkillShotSpells.SkillShotsSpellsList.Any(s => s.hero == caster.Hero && missile.SData.Name.Equals(s.MissileName, StringComparison.CurrentCultureIgnoreCase)))
             {
                 Chat.Print("OnCreate Added " + missile.SData.Name);
-                var spell = Database.SkillShotSpells.SkillShotsSpellsList.FirstOrDefault(s => s.hero == caster.Hero && missile.SData.Name.ToLower() == s.MissileName.ToLower());
+                var spell = Database.SkillShotSpells.SkillShotsSpellsList.FirstOrDefault(s => s.hero == caster.Hero && missile.SData.Name.Equals(s.MissileName, StringComparison.CurrentCultureIgnoreCase));
                 if(!spell.DetectByMissile) return;
                 OnSkillShotDetected?.Invoke(caster, null, spell, missile.StartPosition, missile.EndPosition, spell.Range, spell.Width, missile);
             }
@@ -55,13 +55,13 @@ namespace KappaAIO.KappaEvade
         {
             var caster = sender as AIHeroClient;
             var hero = args.Target as AIHeroClient;
-            if (caster == null || !caster.IsEnemy)
+            if (caster == null || caster.IsEnemy)
                 return;
 
-            if (Database.SkillShotSpells.SkillShotsSpellsList.Any(s => s.hero == caster.Hero && s.slot == args.Slot && args.SData.Name.ToLower() == s.SpellName.ToLower()))
+            if (Database.SkillShotSpells.SkillShotsSpellsList.Any(s => s.hero == caster.Hero && s.slot == args.Slot && args.SData.Name.Equals(s.SpellName, StringComparison.CurrentCultureIgnoreCase)))
             {
                 Chat.Print("OnProcessSpellCast Detected " + args.SData.Name);
-                var spell = Database.SkillShotSpells.SkillShotsSpellsList.FirstOrDefault(s => s.hero == caster.Hero && s.slot == args.Slot && args.SData.Name.ToLower() == s.SpellName.ToLower());
+                var spell = Database.SkillShotSpells.SkillShotsSpellsList.FirstOrDefault(s => s.hero == caster.Hero && s.slot == args.Slot && args.SData.Name.Equals(s.SpellName, StringComparison.CurrentCultureIgnoreCase));
                 if (spell.DetectByMissile) return;
                 OnSkillShotDetected?.Invoke(sender, args, spell, args.Start, args.End, spell.Range, spell.Width, null);
             }
